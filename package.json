@@ -1,0 +1,17 @@
+{
+  "name": "jettison-react",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Jettison — an enforced architecture for enterprise React applications. Any module can be thrown overboard and the app keeps flying; CI proves it on every push.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "type-check": "npm run type-check --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present"
+  }
+}
