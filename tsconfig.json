@@ -1,16 +1,18 @@
 {
-  // Baseline only — Vite scaffold finalizes this in Phase 2 (path aliases, app/node split).
+  // One config for the whole repo — app sources, fixtures, scripts and vite.config.ts.
+  // The conventional app/node split buys nothing here and costs a second file to keep in sync.
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node", "vite/client"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "baseUrl": ".",
+    // Relative, because TypeScript 6 dropped `baseUrl`. Mirrored in vite.config.ts.
     "paths": {
-      "@app/*": ["src/app/*"],
-      "@modules/*": ["src/modules/*"],
-      "@shared/*": ["src/shared/*"],
-      "@core/*": ["src/core/*"]
+      "@app/*": ["./src/app/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@core/*": ["./src/core/*"]
     },
     "jsx": "react-jsx",
     "strict": true,
@@ -24,5 +26,6 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "fixtures", "scripts"]
+  // `fixtures/` is checked by its own project (its aliases point at fixtures/src).
+  "include": ["src", "scripts", "vite.config.ts"]
 }
