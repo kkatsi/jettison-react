@@ -12,7 +12,7 @@ export type TopbarProps = {
   backend: BackendIndicator;
 };
 
-/** Presentational: props in, JSX out, no hook (R2). */
+// Props in, JSX out — no hook needed.
 export function Topbar({ title, backend }: TopbarProps) {
   const bars = [5, 8, 12, 7];
 
@@ -21,7 +21,7 @@ export function Topbar({ title, backend }: TopbarProps) {
       <h1 className="text-lg font-semibold">{title}</h1>
 
       <div className="ml-auto flex items-center gap-2">
-        {/* Signal strength: the mock backend, and how it is behaving today. */}
+        {/* Signal strength: how the mock backend is behaving today. */}
         <div className="flex h-3 items-end gap-0.5" aria-hidden>
           {bars.map((height, index) => (
             <span

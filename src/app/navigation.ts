@@ -1,14 +1,7 @@
-// =============================================================================
-// The console's navigation — one entry per section, owned by a module.
-// =============================================================================
-// The sidebar is composed from this list rather than hardcoded in the layout, so
-// that throwing a module overboard takes its nav entry with it: the `module`
-// field is what `scripts/unregister-module.mjs` matches when the jettison test
-// ejects one (the same mechanical edit it makes in store.ts and router.tsx).
-// =============================================================================
+// The sidebar reads this instead of hardcoding links, so ejecting a module takes
+// its nav entry with it — that's what the `module` field is for.
 
 export type NavItem = {
-  /** The module that owns the destination. */
   module: string;
   to: string;
   label: string;
@@ -25,7 +18,7 @@ export const NAV: readonly NavItem[] = [
 ];
 // jettison:nav:end
 
-/** The topbar title for a path — the longest matching section wins. */
+/** Topbar title for a path; longest matching section wins. */
 export function navTitleFor(pathname: string): string {
   const match = [...NAV]
     .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))

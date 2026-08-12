@@ -15,7 +15,7 @@ const rows = (): Row[] => [
 ];
 
 describe('upsertListItem', () => {
-  it('inserts an unknown item at the start — a new entity must be seen', () => {
+  it('inserts an unknown item at the start', () => {
     const list = rows();
     upsertListItem(list, { id: 'c', title: 'Signal Fade' });
     expect(list.map((r) => r.id)).toEqual(['c', 'a', 'b']);
@@ -27,7 +27,7 @@ describe('upsertListItem', () => {
     expect(list.map((r) => r.id)).toEqual(['a', 'b', 'c']);
   });
 
-  it('replaces a known item in place rather than duplicating it', () => {
+  it('replaces a known item in place', () => {
     const list = rows();
     upsertListItem(list, { id: 'b', title: 'Undertow (Remix)' });
     expect(list).toEqual([
@@ -81,7 +81,7 @@ describe('invalidateTagsAfterDelay', () => {
     expect(dispatch.mock.calls[0]?.[0]).toMatchObject({ type: 'api/invalidateTags' });
   });
 
-  it('cancels — a second patch must not leave a stampede of refetches behind', () => {
+  it('cancels, so a second patch does not leave a stampede behind', () => {
     const dispatch = vi.fn();
     const cancel = invalidateTagsAfterDelay(dispatch, [], 2500);
 

@@ -16,15 +16,9 @@ type Props = { name: string; children: ReactNode };
 type State = { error: Error | null; errorId: string; at: string };
 
 /**
- * One boundary per routed screen (Chapter 2 §3). A single boundary at the app root
- * produces the enterprise experience of a blank page because a tooltip threw; this
- * one contains the failure to the screen that caused it and says so on screen —
- * the sidebar, the topbar and every other screen keep working.
- *
- * It lives in the kit, not in `app`, because every module wraps its own screens
- * with it — and a module may not import `app` (Chapter 1 §2). It is hand-written
- * because an error boundary has to be a class component and shadcn ships no
- * equivalent; the panel it renders is composed from the kit's own primitives.
+ * One per routed screen, so a thrown tooltip doesn't blank the whole console.
+ * Lives in the kit rather than app because modules wrap their own screens and
+ * can't import app.
  */
 export class ScreenErrorBoundary extends Component<Props, State> {
   state: State = { error: null, errorId: '', at: '' };
@@ -32,14 +26,14 @@ export class ScreenErrorBoundary extends Component<Props, State> {
   static getDerivedStateFromError(error: Error): State {
     return {
       error,
-      // Short, sayable, and copyable: the id a user reads out on a support call.
+      // Short enough to read out on a support call.
       errorId: `err_${crypto.randomUUID().replaceAll('-', '').slice(0, 8)}`,
       at: new Date().toLocaleTimeString('en-GB'),
     };
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Where a monitoring client belongs (core, when there is one to add).
+    // A monitoring client would go here.
     console.error(`[${this.props.name}]`, error, info.componentStack);
   }
 

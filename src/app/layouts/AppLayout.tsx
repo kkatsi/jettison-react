@@ -4,7 +4,7 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { useAppLayout } from './useAppLayout';
 
-/** The console frame: sidebar, topbar, and whichever screen the router mounted. */
+// The console frame: sidebar, topbar, and whatever the router mounted.
 export function AppLayout() {
   const { title, backend } = useAppLayout();
 

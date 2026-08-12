@@ -1,11 +1,6 @@
-// =============================================================================
-// The label's history — deterministic seed data for Low Orbit Records.
-// =============================================================================
-// Hand-tuned where believability matters (artists, release titles, catalogue
-// numbers, statuses, artwork colours) and generated where volume matters (tracks,
-// streams, revenue, activity). Everything derives from a fixed PRNG seed, so two
-// reloads, two screenshots and two CI runs see the same label.
-// =============================================================================
+// The label's history. Hand-tuned where believability matters (artists, titles,
+// catalogue numbers) and generated where volume does (tracks, streams, activity),
+// off a fixed seed so every reload and every screenshot see the same label.
 
 import type {
   ActivityEvent,
@@ -28,7 +23,7 @@ export type Seed = {
   stats: DailyStat[];
 };
 
-/** mulberry32 — 4 lines, uniform enough for seed data, identical on every machine. */
+/** mulberry32 — uniform enough, and identical on every machine. */
 function prng(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
@@ -67,7 +62,7 @@ const ARTISTS: readonly string[] = [
   'Various Artists',
 ];
 
-/** `[title, artist, type, status, catalogue number, release date, streams 30d, art from, art to]` */
+/** [title, artist, type, status, catalogue no, release date, streams 30d, art from, art to] */
 type CatalogueRow = readonly [
   string,
   string,
@@ -80,11 +75,7 @@ type CatalogueRow = readonly [
   string,
 ];
 
-/**
- * Three years of label history: mostly live, a few in flight, three drafts, two
- * rejected. One row per release — the table is meant to be read, so it is exempt
- * from the formatter.
- */
+/** Three years of it: mostly live, a few in flight, three drafts, two rejected. */
 // prettier-ignore
 const CATALOGUE: readonly CatalogueRow[] = [
   ['Neon Arterial',       'Vaeda Grey',     'Album',  'live',       'LOR-0042', '2026-05-08', 1284300, '#6D3B8F', '#2A1140'],
@@ -170,10 +161,10 @@ const DAY_MS = 86400000;
 const iso = (date: Date): string => date.toISOString();
 const day = (date: Date): string => iso(date).slice(0, 10);
 
-/** Fixed "now", so the seeded label never drifts relative to its own dates. */
+/** Fixed "now", so the label never drifts against its own dates. */
 const NOW = new Date('2026-08-12T09:14:00.000Z');
 
-/** ISRC: country, registrant, year, designation — the real format, fictional codes. */
+/** Real ISRC format, fictional codes. */
 const isrc = (index: number): string => `GBLOR26${String(index + 1).padStart(5, '0')}`;
 
 export function buildSeed(seed = 20140611): Seed {
@@ -221,14 +212,14 @@ export function buildSeed(seed = 20140611): Seed {
       })),
     });
 
-    // Tracks. One release keeps a track mid-processing — the media-ingestion state
-    // the wizard and the release detail screen both need a live example of.
+    // LOR-0052 keeps a track mid-processing, so the wizard and the detail screen
+    // have a live example of it.
     const [min, max] = TRACK_COUNT[type];
     const count = between(random, min, max);
     const used = new Set<string>();
     for (let number = 1; number <= count; number += 1) {
       let trackTitle = `${pick(random, TRACK_HEADS)}${pick(random, TRACK_TAILS)}`;
-      // No tracklist repeats a title — a duplicate reads as generated, instantly.
+      // A repeated title reads as generated, instantly.
       while (used.has(trackTitle)) {
         trackTitle = `${pick(random, TRACK_HEADS)}${pick(random, TRACK_TAILS)}`;
       }
@@ -246,8 +237,7 @@ export function buildSeed(seed = 20140611): Seed {
       trackIndex += 1;
     }
 
-    // 90 days of daily numbers for anything the public can actually stream, with
-    // one playlist spike so the analytics annotation has something true to name.
+    // 90 days of numbers, with one playlist spike for analytics to point at.
     if (status === 'live') {
       const daily = streams30d / 30;
       const spikeStart = between(random, 20, 60);
@@ -260,14 +250,14 @@ export function buildSeed(seed = 20140611): Seed {
           releaseId: id,
           date: day(date),
           streams,
-          // ~$0.0032 a stream — the industry's famously grim rate.
+          // ~$0.0032 a stream, the industry's famously grim rate.
           revenue: Math.round(streams * 0.0032 * 100) / 100,
         });
       }
     }
   }
 
-  // The activity feed: the label's last ten days, newest first.
+  // The feed, newest first.
   const eventful = releases.filter((release) => release.status !== 'draft');
   for (let index = 0; index < 40; index += 1) {
     const release = pick(random, eventful);
@@ -296,7 +286,7 @@ function deliveryStatusFor(status: ReleaseStatus, random: () => number): Deliver
     case 'live':
       return 'delivered';
     case 'delivering':
-      // Mid-delivery is the interesting case: some stores have it, some do not.
+      // The interesting case: some stores have it, some don't.
       return random() < 0.6 ? 'delivered' : 'pending';
     case 'submitted':
     case 'in-review':

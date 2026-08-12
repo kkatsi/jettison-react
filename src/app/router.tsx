@@ -1,13 +1,5 @@
-// =============================================================================
-// The router — the only file that knows which modules the console contains.
-// =============================================================================
-// A module exports a route tree from its `index.ts` and nothing else; this file
-// spreads it into the shell. That single spread is the module's registration —
-// the line the jettison test deletes when it throws the module overboard.
-//
-// Screens are lazy per module (Chapter 2 §3), so a jettisoned module also stops
-// being downloaded, not merely stops being reachable.
-// =============================================================================
+// A module exports a route tree from its index.ts; this file spreads it in. That
+// spread is the module's registration — and the line the jettison test deletes.
 
 import { createBrowserRouter } from 'react-router';
 
@@ -30,7 +22,6 @@ export const router = createBrowserRouter([
       // jettison:routes:start — one spread per module
       // jettison:routes:end
 
-      // The landing screen, and every section whose module has not shipped.
       { index: true, element: unbuilt },
       { path: '*', element: unbuilt },
     ],

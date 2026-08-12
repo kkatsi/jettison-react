@@ -1,16 +1,8 @@
-// =============================================================================
-// The mock backend's contract.
-// =============================================================================
-// These schemas are the single definition of every shape the mock serves: the
-// seed data is typed from them (`z.infer`), and every handler parses its response
-// through them before it goes out. A mock that silently drifts from its own
-// contract teaches the app to expect a shape no real backend would send — so the
-// drift is made loud, here, in development.
+// The mock's contract: seed data is typed from these and every handler parses its
+// response through them, so drift shows up here instead of in a screen.
 //
-// This is the mock's contract, not the app's. Modules declare their own DTO types
-// in `modules/<name>/api/types.ts` and transform them at the edge (Chapter 4 §1);
-// they never import from `src/mocks`.
-// =============================================================================
+// The mock's contract, not the app's — modules declare their own DTO types and
+// never import from src/mocks.
 
 import { z } from 'zod';
 
@@ -90,7 +82,7 @@ export const dailyStatSchema = z.object({
   revenue: z.number().nonnegative(),
 });
 
-/** Release detail carries its tracks; the list deliberately does not. */
+/** Detail carries its tracks; the list doesn't. */
 export const releaseDetailSchema = releaseSchema.extend({
   tracks: z.array(trackSchema),
 });

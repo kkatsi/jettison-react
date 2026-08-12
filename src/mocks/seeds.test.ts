@@ -7,9 +7,8 @@ const seed = buildSeed();
 
 describe('buildSeed', () => {
   it('satisfies the contract the handlers serve it through', () => {
-    // The seed data and the schemas are the same definition seen twice; if the
-    // generator ever produces something the handlers would refuse, it fails here
-    // rather than as an unexplained 500 in the browser.
+    // If the generator produces something the handlers would refuse, fail here
+    // rather than as a mystery 500 in the browser.
     expect(() => releaseSchema.array().parse(seed.releases)).not.toThrow();
     expect(() => trackSchema.array().parse(seed.tracks)).not.toThrow();
     expect(() => activityEventSchema.array().parse(seed.activity)).not.toThrow();
@@ -28,8 +27,7 @@ describe('buildSeed', () => {
     const statuses = new Set(seed.releases.map((release) => release.status));
     expect([...statuses].sort()).toEqual(['delivering', 'draft', 'in-review', 'live', 'rejected']);
 
-    // Exactly one track mid-processing: the media-ingestion state the wizard and
-    // the release detail screen both need a live example of.
+    // Exactly one track mid-processing, for the wizard and the detail screen.
     expect(seed.tracks.filter((track) => track.audioStatus === 'processing')).toHaveLength(1);
   });
 

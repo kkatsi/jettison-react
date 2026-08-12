@@ -1,14 +1,5 @@
-// =============================================================================
-// The store — composed here, and only here.
-// =============================================================================
-// `app` is the one layer allowed to know which modules exist (Chapter 1 §2), so
-// this is the file that knows the app's full shape: the API cache, every module
-// slice, every module's reactions. No module knows about any of it.
-//
-// The two marked regions below are what the jettison test edits. Deleting a
-// module means deleting its folder plus its lines in here and in router.tsx —
-// `scripts/unregister-module.mjs` does exactly that, mechanically, in CI.
-// =============================================================================
+// app is the only layer that knows which modules exist, so the store is composed
+// here. The marked regions are what scripts/unregister-module.mjs edits.
 
 import { configureStore } from '@reduxjs/toolkit';
 
@@ -23,10 +14,8 @@ export const store = configureStore({
     // jettison:reducers:end
   },
 
-  // Reactions run before the reducers so a domain event's cache patches are
-  // dispatched in the same tick the event lands — the DevTools timeline then
-  // reads as cause followed by effect, which is the debugging story Chapter 4
-  // promises.
+  // Reactions run before the reducers, so an event and the cache patches it caused
+  // land in the same tick and read as cause then effect in DevTools.
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().prepend(reactionsMiddleware.middleware).concat(api.middleware),
 });

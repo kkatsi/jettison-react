@@ -6,8 +6,8 @@ import { handlers } from './handlers';
 import { releaseListModel, scheduleProjections } from './projection';
 import type { Release } from './schemas';
 
-// A shorter lag than the app's 2.5s, but still longer than the handlers' network
-// delay — otherwise the projection lands while the response is still in flight.
+// Shorter than the app's 2.5s, but longer than the handlers' network delay, or the
+// projection lands while the response is still in flight.
 vi.mock('@core/config/config', () => ({
   config: { apiBaseUrl: '/api', cacheMode: 'events', readModelLagMs: 400, reconcileDelayMs: 1400 },
 }));
@@ -39,7 +39,7 @@ describe('the mock backend', () => {
   });
 
   it('answers a detail read from the write model, and the list from the projection', async () => {
-    // A write: instantly in the write model, not yet in any list projection.
+    // A write: in the write model at once, not yet in the projection.
     db.releases.set('lor-0099', newRelease());
     scheduleProjections();
 
@@ -49,8 +49,7 @@ describe('the mock backend', () => {
     const before = (await (await fetch(`${api}/releases`)).json()) as Release[];
     expect(before.some((release) => release.id === 'lor-0099')).toBe(false);
 
-    // …and the list catches up once the projection lands. This gap is the bug the
-    // architecture exists to survive (ADR-002) — here it is, through the transport.
+    // …and catches up once the projection lands. That gap is the whole point.
     await wait(500);
     const after = (await (await fetch(`${api}/releases`)).json()) as Release[];
     expect(after.some((release) => release.id === 'lor-0099')).toBe(true);

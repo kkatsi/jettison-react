@@ -35,7 +35,7 @@ describe('createProjection', () => {
     model.scheduleRebuild();
     vi.advanceTimersByTime(2000);
 
-    // A second write 2s into the window must not restart the clock.
+    // A second write 2s in must not restart the clock.
     writeModel.push('b');
     model.scheduleRebuild();
     vi.advanceTimersByTime(500);

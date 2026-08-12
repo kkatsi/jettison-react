@@ -13,7 +13,7 @@ describe('navTitleFor', () => {
   });
 
   it('prefers the longest matching section', () => {
-    // '/releases/new' must not lose to a future '/releases' entry.
+    // Must not lose to a future '/releases' entry.
     expect(navTitleFor('/releases/new')).toBe('New Release');
   });
 

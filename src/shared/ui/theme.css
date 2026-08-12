@@ -4,25 +4,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ============================================================================
-   The console theme — the only file in the repo that contains a colour value.
-   ============================================================================
-   Two vocabularies live here, on purpose:
-
-   1. The console tokens (`--color-canvas`, `--color-live`, …) — what our own
-      code says. Components never hardcode hex, which is what makes a restyle a
-      one-file change; `grep -rn '#[0-9A-Fa-f]\{6\}' src` should match only this
-      file and the mock's artwork colours.
-
-   2. shadcn's variables (`--background`, `--primary`, …) — what the generated
-      components in this folder say. They are *aliases* onto the console tokens,
-      declared once below, so a component added with `shadcn add` arrives already
-      wearing the Low Orbit theme and needs no restyling by hand.
-
-   The type scale is deliberately overridden to the console's own scale: this is a
-   dense operations UI where 11px and 13px are load-bearing sizes, not exceptions.
-   Naming them keeps arbitrary values out of the components.
-   ============================================================================ */
+/* The console theme. Our tokens first, then shadcn's variables aliased onto them
+   so generated components arrive already themed. No hex anywhere else. */
 
 @theme {
   /* Surfaces, back to front */
@@ -32,9 +15,8 @@
   --color-line: #1e2530;
   --color-line-strong: #2e3648;
 
-  /* Text, brightest to faintest. `subtle` rather than `muted`, and `brand`
-     rather than `accent`, because shadcn owns both of those utility names and
-     means different things by them — a clash here silently repaints the UI. */
+  /* Text, brightest to faintest. Named `subtle`/`brand` because shadcn already
+     owns `muted` and `accent` and means other things by them. */
   --color-bright: #f2f4f8;
   --color-text: #e5e9f0;
   --color-subtle: #94a3b8;
@@ -66,9 +48,7 @@
   --text-xl: 15px;
   --text-2xl: 18px;
 
-  /* Radii, stated rather than derived, because the design states them:
-     panels 8px (rounded-xl, what shadcn's Card uses), controls 6px
-     (rounded-lg, what its Button uses), artwork thumbnails 4px. */
+  /* Panels 8px (rounded-xl, Card), controls 6px (rounded-lg, Button), art 4px. */
   --radius: 6px;
   --radius-sm: 4px;
   --radius-md: 5px;
@@ -79,18 +59,10 @@
   --radius-4xl: 999px;
 }
 
-/* ----------------------------------------------------------------------------
-   shadcn's variables, aliased onto the console tokens.
-   ----------------------------------------------------------------------------
-   Declared in `:root` only. A dark-only console has no second palette to keep in
-   sync, so there is no `.dark` block duplicating these values — `<html>` still
-   carries the `dark` class, which keeps every `dark:` variant inside the
-   generated components active and resolving to the same tokens.
-
-   Note that shadcn's `--accent` is a *hover surface*, not our violet: it is the
-   colour a ghost button turns when you point at it. Our brand violet is
-   `--primary`. Getting that pair backwards tints half the UI purple.
-   -------------------------------------------------------------------------- */
+/* shadcn's variables. Only `:root` — the console is dark-only, so there is no
+   second palette to keep in sync (html keeps the `dark` class so its `dark:`
+   variants still fire). Careful: their `--accent` is a hover surface, not our
+   violet; ours is `--primary`. */
 :root {
   --background: var(--color-canvas);
   --foreground: var(--color-text);
@@ -116,7 +88,7 @@
   --input: var(--color-line);
   --ring: var(--color-brand);
 
-  /* Chart series, in the order ECharts will consume them (Phase 6). */
+  /* Chart series, in the order ECharts will use them. */
   --chart-1: var(--color-brand);
   --chart-2: var(--color-live);
   --chart-3: var(--color-warning);
@@ -134,7 +106,7 @@
 }
 
 @theme inline {
-  /* Generated components read these; keep them pointed at the aliases above. */
+  /* Generated components read these. */
   --font-heading: var(--font-sans);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -171,7 +143,6 @@
 
 @layer base {
   * {
-    /* shadcn's components assume an unset border colour resolves to the theme's. */
     @apply border-border outline-ring/50;
   }
 
