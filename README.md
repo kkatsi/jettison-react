@@ -6,7 +6,7 @@
 
 Not a folder structure, not a style guide — a system of rules with teeth: every boundary is a lint error, every claim of modularity is machine-verified, and every decision is recorded with its costs stated honestly.
 
-The documentation is the product. The reference application ([`apps/mission-control`](apps/mission-control)) exists to prove the rules survive contact with a real product — forms, wizards, cross-module data flow, an eventually consistent backend, and charts.
+The documentation is the product. The application in this repo — **Mission Control**, a satellite ground-station console — exists to prove the rules survive contact with a real product: forms, wizards, cross-module data flow, an eventually consistent backend, and charts.
 
 ---
 
@@ -31,18 +31,26 @@ The chapters are written library-agnostic; the concrete choices behind the refer
 
 ## What's in this repo
 
+One application — **Mission Control** — carrying the whole system:
+
 ```
 jettison-react/
+├── README.md                 # You are here
 ├── docs/                     # The architecture — four chapters + ADRs
-├── packages/
-│   └── eslint-config/        # The enforcement, as an installable package
-└── apps/
-    └── mission-control/      # The proof — a satellite operations console
+├── eslint.config.js          # The enforcement — every boundary rule, heavily commented, copyable
+├── scripts/                  # incl. the jettison-test module unregistration script
+├── .github/workflows/        # CI + the jettison test
+└── src/
+    ├── app/                  # Shell: router, store, providers, layouts
+    ├── modules/              # mission-planner · fleet · telemetry · ops-log
+    ├── shared/               # ui kit, events, generic hooks/utils
+    ├── core/                 # api client, cache utils, reactions, config
+    └── mocks/                # MSW backend with deliberate eventual consistency
 ```
 
-**`packages/eslint-config`** packages the boundary rules so they can be adopted in any codebase, not just admired in this one. The reference app consumes it as a workspace dependency — which keeps this repo honest: if the rules break, the app's CI breaks.
+**`eslint.config.js`** is a deliberate showpiece: the entire boundary system — layers, module privacy, view and service restrictions — as one annotated flat config you can read top-to-bottom and adapt to your own codebase. A Vitest suite runs it against violation fixtures and asserts each rule actually fires, because a boundaries config that matches nothing is indistinguishable from one that is satisfied.
 
-**`apps/mission-control`** is a deliberately real product: a ground-station console for a fictional small-sat operator. Mission planning (a multi-step wizard with drafts), fleet management (lists kept consistent across modules through domain events), and telemetry (charts fed by tested transformations). Its mock backend simulates **eventual consistency** — reads lag writes by seconds — because that is the environment the data-layer doctrine was built for, and a demo backend that hides the problem would prove nothing.
+**Mission Control** is a deliberately real product: a ground-station console for a fictional small-sat operator. Mission planning (a multi-step wizard with drafts), fleet management (lists kept consistent across modules through domain events), and telemetry (charts fed by tested transformations). Its mock backend simulates **eventual consistency** — reads lag writes by seconds — because that is the environment the data-layer doctrine was built for, and a demo backend that hides the problem would prove nothing.
 
 ## Who this is for
 
@@ -53,9 +61,9 @@ Teams building React applications that must survive years of feature work, team 
 - [x] Master plan ([PLAN.md](PLAN.md)) and implementation guide ([IMPLEMENTATION.md](IMPLEMENTATION.md))
 - [x] Chapters 1–4 (drafts)
 - [x] ADR template + founding decisions
-- [ ] `eslint-config` package
-- [ ] Reference app: shell + core + shared
-- [ ] Reference app: modules (ops-log, fleet, mission-planner, telemetry)
+- [ ] `eslint.config.js` + violation fixtures
+- [ ] App shell: core + shared + app layers
+- [ ] Modules: ops-log, fleet, mission-planner, telemetry
 - [ ] Jettison-test CI
 - [ ] Deployed demo (Cloudflare Workers)
 

@@ -2,16 +2,14 @@
   "name": "jettison-react",
   "private": true,
   "version": "0.1.0",
-  "description": "Jettison — an enforced architecture for enterprise React applications. Any module can be thrown overboard and the app keeps flying; CI proves it on every push.",
+  "description": "Jettison — an enforced architecture for enterprise React applications, demonstrated by Mission Control. Any module can be thrown overboard and the app keeps flying; CI proves it on every push.",
   "license": "MIT",
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "type": "module",
   "scripts": {
-    "type-check": "npm run type-check --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "build": "npm run build --workspaces --if-present"
+    "dev": "echo 'App scaffold lands in Phase 2 — see IMPLEMENTATION.md' && exit 1",
+    "type-check": "echo 'ok (no sources yet)'",
+    "lint": "echo 'ok (eslint.config.js lands in Phase 1)'",
+    "test": "echo 'ok (no tests yet)'",
+    "build": "echo 'ok (nothing to build yet)'"
   }
 }

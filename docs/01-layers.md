@@ -95,7 +95,7 @@ The layer matrix becomes configuration:
 // plus: external access to a module only via modules/<name>/index.ts
 ```
 
-The full, working configuration lives in [`packages/eslint-config`](../packages/eslint-config) — installable in any codebase, consumed by the reference app as a real dependency.
+The full, working configuration is this repo's own [`eslint.config.js`](../eslint.config.js) — deliberately written as one annotated file you can read top-to-bottom and adapt to your own codebase.
 
 ### Rules ship as `error` from day one
 
@@ -109,7 +109,7 @@ These are the failure modes that make boundary configs *silently useless* — ea
 - A `references` array in `tsconfig.json` can make the resolver treat it as a solution-style config and ignore `compilerOptions.paths` entirely.
 - Element patterns match **folders** — files sitting directly in `src/` are unclassified and unconstrained.
 
-The discipline that follows: **keep a deliberately violating file in the test suite.** A boundaries config that matches nothing is indistinguishable from one that is satisfied. The `eslint-config` package ships with violation fixtures that must fail, asserted in CI.
+The discipline that follows: **keep a deliberately violating file in the test suite.** A boundaries config that matches nothing is indistinguishable from one that is satisfied. This repo keeps violation fixtures in `fixtures/` and a Vitest suite asserts each rule fires, in CI.
 
 ## 5. Consequences, stated honestly
 

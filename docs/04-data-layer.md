@@ -126,4 +126,4 @@ What survives the port unchanged: the three non-negotiables (one client, mutatio
 
 ---
 
-*Decisions and trade-offs behind these chapters: [`docs/adr/`](adr). The running proof: [`apps/mission-control`](../apps/mission-control).*
+*Decisions and trade-offs behind these chapters: [`docs/adr/`](adr). The running proof: the Mission Control app in [`src/`](../src).*

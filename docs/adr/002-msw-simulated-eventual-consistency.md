@@ -1,6 +1,6 @@
 # ADR-002: The mock backend simulates eventual consistency on purpose
 
-> Architecture Decision Record — reference app (`apps/mission-control`)
+> Architecture Decision Record — the Mission Control app
 
 ---
 
@@ -49,4 +49,4 @@ A documented demo flag (`?cache=naive`) switches the app's Class-C handling from
 
 ## Related
 
-Chapter 4 §§3–5; the MSW handlers in `apps/mission-control/src/mocks/` (once built); the `?cache=naive` demo flag.
+Chapter 4 §§3–5; the MSW handlers in `src/mocks/` (once built); the `?cache=naive` demo flag.
