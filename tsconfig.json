@@ -5,6 +5,13 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@app/*": ["src/app/*"],
+      "@modules/*": ["src/modules/*"],
+      "@shared/*": ["src/shared/*"],
+      "@core/*": ["src/core/*"]
+    },
     "jsx": "react-jsx",
     "strict": true,
     "noUncheckedIndexedAccess": true,

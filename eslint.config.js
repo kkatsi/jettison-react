@@ -1,0 +1,220 @@
+// =============================================================================
+// Jettison — the enforcement
+// =============================================================================
+// The architecture in one file. Four sections, readable top to bottom:
+//
+//   1. Layers         — imports flow one way: app → modules → shared → core
+//   2. Module privacy — a module is reachable only through its index.ts
+//   3. R1 (views)     — .tsx files render; they never fetch, dispatch, or navigate
+//   4. R5 (services)  — business logic is React-free and store-free
+//
+// Every rule here ships as `error`. Warnings are wallpaper within a week.
+//
+// Copy this file into your own codebase: change the four element patterns in
+// section 1 to match your folders and the rest follows.
+//
+// A boundaries config that matches nothing is indistinguishable from one that
+// is satisfied — so `fixtures/` holds a deliberately violating file per rule
+// group, and `fixtures/enforcement.test.ts` asserts in CI that each rule fires.
+// =============================================================================
+
+import path from 'node:path';
+
+import boundaries from 'eslint-plugin-boundaries';
+import tseslint from 'typescript-eslint';
+
+/** Paths that are never business logic and never linted. */
+const IGNORED = ['dist/**', 'coverage/**', 'node_modules/**'];
+
+/** Files whose whole job is to decide something — R5 applies to all of them. */
+const SERVICE_FILES = ['**/services/**/*.ts', '**/*-rules.ts', '**/*-eligibility.ts'];
+
+export default tseslint.config(
+  { ignores: IGNORED },
+
+  // Baseline: TypeScript rules for every source file.
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [tseslint.configs.recommended],
+  },
+
+  // ===========================================================================
+  // 1. LAYERS — app → modules → shared → core, and never the other way
+  // ===========================================================================
+  // Each layer is an "element" matched by folder. The dependency rule below
+  // reads as the layer table does: what each layer may NOT reach for.
+  //
+  // `default: 'allow'` is deliberate: folders that have not adopted the layout
+  // stay unconstrained, so this config can be dropped into a migration without
+  // a red build on day one. Every adopted folder becomes a ratchet.
+  //
+  // Gotcha worth knowing: boundaries classifies dependencies by resolving them.
+  // Without `eslint-import-resolver-typescript` below, every `@alias/…` import
+  // is classified `external` and every rule here silently passes.
+  {
+    files: ['**/*.{ts,tsx}'],
+    plugins: { boundaries },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          alwaysTryTypes: true,
+          // Absolute, so resolution never depends on which directory ESLint was
+          // started from. The second entry teaches the resolver the aliases of
+          // the violation fixtures, which is how this config gets tested.
+          project: [
+            path.join(import.meta.dirname, 'tsconfig.json'),
+            path.join(import.meta.dirname, 'fixtures/tsconfig.json'),
+          ],
+        },
+      },
+      'boundaries/elements': [
+        { type: 'app', pattern: 'src/app' },
+        { type: 'modules', pattern: 'src/modules/*', capture: ['moduleName'] },
+        { type: 'shared', pattern: 'src/shared' },
+        { type: 'core', pattern: 'src/core' },
+      ],
+    },
+    rules: {
+      'boundaries/dependencies': [
+        'error',
+        {
+          default: 'allow',
+          policies: [
+            {
+              // core is the floor: infrastructure knows nothing above it.
+              from: { element: { type: 'core' } },
+              disallow: { to: { element: { types: { anyOf: ['app', 'modules', 'shared'] } } } },
+              message: 'core is the bottom layer — it may not import {{to.element.type}}.',
+            },
+            {
+              // shared is business-agnostic: it may only reach down into core.
+              from: { element: { type: 'shared' } },
+              disallow: { to: { element: { types: { anyOf: ['app', 'modules'] } } } },
+              message: 'shared may only import core — {{to.element.type}} is above it.',
+            },
+            {
+              // Only app composes. No module knows the shell exists.
+              from: { element: { type: 'modules' } },
+              disallow: { to: { element: { type: 'app' } } },
+              message: 'modules may not import app — only app composes.',
+            },
+            {
+              // The jettison test, as a lint rule: no module may depend on
+              // another module, or deleting one would break the other.
+              from: { element: { type: 'modules' } },
+              disallow: {
+                to: {
+                  element: {
+                    type: 'modules',
+                    captured: { moduleName: '!{{from.captured.moduleName}}' },
+                  },
+                },
+              },
+              message:
+                'modules may not import other modules — move it down to shared/core, or duplicate it.',
+            },
+
+            // =================================================================
+            // 2. MODULE PRIVACY — index.ts is the only door
+            // =================================================================
+            // Everything behind a module's index.ts is private and refactorable
+            // without repository-wide impact. Deep imports are how that
+            // guarantee is lost — so from anywhere outside the module, only its
+            // index.ts is reachable. (Files inside the module import each other
+            // freely: the formality lives at the boundary, not within it.)
+            {
+              disallow: {
+                to: { element: { type: 'modules', fileInternalPath: '!index.ts' } },
+              },
+              message:
+                'a module is consumed only through its index.ts — {{to.element.fileInternalPath}} is private.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ===========================================================================
+  // 3. R1 — VIEWS RENDER
+  // ===========================================================================
+  // A .tsx file may import React, styles, design-system and child components,
+  // its own colocated hook, and types. Never a query, a store, an HTTP client,
+  // or a navigator: navigation is a handler, and handlers come from the hook.
+  //
+  // Type-only imports are allowed — a view is welcome to know the shape of its
+  // props. It is the *runtime* reach that is banned.
+  {
+    files: ['**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'react-redux',
+              allowTypeImports: true,
+              message: 'R1: a view never touches the store — move it to the colocated hook.',
+            },
+            {
+              name: 'react-router',
+              importNames: ['useNavigate'],
+              message: 'R1: navigation is a handler — the hook returns it, the view calls it.',
+            },
+            {
+              name: 'react-router-dom',
+              importNames: ['useNavigate'],
+              message: 'R1: navigation is a handler — the hook returns it, the view calls it.',
+            },
+            {
+              name: 'axios',
+              allowTypeImports: true,
+              message: 'R1: a view never speaks HTTP — data arrives through its hook.',
+            },
+          ],
+          patterns: [
+            {
+              group: ['**/api', '**/api/*', '@core/api', '@core/api/*'],
+              allowTypeImports: true,
+              message: 'R1: a view never imports endpoints — its colocated hook does.',
+            },
+            {
+              group: ['@app/*'],
+              allowTypeImports: true,
+              message: 'R1: a view never reaches into the app shell (store, router, providers).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ===========================================================================
+  // 4. R5 — SERVICES DECIDE
+  // ===========================================================================
+  // Services are where the money-losing bugs live, so they are kept trivially
+  // testable: plain functions, no React, no store, no router, no fetching.
+  // Input object in, issue codes out — no mocks, no DOM.
+  {
+    files: SERVICE_FILES,
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['react', 'react-*', '@reduxjs/*', 'react-router*'],
+              allowTypeImports: true,
+              message: 'R5: services are React-free and store-free — plain functions only.',
+            },
+            {
+              group: ['@app/*', '**/api', '**/api/*', '@core/api', '@core/api/*'],
+              allowTypeImports: true,
+              message: 'R5: a service decides, it does not fetch — pass the data in as arguments.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+);

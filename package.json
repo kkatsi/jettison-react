@@ -8,12 +8,17 @@
   "scripts": {
     "dev": "echo 'The app scaffold has not landed yet' && exit 1",
     "type-check": "echo 'ok (no sources yet)'",
-    "lint": "echo 'ok (eslint.config.js lands in Phase 1)'",
-    "test": "echo 'ok (no tests yet)'",
+    "lint": "eslint . --ignore-pattern 'fixtures/src/**'",
+    "test": "vitest run",
     "build": "echo 'ok (nothing to build yet)'"
   },
   "devDependencies": {
+    "eslint": "^10.8.1",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-boundaries": "^7.2.0",
     "prettier": "^3.9.6",
-    "typescript": "^7.0.2"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^4.1.10"
   }
 }

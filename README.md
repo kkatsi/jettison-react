@@ -60,7 +60,7 @@ Teams building React applications that must survive years of feature work, team 
 
 - [x] Chapters 1–4 (drafts)
 - [x] ADR template + founding decisions
-- [ ] `eslint.config.js` + violation fixtures
+- [x] `eslint.config.js` + violation fixtures
 - [ ] App shell: core + shared + app layers
 - [ ] Modules: activity, catalog, release-editor, analytics
 - [ ] Jettison-test CI
