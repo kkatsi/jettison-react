@@ -13,3 +13,4 @@ export { Badge, type BadgeProps } from './Badge';
 export { Button, type ButtonProps } from './Button';
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { Panel, type PanelProps } from './Panel';
+export { ScreenErrorBoundary } from './ScreenErrorBoundary';

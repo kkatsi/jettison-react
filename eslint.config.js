@@ -200,6 +200,19 @@ export default tseslint.config(
     },
   },
 
+  // ---------------------------------------------------------------------------
+  // R1's one exemption: the composition root.
+  // ---------------------------------------------------------------------------
+  // Something has to mount the store and the router, and these two files are it.
+  // R1 exists to stop *screens* reaching for the store, the router or an
+  // endpoint — not to make wiring the application impossible. The exemption is
+  // deliberately a two-file allowlist rather than a folder: `src/app` is full of
+  // layouts and screens that R1 must keep policing.
+  {
+    files: ['src/main.tsx', 'src/app/providers.tsx'],
+    rules: { '@typescript-eslint/no-restricted-imports': 'off' },
+  },
+
   // ===========================================================================
   // 4. R5 — SERVICES DECIDE
   // ===========================================================================

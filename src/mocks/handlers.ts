@@ -20,17 +20,20 @@ import { activityEventSchema, releaseDetailSchema, releaseSchema } from './schem
 /** Enough latency for loading states to be real, little enough to stay usable. */
 const NETWORK_MS = 140;
 
+/** Origin-agnostic, so the same handlers serve the browser and the node tests. */
+const url = (path: string) => `*/api${path}`;
+
 export const handlers = [
   // The list every catalogue and distribution screen reads — and the one that is
   // briefly, deliberately wrong after a write.
-  http.get('/api/releases', async () => {
+  http.get(url('/releases'), async () => {
     await delay(NETWORK_MS);
     return HttpResponse.json(releaseSchema.array().parse(releaseListModel.read()));
   }),
 
   // Detail comes from the write model: the entity you just wrote is readable,
   // exactly as in the real systems this mock imitates.
-  http.get('/api/releases/:id', async ({ params }) => {
+  http.get(url('/releases/:id'), async ({ params }) => {
     await delay(NETWORK_MS);
     const release = db.releases.get(String(params.id));
     if (!release) return new HttpResponse(null, { status: 404 });
@@ -40,12 +43,12 @@ export const handlers = [
     );
   }),
 
-  http.get('/api/activity', async () => {
+  http.get(url('/activity'), async () => {
     await delay(NETWORK_MS);
     return HttpResponse.json(activityEventSchema.array().parse(activityFeedModel.read()));
   }),
 
-  http.get('/api/stores', async () => {
+  http.get(url('/stores'), async () => {
     await delay(NETWORK_MS);
     return HttpResponse.json(db.stores);
   }),
