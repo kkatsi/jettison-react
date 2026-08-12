@@ -1,0 +1,46 @@
+# The jettison test: for every module, throw it overboard and require the ship to
+# keep flying. One job per module, so a failure names the module that is no longer
+# jettisonable — and the diff that made it so.
+
+name: Jettison test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  modules:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.find.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: find
+        run: echo "list=$(ls src/modules | jq -R -s -c 'split("\n") | map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+
+  jettison:
+    needs: modules
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJson(needs.modules.outputs.list) }}
+    name: without ${{ matrix.module }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+
+      - name: Throw ${{ matrix.module }} overboard
+        run: |
+          rm -rf "src/modules/${{ matrix.module }}"
+          node scripts/unregister-module.mjs "${{ matrix.module }}"
+
+      # No lint and no tests: the claim is that the app still compiles and builds
+      # without the module. Its own tests left with it.
+      - run: npm run type-check
+      - run: npm run build

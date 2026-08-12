@@ -1,5 +1,8 @@
 # Jettison
 
+[![CI](https://github.com/kkatsi/jettison-react/actions/workflows/ci.yml/badge.svg)](https://github.com/kkatsi/jettison-react/actions/workflows/ci.yml)
+[![Jettison test](https://github.com/kkatsi/jettison-react/actions/workflows/jettison-test.yml/badge.svg)](https://github.com/kkatsi/jettison-react/actions/workflows/jettison-test.yml)
+
 > **jettison** (v.) — to throw cargo overboard, deliberately, to keep the ship flying.
 
 **Jettison is an enforced architecture for enterprise React applications.** Its boldest claim is its name: any module in a Jettison codebase can be thrown overboard — delete its folder plus its two registration lines — and the application still compiles and runs. That claim is not a diagram in a wiki; it is a CI job (**the jettison test**) that runs on every push.
@@ -48,6 +51,8 @@ jettison-react/
     └── mocks/                # MSW backend with deliberate eventual consistency
 ```
 
+**The jettison test** is a CI job, not a claim: for every module under `src/modules/`, a matrix job deletes the folder, runs [`scripts/unregister-module.mjs`](scripts/unregister-module.mjs) to strip its registration lines from the app shell, and requires `type-check` and `build` to pass without it. Unregistering is mechanical — an import line and whatever sits inside the `// jettison:…` marker regions — because a module that needs judgement to remove was never jettisonable. [`src/modules/activity/`](src/modules/activity) is the copyable example: the whole module template at its smallest honest size, and the test's cheapest victim.
+
 **`eslint.config.js`** is a deliberate showpiece: the entire boundary system — layers, module privacy, view and service restrictions — as one annotated flat config you can read top-to-bottom and adapt to your own codebase. A Vitest suite runs it against violation fixtures and asserts each rule actually fires, because a boundaries config that matches nothing is indistinguishable from one that is satisfied.
 
 **The console** is a deliberately real product: the back office of an indie record label. Release creation (a multi-step wizard with drafts and audio that processes asynchronously), catalog and distribution management (lists kept consistent across modules through domain events), and streaming analytics (charts fed by tested transformations). Its mock backend simulates **eventual consistency** — reads lag writes by seconds — because that is how music distribution actually behaves (delivery takes hours, stats lag days), and a demo backend that hides the problem would prove nothing.
@@ -61,9 +66,9 @@ Teams building React applications that must survive years of feature work, team 
 - [x] Chapters 1–4 (drafts)
 - [x] ADR template + founding decisions
 - [x] `eslint.config.js` + violation fixtures
-- [ ] App shell: core + shared + app layers
-- [ ] Modules: activity, catalog, release-editor, analytics
-- [ ] Jettison-test CI
+- [x] App shell: core + shared + app layers
+- [x] Jettison-test CI
+- [ ] Modules: ~~activity~~, catalog, release-editor, analytics
 - [ ] Deployed demo (Cloudflare Workers)
 
 ---
