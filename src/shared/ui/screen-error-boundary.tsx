@@ -1,7 +1,16 @@
+import { TriangleAlert } from 'lucide-react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
-import { Button } from './Button';
-import { Panel } from './Panel';
+import { Button } from './button';
+import { Card } from './card';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from './empty';
 
 type Props = { name: string; children: ReactNode };
 type State = { error: Error | null; errorId: string; at: string };
@@ -13,7 +22,9 @@ type State = { error: Error | null; errorId: string; at: string };
  * the sidebar, the topbar and every other screen keep working.
  *
  * It lives in the kit, not in `app`, because every module wraps its own screens
- * with it — and a module may not import `app` (Chapter 1 §2).
+ * with it — and a module may not import `app` (Chapter 1 §2). It is hand-written
+ * because an error boundary has to be a class component and shadcn ships no
+ * equivalent; the panel it renders is composed from the kit's own primitives.
  */
 export class ScreenErrorBoundary extends Component<Props, State> {
   state: State = { error: null, errorId: '', at: '' };
@@ -45,36 +56,36 @@ export class ScreenErrorBoundary extends Component<Props, State> {
     if (!error) return this.props.children;
 
     return (
-      <Panel tone="danger" className="flex min-h-80 flex-1 flex-col">
-        <div className="flex items-baseline justify-between">
-          <span className="font-semibold">Something failed here</span>
-          <span className="font-mono text-2xs text-dim">boundary: {this.props.name}</span>
-        </div>
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-          <div className="flex size-9 items-center justify-center rounded-md border border-danger/35 bg-danger/8 text-lg font-semibold text-danger">
-            !
-          </div>
-          <div className="flex max-w-100 flex-col gap-2">
-            <p className="text-lg font-semibold text-text">
+      <Card className="min-h-80 flex-1 ring-destructive/30">
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon" className="bg-destructive/10 text-destructive">
+              <TriangleAlert />
+            </EmptyMedia>
+            <EmptyTitle className="text-lg">
               This section failed — the rest of the console is unaffected
-            </p>
-            <p className="text-sm leading-relaxed text-faint">
+            </EmptyTitle>
+            <EmptyDescription>
               Every other panel and screen is still live and safe to use.
-            </p>
-          </div>
-          <div className="flex items-center gap-2.5">
-            <Button onClick={this.retry}>Try again</Button>
-            <Button variant="secondary" onClick={this.copyErrorId}>
-              Copy error id
-            </Button>
-          </div>
-          <div className="flex items-center gap-2.5 font-mono text-2xs text-dim">
-            <span>{errorId}</span>
-            <span>·</span>
-            <span>{at}</span>
-          </div>
-        </div>
-      </Panel>
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <div className="flex items-center gap-2.5">
+              <Button onClick={this.retry}>Try again</Button>
+              <Button variant="outline" onClick={this.copyErrorId}>
+                Copy error id
+              </Button>
+            </div>
+            <div className="flex items-center gap-2.5 font-mono text-2xs text-dim">
+              <span>{errorId}</span>
+              <span>·</span>
+              <span>{at}</span>
+              <span>·</span>
+              <span>boundary: {this.props.name}</span>
+            </div>
+          </EmptyContent>
+        </Empty>
+      </Card>
     );
   }
 }

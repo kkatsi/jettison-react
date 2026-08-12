@@ -1,15 +1,27 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
 
 /* ============================================================================
    The console theme — the only file in the repo that contains a colour value.
    ============================================================================
-   Components never hardcode hex; they use the token names below. That is what
-   makes a restyle a one-file change instead of a repo-wide search, and it is
-   why `grep -rn '#[0-9A-Fa-f]\{6\}' src` should only ever match this file.
+   Two vocabularies live here, on purpose:
 
-   The type scale is deliberately overridden to the console's own scale: this is
-   a dense operations UI where 11px and 13px are load-bearing sizes, not
-   exceptions. Naming them keeps arbitrary values out of the components.
+   1. The console tokens (`--color-canvas`, `--color-live`, …) — what our own
+      code says. Components never hardcode hex, which is what makes a restyle a
+      one-file change; `grep -rn '#[0-9A-Fa-f]\{6\}' src` should match only this
+      file and the mock's artwork colours.
+
+   2. shadcn's variables (`--background`, `--primary`, …) — what the generated
+      components in this folder say. They are *aliases* onto the console tokens,
+      declared once below, so a component added with `shadcn add` arrives already
+      wearing the Low Orbit theme and needs no restyling by hand.
+
+   The type scale is deliberately overridden to the console's own scale: this is a
+   dense operations UI where 11px and 13px are load-bearing sizes, not exceptions.
+   Naming them keeps arbitrary values out of the components.
    ============================================================================ */
 
 @theme {
@@ -20,17 +32,19 @@
   --color-line: #1e2530;
   --color-line-strong: #2e3648;
 
-  /* Text, brightest to faintest */
+  /* Text, brightest to faintest. `subtle` rather than `muted`, and `brand`
+     rather than `accent`, because shadcn owns both of those utility names and
+     means different things by them — a clash here silently repaints the UI. */
   --color-bright: #f2f4f8;
   --color-text: #e5e9f0;
-  --color-muted: #94a3b8;
+  --color-subtle: #94a3b8;
   --color-faint: #5b6577;
   --color-dim: #3e4759;
 
   /* Interactive */
-  --color-accent: #8b5cf6;
-  --color-accent-hover: #7c4def;
-  --color-accent-soft: #a78bfa;
+  --color-brand: #8b5cf6;
+  --color-brand-hover: #7c4def;
+  --color-brand-soft: #a78bfa;
 
   /* Status — one colour per state a release can be in */
   --color-live: #34d399;
@@ -51,9 +65,116 @@
   --text-lg: 14px;
   --text-xl: 15px;
   --text-2xl: 18px;
+
+  /* Radii, stated rather than derived, because the design states them:
+     panels 8px (rounded-xl, what shadcn's Card uses), controls 6px
+     (rounded-lg, what its Button uses), artwork thumbnails 4px. */
+  --radius: 6px;
+  --radius-sm: 4px;
+  --radius-md: 5px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+  --radius-2xl: 10px;
+  --radius-3xl: 12px;
+  --radius-4xl: 999px;
+}
+
+/* ----------------------------------------------------------------------------
+   shadcn's variables, aliased onto the console tokens.
+   ----------------------------------------------------------------------------
+   Declared in `:root` only. A dark-only console has no second palette to keep in
+   sync, so there is no `.dark` block duplicating these values — `<html>` still
+   carries the `dark` class, which keeps every `dark:` variant inside the
+   generated components active and resolving to the same tokens.
+
+   Note that shadcn's `--accent` is a *hover surface*, not our violet: it is the
+   colour a ghost button turns when you point at it. Our brand violet is
+   `--primary`. Getting that pair backwards tints half the UI purple.
+   -------------------------------------------------------------------------- */
+:root {
+  --background: var(--color-canvas);
+  --foreground: var(--color-text);
+
+  --card: var(--color-panel);
+  --card-foreground: var(--color-text);
+  --popover: var(--color-raised);
+  --popover-foreground: var(--color-text);
+
+  --primary: var(--color-brand);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-raised);
+  --secondary-foreground: var(--color-text);
+
+  --muted: var(--color-raised);
+  --muted-foreground: var(--color-subtle);
+  --accent: var(--color-raised);
+  --accent-foreground: var(--color-text);
+
+  --destructive: var(--color-danger);
+
+  --border: var(--color-line);
+  --input: var(--color-line);
+  --ring: var(--color-brand);
+
+  /* Chart series, in the order ECharts will consume them (Phase 6). */
+  --chart-1: var(--color-brand);
+  --chart-2: var(--color-live);
+  --chart-3: var(--color-warning);
+  --chart-4: #3b6b8f;
+  --chart-5: var(--color-idle);
+
+  --sidebar: var(--color-canvas);
+  --sidebar-foreground: var(--color-text);
+  --sidebar-primary: var(--color-brand);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--color-raised);
+  --sidebar-accent-foreground: var(--color-text);
+  --sidebar-border: var(--color-line);
+  --sidebar-ring: var(--color-brand);
+}
+
+@theme inline {
+  /* Generated components read these; keep them pointed at the aliases above. */
+  --font-heading: var(--font-sans);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 @layer base {
+  * {
+    /* shadcn's components assume an unset border colour resolves to the theme's. */
+    @apply border-border outline-ring/50;
+  }
+
   html,
   body,
   #root {
