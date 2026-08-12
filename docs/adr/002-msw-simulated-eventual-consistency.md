@@ -1,6 +1,6 @@
 # ADR-002: The mock backend simulates eventual consistency on purpose
 
-> Architecture Decision Record — the Mission Control app
+> Architecture Decision Record — the Low Orbit Records console
 
 ---
 
@@ -26,7 +26,7 @@ But the architecture's hardest doctrine — cache Class C, patch-then-verify via
 
 The MSW handlers maintain a write model and **lagging read models**. Mutations apply to the write model instantly and return success; list/aggregate read endpoints serve a projection that catches up after a configurable delay (default ~2.5s). Detail-by-id reads serve the write model directly — mirroring the common real-world split where the entity you just wrote is readable but the lists haven't caught up.
 
-A documented demo flag (`?cache=naive`) switches the app's Class-C handling from patch-then-verify to plain tag invalidation, so the failure is reproducible on screen: schedule a pass, watch it appear in the fleet board via the event-driven patch, then — in naive mode — watch the racing refetch clobber it with the stale projection and the row vanish until the projection catches up.
+A documented demo flag (`?cache=naive`) switches the app's Class-C handling from patch-then-verify to plain tag invalidation, so the failure is reproducible on screen: submit a release, watch it appear on the distribution board via the event-driven patch, then — in naive mode — watch the racing refetch clobber it with the stale projection and the row vanish until the projection catches up. The lag is also honest to the domain: real music distribution takes hours to deliver, stores review releases asynchronously, and streaming stats trail by days — the mock's 2.5 seconds is that reality, compressed for a demo.
 
 ## Costs & sharp edges (be honest)
 

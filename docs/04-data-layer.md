@@ -34,7 +34,7 @@ Every piece of state has exactly one correct home. The table is the whole doctri
 
 | Kind of state | Home | Examples |
 |---|---|---|
-| Server data | the query cache — only | fleets, passes, telemetry, wallets |
+| Server data | the query cache — only | releases, tracks, streams, payouts |
 | Local UI state | `useState` in the component | modal open, hovered row, active tab |
 | Form state | React Hook Form | every form |
 | URL-worthy state | the router (query params) | filters, pagination, selected tab that should survive reload |
@@ -50,9 +50,9 @@ Two prohibitions with teeth: server data never gets copied into a slice ("mirror
 
 Here is where most architectures go quiet, and where this one was forged.
 
-The scenario: the **mission-planner** module schedules a pass. The **fleet** module's screens — its pass board, its satellite list — must reflect that immediately. The textbook answer is tag invalidation: the mutation invalidates `['Passes']`, fleet's queries refetch, done.
+The scenario: the **release-editor** module submits a release for distribution. The **catalog** module's screens — its distribution board, its releases list — must reflect that immediately. The textbook answer is tag invalidation: the mutation invalidates `['Releases']`, catalog's queries refetch, done.
 
-The textbook answer assumes the backend is **read-your-writes consistent**. Real enterprise backends often aren't: writes land in a command store, read models are projected asynchronously, and for a second or three the list endpoint *does not yet contain what you just wrote*. Under eventual consistency, invalidation isn't just insufficient — it is **destructive**: the refetch races the projection, returns the stale list, and the query library dutifully replaces the cache with it. If you had optimistically patched the cache, the refetch *clobbers your correct patch with stale server data*. The user watches their freshly scheduled pass appear and then vanish.
+The textbook answer assumes the backend is **read-your-writes consistent**. Real enterprise backends often aren't: writes land in a command store, read models are projected asynchronously, and for a second or three the list endpoint *does not yet contain what you just wrote*. Under eventual consistency, invalidation isn't just insufficient — it is **destructive**: the refetch races the projection, returns the stale list, and the query library dutifully replaces the cache with it. If you had optimistically patched the cache, the refetch *clobbers your correct patch with stale server data*. The user watches their freshly submitted release appear and then vanish.
 
 The reference app's mock backend simulates this lag on purpose (see ADR-002), so the failure is reproducible on screen — flip the demo to naive invalidation and watch the row disappear.
 
@@ -60,9 +60,9 @@ So every cache effect is first **classified**:
 
 | Class | Situation | Mechanism |
 |---|---|---|
-| **A** | Same-module feedback — the planner patching its own mission detail after a save | Manual patch in the mutation's `onQueryStarted` |
+| **A** | Same-module feedback — the editor patching its own release detail after a save | Manual patch in the mutation's `onQueryStarted` |
 | **B** | Cross-module, and the read model is consistent by the time the user can reach the other screen | Plain `invalidatesTags` |
-| **C** | Cross-module **and** eventually consistent — the pass just scheduled must appear in fleet's lists *now* | **Patch-then-verify via domain events** (§5) |
+| **C** | Cross-module **and** eventually consistent — the release just submitted must appear in catalog's lists *now* | **Patch-then-verify via domain events** (§5) |
 
 ## 4. Rule one: mutations own their cache effects
 
@@ -74,24 +74,24 @@ One hard prohibition follows: **a module never patches another module's cached q
 
 The shape is classic Redux, in modern spelling:
 
-- **`shared/events/`** holds the domain events — typed `createAction` definitions, zero logic. This is the "action constants file": a complete, readable catalogue of every fact that may cross a module boundary. `domain/passes/scheduled`, `domain/missions/aborted`.
-- **The mutating module announces.** After `queryFulfilled`, the endpoint dispatches `passScheduled({ pass })` alongside its own Class-A patches.
+- **`shared/events/`** holds the domain events — typed `createAction` definitions, zero logic. This is the "action constants file": a complete, readable catalogue of every fact that may cross a module boundary. `domain/releases/submitted`, `domain/releases/withdrawn`.
+- **The mutating module announces.** After `queryFulfilled`, the endpoint dispatches `releaseSubmitted({ release })` alongside its own Class-A patches.
 - **Each interested module reacts** in `state/reactions.ts` — its "reducer switch": one `on(event, handler)` per case. The handler upserts into *its own* cached queries immediately (the patch), and schedules a delayed tag invalidation as reconciliation (the verify) — by the time it fires, the read model has caught up, and the refetch confirms rather than clobbers.
 - **One core file** (`core/redux/reactions.ts`, ~30 lines, written once) wraps the store's listener mechanism (RTK: `createListenerMiddleware`) into a `createReactions((on) => …)` helper. No module ever touches middleware; `app/store.ts` registers each module's reactions in one line — the same line the jettison test strips.
 
 ```
-planner endpoint                     shared/events               fleet/state/reactions.ts
-────────────────                     ─────────────               ─────────────────────────
+editor endpoint                          shared/events                 catalog/state/reactions.ts
+───────────────                          ─────────────                 ──────────────────────────
 onQueryStarted:
   patch own detail (Class A)
-  dispatch(passScheduled(pass)) ──▶  passScheduled  ──────────▶  on(passScheduled):
-                                                                   upsert into own lists   (patch)
-                                                                   invalidate after delay  (verify)
+  dispatch(releaseSubmitted(rel)) ──▶  releaseSubmitted  ──────────▶  on(releaseSubmitted):
+                                                                        upsert into own lists   (patch)
+                                                                        invalidate after delay  (verify)
 ```
 
 Why this preserves the architecture:
 
-- **The jettison test survives.** Jettison fleet → planner dispatches events nobody hears; jettison planner → events never fire and fleet still compiles. Events are fire-and-forget by construction.
+- **The jettison test survives.** Jettison catalog → the editor dispatches events nobody hears; jettison the editor → events never fire and catalog still compiles. Events are fire-and-forget by construction.
 - **Debugging is a timeline, not a hunt.** DevTools shows the event action followed by the exact patches it caused.
 - **It cannot regrow into a cache-update monolith,** because the mechanics are contained: generic list surgery (`upsertListItem`, `patchListItem`, `removeListItem`, `invalidateTagsAfterDelay`) lives once in `core/api/cache-utils.ts`; reactions files split per entity past ~100 lines; and a handler is a routing table — one lookup, one cache-util call, one delayed invalidation. A handler past ~10 lines is smuggling logic that belongs in a transformation or util.
 
@@ -114,16 +114,16 @@ The doctrine above names no library, and every mechanism has a TanStack Query eq
 | Doctrine element | RTK Query (reference impl) | TanStack Query equivalent |
 |---|---|---|
 | One client in `core` | `createApi` + base query | one `queryClient` + one fetch wrapper (auth, refresh mutex, retry) in `core/api/` |
-| Module-owned endpoints | `injectEndpoints` per module | query/mutation option factories (`passQueries.list()`, `queryOptions(...)`) per module `api/` |
+| Module-owned endpoints | `injectEndpoints` per module | query/mutation option factories (`releaseQueries.list()`, `queryOptions(...)`) per module `api/` |
 | Cache tags | `tagTypes` registry | hierarchical query keys; the registry becomes a `core` query-key factory convention |
 | Class A: own-cache patch | `onQueryStarted` + `updateQueryData` | `onMutate`/`onSuccess` + `queryClient.setQueryData` |
 | Class B: plain invalidation | `invalidatesTags` | `queryClient.invalidateQueries({ queryKey })` |
 | Class C: domain events | `createAction` + listener middleware | a typed event emitter in `shared/events/` (or keep a minimal Redux store just for events) |
 | Reactions | `state/reactions.ts` via `createReactions` | `state/reactions.ts` subscribing to the emitter, calling `setQueryData` + delayed `invalidateQueries` |
-| Registration line the jettison test strips | `registerFleetReactions()` in `store.ts` | `registerFleetReactions()` in app bootstrap |
+| Registration line the jettison test strips | `registerCatalogReactions()` in `store.ts` | `registerCatalogReactions()` in app bootstrap |
 
 What survives the port unchanged: the three non-negotiables (one client, mutations own their effects, no cross-module cache writes), the A/B/C classification, patch-then-verify, and the jettison test. What you lose: the single Redux DevTools timeline where each event is followed by the exact cache patches it caused — with TanStack Query the event log and the cache live in different tools. That loss is the substance of [ADR-001](adr/001-why-rtk-query-in-2026.md); weigh it for your team rather than inheriting our conclusion.
 
 ---
 
-*Decisions and trade-offs behind these chapters: [`docs/adr/`](adr). The running proof: the Mission Control app in [`src/`](../src).*
+*Decisions and trade-offs behind these chapters: [`docs/adr/`](adr). The running proof: the Low Orbit Records console in [`src/`](../src).*

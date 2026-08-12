@@ -46,7 +46,7 @@ Three corollaries do most of the work:
 ### What goes where — the litmus tests
 
 - **Could this be published to npm without mentioning your product?** → `shared` (if UI/util) or `core` (if infrastructure).
-- **Does it mention a domain concept** (a mission, an invoice, a campaign)? → it belongs to a module. Domain code in `shared` is the first symptom of decay.
+- **Does it mention a domain concept** (a release, an invoice, a campaign)? → it belongs to a module. Domain code in `shared` is the first symptom of decay.
 - **Is it framework plumbing** — the HTTP client, token refresh, env config, error monitoring? → `core`. `core` contains no JSX and no business rules, ever.
 - **Does it need to know every module?** → `app`, and only `app`.
 
@@ -62,7 +62,7 @@ This is what "loosely coupled" means when you refuse to let it be a vibe. The je
 # .github/workflows/jettison-test.yml (reference app)
 strategy:
   matrix:
-    module: [mission-planner, fleet, telemetry, ops-log]
+    module: [release-editor, catalog, analytics, activity]
 steps:
   - run: rm -rf src/modules/${{ matrix.module }}
   - run: node scripts/unregister-module.mjs ${{ matrix.module }}  # strips the 2 registration lines
@@ -71,7 +71,7 @@ steps:
 
 If a teammate (or an AI agent — they are prolific import writers) sneaks a cross-module import in, this job fails on the next push, with the module name in the job title. The wiki diagram can't drift from the codebase, because the diagram *is* a test.
 
-The jettison test also forces honest answers to design questions. "Can the fleet module use the planner's eligibility service?" becomes "would fleet still compile if the planner were jettisoned?" — and the answer designs the code for you: the service either moves down to `shared`, gets duplicated, or the requirement is rethought.
+The jettison test also forces honest answers to design questions. "Can the catalog module use the release editor's eligibility service?" becomes "would catalog still compile if the editor were jettisoned?" — and the answer designs the code for you: the service either moves down to `shared`, gets duplicated, or the requirement is rethought.
 
 ## 4. Enforcement
 

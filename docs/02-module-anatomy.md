@@ -11,7 +11,7 @@ Chapter 1 made modules *isolated*. This chapter makes them *predictable*. The go
 ## 2. The template
 
 ```
-modules/fleet/
+modules/catalog/
 ├── index.ts              # PUBLIC API — exports routes (and nothing else unless deliberate)
 ├── routes.tsx            # The module's route tree (lazy-loaded screens)
 ├── api/                  # Query endpoints THIS module owns (→ Chapter 4)
@@ -19,10 +19,10 @@ modules/fleet/
 │   ├── transformations.ts#   server response → UI shape, nothing else
 │   └── types.ts          #   DTOs + domain types for this module
 ├── screens/              # One folder per routed screen — composition only
-│   └── FleetOverview/
-│       └── FleetOverview.tsx
+│   └── CatalogOverview/
+│       └── CatalogOverview.tsx
 ├── features/             # Big self-contained chunks of behavior (see §4)
-│   └── pass-schedule/
+│   └── distribution-board/
 │       ├── components/
 │       ├── hooks/
 │       └── services/
@@ -57,7 +57,7 @@ A feature is a mini-module: its own `components/`, `hooks/`, `services/`, govern
 
 The template above is the *maximum* shape, not the mandatory one. A module with 12 files needs no `features/` directory, possibly no `state/`, maybe just `api/index.ts` instead of three api files. Empty scaffolding is worse than absence — it implies structure that doesn't exist and trains readers to ignore folder names.
 
-The rule: **create a folder at the moment the second file that belongs in it appears.** Corollary: the smallest honest module is `index.ts` + `routes.tsx` + one screen. The reference app's `ops-log` module is intentionally this small — it exists to prove the template scales *down*, and to be the jettison test's cheapest victim.
+The rule: **create a folder at the moment the second file that belongs in it appears.** Corollary: the smallest honest module is `index.ts` + `routes.tsx` + one screen. The reference app's `activity` module is intentionally this small — it exists to prove the template scales *down*, and to be the jettison test's cheapest victim.
 
 ## 6. The promotion ladder
 
@@ -80,7 +80,7 @@ Three disciplines keep the ladder honest:
 
 One naming rule does outsized work: **files named `utils` may not speak the domain.**
 
-If a function mentions a domain word — mission, pass, satellite, invoice — it is *business logic*, and it lives in a `services/` file named for its topic (`pass-eligibility.ts`, `orbit-window.ts`). If it could be published to npm without mentioning your product (`formatDuration`, `groupBy`, `clamp`), it is a util. A new `utils.ts` containing domain vocabulary fails code review.
+If a function mentions a domain word — release, track, royalty, invoice — it is *business logic*, and it lives in a `services/` file named for its topic (`release-eligibility.ts`, `royalty-split.ts`). If it could be published to npm without mentioning your product (`formatDuration`, `groupBy`, `clamp`), it is a util. A new `utils.ts` containing domain vocabulary fails code review.
 
 Why so strict: `utils.ts` is where business logic goes to hide. It starts with one innocent mapper, and two years later it is an 800-line file that is really the domain model of the application, untested and unnamed. Naming the topic forces the file to *have* a topic — which is what makes it findable, testable, and ownable.
 

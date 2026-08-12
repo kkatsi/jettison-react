@@ -2,7 +2,7 @@
   "name": "jettison-react",
   "private": true,
   "version": "0.1.0",
-  "description": "Jettison — an enforced architecture for enterprise React applications, demonstrated by Mission Control. Any module can be thrown overboard and the app keeps flying; CI proves it on every push.",
+  "description": "Jettison — an enforced architecture for enterprise React applications, demonstrated by the Low Orbit Records label console. Any module can be thrown overboard and the app keeps flying; CI proves it on every push.",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -11,5 +11,9 @@
     "lint": "echo 'ok (eslint.config.js lands in Phase 1)'",
     "test": "echo 'ok (no tests yet)'",
     "build": "echo 'ok (nothing to build yet)'"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "typescript": "^7.0.2"
   }
 }
