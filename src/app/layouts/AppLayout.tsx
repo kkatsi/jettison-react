@@ -13,7 +13,9 @@ export function AppLayout() {
       <Sidebar />
       <main className="flex min-h-0 min-w-0 flex-col overflow-hidden">
         <Topbar title={title} backend={backend} />
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-6">
+        {/* No padding here: screens differ — the catalogue is a padded page, the
+            activity feed is full-bleed rows — so each screen owns its own chrome. */}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <Outlet />
         </div>
       </main>

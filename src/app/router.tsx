@@ -3,6 +3,7 @@
 
 import { createBrowserRouter } from 'react-router';
 
+import { activityRoutes } from '@modules/activity';
 import { ScreenErrorBoundary } from '@shared/ui';
 
 import { AppLayout } from './layouts/AppLayout';
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
     Component: AppLayout,
     children: [
       // jettison:routes:start — one spread per module
+      ...activityRoutes,
       // jettison:routes:end
 
       { index: true, element: unbuilt },

@@ -3,6 +3,8 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 
+import { registerActivityReactions } from '@modules/activity';
+
 import { api } from '@core/api/api';
 import { reactionsMiddleware } from '@core/redux/reactions';
 
@@ -21,6 +23,7 @@ export const store = configureStore({
 });
 
 // jettison:reactions:start — one registerXReactions() call per module
+registerActivityReactions();
 // jettison:reactions:end
 
 export type RootState = ReturnType<typeof store.getState>;
