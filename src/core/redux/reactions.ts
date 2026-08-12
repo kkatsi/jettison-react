@@ -10,14 +10,22 @@ import {
   createListenerMiddleware,
   type ActionCreatorWithPayload,
   type ListenerEffectAPI,
-  type Dispatch,
+  type ThunkDispatch,
   type UnknownAction,
 } from '@reduxjs/toolkit';
 
 /** One instance, added to the store once. */
 export const reactionsMiddleware = createListenerMiddleware();
 
-type ReactionApi = ListenerEffectAPI<unknown, Dispatch<UnknownAction>>;
+// Thunk-capable, because a cache patch (updateQueryData) is a thunk — a plain
+// Dispatch would type-error at the one call every reaction has to make. The state
+// parameter is `any` on purpose: a cache patch is typed against the store state it
+// belongs to, and core may not import app to learn what that is. Reactions read
+// their data from the event payload, never from getState, so nothing is lost.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ReactionDispatch = ThunkDispatch<any, unknown, UnknownAction>;
+
+type ReactionApi = ListenerEffectAPI<unknown, ReactionDispatch>;
 
 type Register = <Payload>(
   event: ActionCreatorWithPayload<Payload>,

@@ -271,9 +271,14 @@ export function buildSeed(seed = 20140611): Seed {
       id: `evt-${String(index + 1).padStart(3, '0')}`,
       type,
       at: iso(new Date(NOW.getTime() - between(random, 1, 40) * 6 * 3600000)),
-      actor: type === 'domain/tracks/processed' ? 'automation' : pick(random, ACTOR),
-      releaseId: release.id,
-      summary: summaryFor(type, release),
+      actor: type === 'domain/tracks/processed' ? 'Audio pipeline' : pick(random, ACTOR),
+      summary: summaryFor(type, release, tracks.filter((t) => t.releaseId === release.id).length),
+      release: {
+        id: release.id,
+        catalogNumber: release.catalogNumber,
+        title: release.title,
+        artwork: release.artwork,
+      },
     });
   }
   activity.sort((a, b) => b.at.localeCompare(a.at));
@@ -298,13 +303,13 @@ function deliveryStatusFor(status: ReleaseStatus, random: () => number): Deliver
   }
 }
 
-function summaryFor(type: ActivityEvent['type'], release: Release): string {
+function summaryFor(type: ActivityEvent['type'], release: Release, trackCount: number): string {
   switch (type) {
     case 'domain/releases/submitted':
-      return `${release.title} submitted for distribution`;
+      return `${release.title} submitted for distribution to ${release.deliveries.length} stores`;
     case 'domain/releases/withdrawn':
-      return `${release.title} withdrawn from distribution`;
+      return `Withdrawn from all ${release.deliveries.length} stores at the artist's request`;
     case 'domain/tracks/processed':
-      return `Audio processing finished for ${release.title}`;
+      return `All ${trackCount} tracks processed and fingerprinted`;
   }
 }

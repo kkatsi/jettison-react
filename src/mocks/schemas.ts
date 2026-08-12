@@ -21,6 +21,9 @@ export const audioStatusSchema = z.enum(['uploading', 'processing', 'ready']);
 
 export const deliveryStatusSchema = z.enum(['pending', 'in-review', 'delivered', 'rejected']);
 
+/** Two colours, not an image — the seed's artwork is generated, and honest about it. */
+export const artworkSchema = z.object({ from: z.string(), to: z.string() });
+
 export const artistSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -57,7 +60,7 @@ export const releaseSchema = z.object({
   status: releaseStatusSchema,
   releaseDate: z.iso.date(),
   submittedAt: z.iso.datetime().nullable(),
-  artwork: z.object({ from: z.string(), to: z.string() }),
+  artwork: artworkSchema,
   streams30d: z.number().int().nonnegative(),
   deliveries: z.array(deliverySchema),
 });
@@ -71,8 +74,15 @@ export const activityEventSchema = z.object({
   ]),
   at: z.iso.datetime(),
   actor: z.string(),
-  releaseId: z.string(),
   summary: z.string(),
+  // Denormalised on purpose: a feed row names its release, and a feed that made
+  // the client join 40 events against the catalogue would be a slow feed.
+  release: z.object({
+    id: z.string(),
+    catalogNumber: z.string(),
+    title: z.string(),
+    artwork: artworkSchema,
+  }),
 });
 
 export const dailyStatSchema = z.object({
