@@ -16,15 +16,15 @@ export function EmptyState({ title, description, actions, footnote, className }:
   return (
     <div
       className={cn(
-        'flex flex-1 flex-col items-center justify-center gap-[18px] p-8 text-center',
+        'flex flex-1 flex-col items-center justify-center gap-4.5 p-8 text-center',
         className,
       )}
     >
       {/* Three empty artwork slots: the console's signature for "no records here". */}
       <div className="flex gap-2" aria-hidden>
-        <div className="size-[34px] rounded border border-dashed border-line" />
-        <div className="size-[34px] rounded border border-dashed border-line" />
-        <div className="size-[34px] rounded border border-dashed border-line" />
+        <div className="size-8.5 rounded border border-dashed border-line" />
+        <div className="size-8.5 rounded border border-dashed border-line" />
+        <div className="size-8.5 rounded border border-dashed border-line" />
       </div>
       <div className="flex flex-col items-center gap-2">
         <p className="text-xl font-semibold text-text">{title}</p>

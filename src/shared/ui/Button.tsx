@@ -15,7 +15,7 @@ const button = cva(
         ghost: 'text-muted hover:bg-panel hover:text-text',
       },
       size: {
-        sm: 'h-[30px] px-3 text-sm',
+        sm: 'h-7.5 px-3 text-sm',
         md: 'h-8 px-4 text-sm',
       },
     },

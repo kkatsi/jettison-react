@@ -7,7 +7,7 @@ import { cn } from '@shared/utils/cn';
 // mapping a domain status onto a tone is a module's job, not the kit's — the kit
 // must stay publishable without mentioning releases (Ch. 1 §2).
 const badge = cva(
-  'inline-flex items-center gap-1.5 h-[22px] px-2.5 rounded-full text-xs font-medium',
+  'inline-flex items-center gap-1.5 h-5.5 px-2.5 rounded-full text-xs font-medium',
   {
     variants: {
       tone: {
@@ -22,7 +22,7 @@ const badge = cva(
   },
 );
 
-const dot = cva('size-[5px] rounded-full', {
+const dot = cva('size-1.25 rounded-full', {
   variants: {
     tone: {
       live: 'bg-live',
