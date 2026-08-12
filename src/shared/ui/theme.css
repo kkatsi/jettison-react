@@ -1,0 +1,83 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   The console theme — the only file in the repo that contains a colour value.
+   ============================================================================
+   Components never hardcode hex; they use the token names below. That is what
+   makes a restyle a one-file change instead of a repo-wide search, and it is
+   why `grep -rn '#[0-9A-Fa-f]\{6\}' src` should only ever match this file.
+
+   The type scale is deliberately overridden to the console's own scale: this is
+   a dense operations UI where 11px and 13px are load-bearing sizes, not
+   exceptions. Naming them keeps arbitrary values out of the components.
+   ============================================================================ */
+
+@theme {
+  /* Surfaces, back to front */
+  --color-canvas: #0b0e14;
+  --color-panel: #12161f;
+  --color-raised: #161b26;
+  --color-line: #1e2530;
+  --color-line-strong: #2e3648;
+
+  /* Text, brightest to faintest */
+  --color-bright: #f2f4f8;
+  --color-text: #e5e9f0;
+  --color-muted: #94a3b8;
+  --color-faint: #5b6577;
+  --color-dim: #3e4759;
+
+  /* Interactive */
+  --color-accent: #8b5cf6;
+  --color-accent-hover: #7c4def;
+  --color-accent-soft: #a78bfa;
+
+  /* Status — one colour per state a release can be in */
+  --color-live: #34d399;
+  --color-warning: #fbbf24;
+  --color-danger: #f87171;
+  --color-idle: #64748b;
+
+  /* Type */
+  --font-sans: Inter, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: Archivo, Inter, sans-serif;
+
+  --text-3xs: 9px;
+  --text-2xs: 10px;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-lg: 14px;
+  --text-xl: 15px;
+  --text-2xl: 18px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-canvas);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-line);
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

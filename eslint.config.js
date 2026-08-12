@@ -21,6 +21,7 @@
 import path from 'node:path';
 
 import boundaries from 'eslint-plugin-boundaries';
+import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
 /** Paths that are never business logic and never linted. */
@@ -32,10 +33,12 @@ const SERVICE_FILES = ['**/services/**/*.ts', '**/*-rules.ts', '**/*-eligibility
 export default tseslint.config(
   { ignores: IGNORED },
 
-  // Baseline: TypeScript rules for every source file.
+  // Baseline: TypeScript and React-hook rules for every source file. Nothing
+  // architectural here — the hooks rules are correctness insurance, and the four
+  // sections below are the architecture.
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [tseslint.configs.recommended],
+    extends: [tseslint.configs.recommended, reactHooks.configs.flat.recommended],
   },
 
   // ===========================================================================
@@ -65,6 +68,8 @@ export default tseslint.config(
             path.join(import.meta.dirname, 'tsconfig.json'),
             path.join(import.meta.dirname, 'fixtures/tsconfig.json'),
           ],
+          // Two projects is the intent here, not an accident worth a warning per run.
+          noWarnOnMultipleProjects: true,
         },
       },
       'boundaries/elements': [
