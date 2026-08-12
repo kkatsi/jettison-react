@@ -58,7 +58,6 @@ Teams building React applications that must survive years of feature work, team 
 
 ## Status
 
-- [x] Master plan ([PLAN.md](PLAN.md)) and implementation guide ([IMPLEMENTATION.md](IMPLEMENTATION.md))
 - [x] Chapters 1–4 (drafts)
 - [x] ADR template + founding decisions
 - [ ] `eslint.config.js` + violation fixtures

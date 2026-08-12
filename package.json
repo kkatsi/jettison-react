@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "echo 'App scaffold lands in Phase 2 — see IMPLEMENTATION.md' && exit 1",
+    "dev": "echo 'The app scaffold has not landed yet' && exit 1",
     "type-check": "echo 'ok (no sources yet)'",
     "lint": "echo 'ok (eslint.config.js lands in Phase 1)'",
     "test": "echo 'ok (no tests yet)'",
