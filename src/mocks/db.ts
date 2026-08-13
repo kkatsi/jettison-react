@@ -149,6 +149,12 @@ export function createDraft(): Release {
   return draft;
 }
 
+/** Discarding a draft gives its catalogue number back to nobody — numbers only go up. */
+export function deleteDraft(release: Release): void {
+  db.releases.delete(release.id);
+  db.tracks = db.tracks.filter((track) => track.releaseId !== release.id);
+}
+
 export type DraftPatch = Partial<
   Pick<Release, 'title' | 'type' | 'releaseDate' | 'genre' | 'credits' | 'artwork' | 'artworkFile'>
 > & { artistId?: string };

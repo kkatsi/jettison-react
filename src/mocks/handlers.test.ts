@@ -210,6 +210,17 @@ describe('the wizard write paths', () => {
     forget(id);
   });
 
+  it('discards a draft and the tracks that were only ever its', async () => {
+    const id = await readyDraft();
+
+    expect((await fetch(`${api}/releases/${id}`, { method: 'DELETE' })).status).toBe(204);
+    expect((await fetch(`${api}/releases/${id}`)).status).toBe(404);
+    expect(db.tracks.some((track) => track.releaseId === id)).toBe(false);
+
+    // …but never one the stores have seen.
+    expect((await fetch(`${api}/releases/lor-0042`, { method: 'DELETE' })).status).toBe(409);
+  });
+
   it('holds a submission back until the audio is ready', async () => {
     const id = await readyDraft();
 

@@ -33,6 +33,9 @@ export const api = createApi({
     'ReleaseDetail',
     'ReleaseActivity',
     'Stores',
+
+    // release-editor
+    'Artists',
   ],
 
   endpoints: () => ({}),

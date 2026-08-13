@@ -5,6 +5,7 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import { registerActivityReactions } from '@modules/activity';
 import { registerCatalogReactions } from '@modules/catalog';
+import { draftSlice } from '@modules/release-editor';
 
 import { api } from '@core/api/api';
 import { reactionsMiddleware } from '@core/redux/reactions';
@@ -14,6 +15,7 @@ export const store = configureStore({
     [api.reducerPath]: api.reducer,
 
     // jettison:reducers:start — one line per module slice
+    [draftSlice.reducerPath]: draftSlice.reducer,
     // jettison:reducers:end
   },
 

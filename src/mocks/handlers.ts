@@ -9,6 +9,7 @@ import {
   addTrack,
   createDraft,
   db,
+  deleteDraft,
   replaceTracks,
   submitRelease,
   tracksFor,
@@ -79,6 +80,16 @@ export const handlers = [
 
     scheduleProjections();
     return detail(updateDraft(draft, patch.data));
+  }),
+
+  http.delete(url('/releases/:id'), async ({ params }) => {
+    await delay(NETWORK_MS);
+    const draft = editableDraft(String(params.id));
+    if (draft instanceof Response) return draft;
+
+    deleteDraft(draft);
+    scheduleProjections();
+    return new HttpResponse(null, { status: 204 });
   }),
 
   http.post(url('/releases/:id/tracks'), async ({ params, request }) => {

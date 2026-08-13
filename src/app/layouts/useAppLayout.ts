@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router';
+import { useLocation, useMatches } from 'react-router';
 
 import { config } from '@core/config/config';
 
@@ -19,10 +19,13 @@ export function useAppLayout(): {
   screenKey: string;
 } {
   const { pathname } = useLocation();
+  const matches = useMatches();
 
   return {
     title: navTitleFor(pathname),
     backend: BACKEND_COPY[config.cacheMode],
-    screenKey: pathname,
+    // The screen's own route, not the URL: a screen with child routes of its own
+    // would otherwise be torn down and rebuilt every time one of them changed.
+    screenKey: matches[1]?.id ?? pathname,
   };
 }
