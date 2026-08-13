@@ -5,6 +5,7 @@
 // Customise in a sibling file, not inside a generated one, so `--overwrite` stays
 // a safe way to take upstream fixes. Add them when a screen needs them.
 
+export { Badge, badgeVariants } from './badge';
 export { Button, buttonVariants } from './button';
 export {
   Card,
@@ -25,6 +26,20 @@ export {
 } from './empty';
 export { Input } from './input';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
+export {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table';
 
 // Ours — shadcn has no equivalent.
+export { Artwork, type ArtworkColours } from './artwork';
 export { ScreenErrorBoundary } from './screen-error-boundary';
+export { Sparkline } from './sparkline';
+export { StatTile } from './stat-tile';
+export { StatusBadge, TONE_TEXT, type Tone } from './status-badge';

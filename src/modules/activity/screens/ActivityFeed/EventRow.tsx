@@ -1,3 +1,4 @@
+import { Artwork } from '@shared/ui';
 import { cn } from '@shared/utils/cn';
 
 import { TYPE_CHIP } from '../../constants';
@@ -5,8 +6,6 @@ import type { ActivityEvent } from '../../types';
 
 // Props in, JSX out — no hook, because there is nothing to orchestrate (R2).
 export function EventRow({ event }: { event: ActivityEvent }) {
-  const { artwork } = event.release;
-
   return (
     <div className="grid h-13 grid-cols-[82px_224px_1fr_196px_116px] items-center gap-4 border-b border-panel px-6 hover:bg-raised/60">
       {/* UTC, like every other timestamp the console shows — a label delivers across time zones. */}
@@ -25,14 +24,7 @@ export function EventRow({ event }: { event: ActivityEvent }) {
       <span className="truncate">{event.summary}</span>
 
       <div className="flex min-w-0 items-center gap-2.25">
-        {/* Generated artwork: two seed colours, hatched. Inline because the values are data. */}
-        <div
-          className="size-5.5 flex-none rounded-sm"
-          style={{
-            background: artwork.from,
-            backgroundImage: `repeating-linear-gradient(135deg, ${artwork.to} 0 3px, transparent 3px 7px)`,
-          }}
-        />
+        <Artwork artwork={event.release.artwork} className="size-5.5" />
         <span className="truncate text-sm text-subtle">{event.release.title}</span>
         <span className="flex-none font-mono text-2xs text-dim">{event.release.catalogNumber}</span>
       </div>
