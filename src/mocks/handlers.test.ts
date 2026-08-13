@@ -3,13 +3,19 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 
 import { db } from './db';
 import { handlers } from './handlers';
-import { releaseListModel, scheduleProjections } from './projection';
-import type { Release } from './schemas';
+import { activityFeedModel, releaseListModel, scheduleProjections } from './projection';
+import type { ActivityEvent, Release, ReleaseDetail } from './schemas';
 
 // Shorter than the app's 2.5s, but longer than the handlers' network delay, or the
 // projection lands while the response is still in flight.
 vi.mock('@core/config/config', () => ({
-  config: { apiBaseUrl: '/api', cacheMode: 'events', readModelLagMs: 400, reconcileDelayMs: 1400 },
+  config: {
+    apiBaseUrl: '/api',
+    cacheMode: 'events',
+    readModelLagMs: 400,
+    reconcileDelayMs: 1400,
+    networkMs: 20,
+  },
 }));
 
 const server = setupServer(...handlers);
@@ -58,5 +64,40 @@ describe('the mock backend', () => {
     scheduleProjections();
     await wait(500);
     expect(releaseListModel.read().some((release) => release.id === 'lor-0099')).toBe(false);
+  });
+
+  it('withdraws a release out of the stores and records why', async () => {
+    // Sodium Sun is mid-delivery in the seed, so there is something to undo.
+    const before = db.releases.get('lor-0058');
+    if (!before) throw new Error('seed changed: lor-0058 is gone');
+
+    const withdrawn = (await (
+      await fetch(`${api}/releases/lor-0058/withdraw`, { method: 'POST' })
+    ).json()) as ReleaseDetail;
+
+    expect(withdrawn.status).toBe('draft');
+    expect(withdrawn.submittedAt).toBeNull();
+    expect(withdrawn.deliveries.every((delivery) => delivery.status === 'pending')).toBe(true);
+    expect(withdrawn.tracks.length).toBeGreaterThan(0);
+
+    // The fact the client's own event announced, now on the backend too — which
+    // is what makes the delayed reconcile a confirmation rather than a surprise.
+    await wait(500);
+    const feed = (await (await fetch(`${api}/activity`)).json()) as ActivityEvent[];
+    expect(feed[0]).toMatchObject({
+      type: 'domain/releases/withdrawn',
+      release: { id: 'lor-0058' },
+    });
+
+    db.releases.set('lor-0058', before);
+    db.activity.shift();
+    scheduleProjections();
+    await wait(500);
+    expect(activityFeedModel.read()[0]?.release.id).not.toBe('lor-0058');
+  });
+
+  it('404s a withdrawal of something that was never there', async () => {
+    const response = await fetch(`${api}/releases/lor-9999/withdraw`, { method: 'POST' });
+    expect(response.status).toBe(404);
   });
 });

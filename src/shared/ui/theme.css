@@ -12,6 +12,10 @@
   --color-canvas: #0b0e14;
   --color-panel: #12161f;
   --color-raised: #161b26;
+  /* One step above `raised`, and the reason it exists: a menu sits on `raised`,
+     so its highlighted row needs a surface of its own or the selection is
+     invisible — under the pointer and under the keyboard alike. */
+  --color-highlight: #212936;
   --color-line: #1e2530;
   --color-line-strong: #2e3648;
 
@@ -79,8 +83,11 @@
 
   --muted: var(--color-raised);
   --muted-foreground: var(--color-subtle);
-  --accent: var(--color-raised);
-  --accent-foreground: var(--color-text);
+  /* Their `--accent` is the highlight surface — what a hovered or keyboard-focused
+     row turns. It cannot equal `--popover`, or every menu highlights to exactly
+     the colour it is sitting on. */
+  --accent: var(--color-highlight);
+  --accent-foreground: var(--color-bright);
 
   --destructive: var(--color-danger);
 
@@ -99,8 +106,8 @@
   --sidebar-foreground: var(--color-text);
   --sidebar-primary: var(--color-brand);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--color-raised);
-  --sidebar-accent-foreground: var(--color-text);
+  --sidebar-accent: var(--color-highlight);
+  --sidebar-accent-foreground: var(--color-bright);
   --sidebar-border: var(--color-line);
   --sidebar-ring: var(--color-brand);
 }
@@ -172,4 +179,22 @@
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+}
+
+/* Anything you can click says so under the pointer.
+
+   Tailwind v4's preflight dropped the browser default of `cursor: pointer` on
+   buttons, and several generated kit components set `cursor-default` outright —
+   so this rule is deliberately unlayered: unlayered CSS outranks every @layer,
+   which is the only way it beats a utility class sitting on the element itself.
+   Disabled controls are left alone; a pointer over something inert is a lie. */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+[role='menuitem']:not([data-disabled]),
+[role='option']:not([data-disabled]),
+[role='tab']:not([aria-disabled='true']),
+label[for],
+summary,
+a[href] {
+  cursor: pointer;
 }

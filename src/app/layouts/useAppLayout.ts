@@ -12,11 +12,17 @@ const BACKEND_COPY: Record<typeof config.cacheMode, BackendIndicator> = {
 };
 
 /** The layout's one view-model. */
-export function useAppLayout(): { title: string; backend: BackendIndicator } {
+export function useAppLayout(): {
+  title: string;
+  backend: BackendIndicator;
+  /** Keys the screen slot: a mount, not an update, or React holds the old screen. */
+  screenKey: string;
+} {
   const { pathname } = useLocation();
 
   return {
     title: navTitleFor(pathname),
     backend: BACKEND_COPY[config.cacheMode],
+    screenKey: pathname,
   };
 }

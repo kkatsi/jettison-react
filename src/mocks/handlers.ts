@@ -3,12 +3,14 @@
 
 import { delay, http, HttpResponse } from 'msw';
 
-import { db, tracksFor } from './db';
-import { activityFeedModel, releaseListModel } from './projection';
+import { config } from '@core/config/config';
+
+import { db, tracksFor, withdrawRelease } from './db';
+import { activityFeedModel, releaseListModel, scheduleProjections } from './projection';
 import { activityEventSchema, releaseDetailSchema, releaseSchema } from './schemas';
 
-/** Enough latency for loading states to be real. */
-const NETWORK_MS = 140;
+/** Enough latency for loading states to be real. Turn it up with VITE_NETWORK_MS. */
+const NETWORK_MS = config.networkMs;
 
 /** Origin-agnostic so the node tests hit the same handlers. */
 const url = (path: string) => `*/api${path}`;
@@ -31,9 +33,31 @@ export const handlers = [
     );
   }),
 
-  http.get(url('/activity'), async () => {
+  // The write lands now; the lists that show it catch up later (ADR-002).
+  http.post(url('/releases/:id/withdraw'), async ({ params }) => {
     await delay(NETWORK_MS);
-    return HttpResponse.json(activityEventSchema.array().parse(activityFeedModel.read()));
+    const release = withdrawRelease(String(params.id));
+    if (!release) return new HttpResponse(null, { status: 404 });
+
+    scheduleProjections();
+    return HttpResponse.json(
+      releaseDetailSchema.parse({ ...release, tracks: tracksFor(release.id) }),
+    );
+  }),
+
+  // `?releaseId=` narrows the same feed: catalog's detail screen shows one
+  // release's history, and asking the client to fetch forty events to render six
+  // would be a slow screen (Ch. 4 §1 — two modules, one resource).
+  http.get(url('/activity'), async ({ request }) => {
+    await delay(NETWORK_MS);
+    const releaseId = new URL(request.url).searchParams.get('releaseId');
+    const feed = activityFeedModel.read();
+
+    return HttpResponse.json(
+      activityEventSchema
+        .array()
+        .parse(releaseId ? feed.filter((event) => event.release.id === releaseId) : feed),
+    );
   }),
 
   http.get(url('/stores'), async () => {

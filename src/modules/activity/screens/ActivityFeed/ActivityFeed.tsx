@@ -1,14 +1,6 @@
 import { Search } from 'lucide-react';
 
-import {
-  Button,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@shared/ui';
+import { Button, FilterSelect, Input, ScreenFallback } from '@shared/ui';
 
 import { RANGE_OPTIONS, TYPE_OPTIONS } from '../../constants';
 import { EventRow } from './EventRow';
@@ -18,6 +10,8 @@ import { useActivityFeed } from './useActivityFeed';
 // cross a module boundary, named exactly as `shared/events/` names it.
 export function ActivityFeed() {
   const { isLoading, failure, groups, isEmpty, resultLabel, filters } = useActivityFeed();
+
+  if (isLoading) return <ScreenFallback />;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -70,8 +64,6 @@ export function ActivityFeed() {
           </div>
         ))}
 
-        {isLoading ? <Notice>Loading the feed…</Notice> : null}
-
         {failure ? (
           <Notice>
             <span>The activity feed could not be loaded.</span>
@@ -97,33 +89,6 @@ export function ActivityFeed() {
         ) : null}
       </div>
     </div>
-  );
-}
-
-type FilterSelectProps = {
-  label: string;
-  options: { value: string; label: string }[];
-  value: string;
-  onValueChange: (value: string) => void;
-};
-
-function FilterSelect({ label, options, value, onValueChange }: FilterSelectProps) {
-  return (
-    // An empty value can't happen here — the select isn't clearable — and would
-    // fall back to the default on the next read anyway.
-    <Select items={options} value={value} onValueChange={(next) => onValueChange(next ?? '')}>
-      <SelectTrigger size="sm" className="h-7.5 gap-2 bg-panel text-sm">
-        <span className="text-idle">{label}</span>
-        <SelectValue className="font-mono text-xs text-subtle" />
-      </SelectTrigger>
-      <SelectContent className="min-w-44">
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value} className="font-mono text-xs">
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   );
 }
 

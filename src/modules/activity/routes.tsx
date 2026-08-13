@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy } from 'react';
 import type { RouteObject } from 'react-router';
 
 import { ScreenErrorBoundary } from '@shared/ui';
@@ -16,10 +16,7 @@ export const activityRoutes: RouteObject[] = [
     path: 'activity',
     element: (
       <ScreenErrorBoundary name="activity.feed">
-        {/* No fallback: the chunk is small and the screen renders its own loading row. */}
-        <Suspense fallback={null}>
-          <ActivityFeed />
-        </Suspense>
+        <ActivityFeed />
       </ScreenErrorBoundary>
     ),
   },

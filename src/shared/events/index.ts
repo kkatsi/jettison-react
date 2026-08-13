@@ -1,12 +1,6 @@
-// Every fact that crosses a module boundary, in one readable list.
-//
-// Naming: domain/<entity>/<past-tense fact>. Payload: the smallest thing a
-// listener needs, and its type lives here too (shared can't import a module).
-// No logic — createAction calls only.
-//
-// The producers arrive with catalog and release-editor; activity already listens.
-// That order is deliberate: an event nobody dispatches costs nothing, which is
-// the same reason jettisoning a producer is safe.
+// Every fact that crosses a module boundary, in one list.
+// domain/<entity>/<past-tense fact>, no logic, payload types included because
+// shared cannot import a module.
 
 import { createAction } from '@reduxjs/toolkit';
 
@@ -24,7 +18,23 @@ type ReleaseEvent = {
   actor: string;
 };
 
-export const releaseSubmitted = createAction<ReleaseEvent>('domain/releases/submitted');
+/**
+ * Submission carries a whole row: the catalogue has to show the release seconds
+ * before its own list endpoint will return it.
+ */
+export type SubmittedRelease = EventRelease & {
+  artistId: string;
+  artistName: string;
+  type: 'Single' | 'EP' | 'Album';
+  releaseDate: string;
+  submittedAt: string;
+  /** The stores it went to — enough to draw a delivery row with nothing delivered yet. */
+  storeIds: string[];
+};
+
+export const releaseSubmitted = createAction<{ release: SubmittedRelease; actor: string }>(
+  'domain/releases/submitted',
+);
 
 export const releaseWithdrawn = createAction<ReleaseEvent>('domain/releases/withdrawn');
 

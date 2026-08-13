@@ -62,6 +62,8 @@ export const releaseSchema = z.object({
   submittedAt: z.iso.datetime().nullable(),
   artwork: artworkSchema,
   streams30d: z.number().int().nonnegative(),
+  /** Sixteen days of streams for the catalogue's sparkline. Empty until a release is live. */
+  streamsTrend: z.array(z.number().int().nonnegative()),
   deliveries: z.array(deliverySchema),
 });
 

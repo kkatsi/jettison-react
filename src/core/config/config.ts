@@ -19,6 +19,9 @@ export const config = Object.freeze({
   /** How far the mock's read models trail its write model (ADR-002). */
   readModelLagMs,
 
+  /** What the mock charges for a round trip. Raise it to read the loading states. */
+  networkMs: Number(import.meta.env.VITE_NETWORK_MS ?? 140),
+
   /** How long a reaction waits before reconciling. Must outlast the lag above. */
   reconcileDelayMs: readModelLagMs + 1000,
 });

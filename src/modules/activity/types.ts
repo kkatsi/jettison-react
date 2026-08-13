@@ -3,9 +3,7 @@
 
 /** The app's cross-module vocabulary, as the feed receives it. */
 export type ActivityEventType =
-  | 'domain/releases/submitted'
-  | 'domain/releases/withdrawn'
-  | 'domain/tracks/processed';
+  'domain/releases/submitted' | 'domain/releases/withdrawn' | 'domain/tracks/processed';
 
 export type ActivityEvent = {
   id: string;
