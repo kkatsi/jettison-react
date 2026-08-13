@@ -28,3 +28,46 @@ export function tracksFor(releaseId: string): Track[] {
     .filter((track) => track.releaseId === releaseId)
     .sort((a, b) => a.number - b.number);
 }
+
+/** The label's own name for the session. A real backend would read it off the token. */
+const SESSION_ACTOR = 'Mara Kessler';
+
+/**
+ * Withdrawing puts a release back in the label's hands: out of the pipeline, out
+ * of the stores, back to a draft it can resubmit. Returns undefined for an
+ * unknown id so the handler can 404 rather than invent one.
+ */
+export function withdrawRelease(id: string): Release | undefined {
+  const release = db.releases.get(id);
+  if (!release) return undefined;
+
+  const withdrawn: Release = {
+    ...release,
+    status: 'draft',
+    submittedAt: null,
+    deliveries: release.deliveries.map((delivery) => ({
+      ...delivery,
+      status: 'pending',
+      deliveredAt: null,
+    })),
+  };
+  db.releases.set(id, withdrawn);
+
+  // The backend records the same fact the client just announced to its own
+  // modules — that's what makes the delayed reconcile a confirmation.
+  db.activity.unshift({
+    id: `evt-withdrawn-${id}-${db.activity.length}`,
+    type: 'domain/releases/withdrawn',
+    at: new Date().toISOString(),
+    actor: SESSION_ACTOR,
+    summary: `Withdrawn from all ${release.deliveries.length} stores at the artist's request`,
+    release: {
+      id: release.id,
+      catalogNumber: release.catalogNumber,
+      title: release.title,
+      artwork: release.artwork,
+    },
+  });
+
+  return withdrawn;
+}

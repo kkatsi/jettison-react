@@ -3,8 +3,8 @@
 
 import { delay, http, HttpResponse } from 'msw';
 
-import { db, tracksFor } from './db';
-import { activityFeedModel, releaseListModel } from './projection';
+import { db, tracksFor, withdrawRelease } from './db';
+import { activityFeedModel, releaseListModel, scheduleProjections } from './projection';
 import { activityEventSchema, releaseDetailSchema, releaseSchema } from './schemas';
 
 /** Enough latency for loading states to be real. */
@@ -26,6 +26,18 @@ export const handlers = [
     const release = db.releases.get(String(params.id));
     if (!release) return new HttpResponse(null, { status: 404 });
 
+    return HttpResponse.json(
+      releaseDetailSchema.parse({ ...release, tracks: tracksFor(release.id) }),
+    );
+  }),
+
+  // The write lands now; the lists that show it catch up later (ADR-002).
+  http.post(url('/releases/:id/withdraw'), async ({ params }) => {
+    await delay(NETWORK_MS);
+    const release = withdrawRelease(String(params.id));
+    if (!release) return new HttpResponse(null, { status: 404 });
+
+    scheduleProjections();
     return HttpResponse.json(
       releaseDetailSchema.parse({ ...release, tracks: tracksFor(release.id) }),
     );

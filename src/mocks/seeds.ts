@@ -192,6 +192,27 @@ export function buildSeed(seed = 20140611): Seed {
     const submittedAt =
       status === 'draft' ? null : iso(new Date(releasedAt - between(random, 6, 40) * DAY_MS));
 
+    // 90 days of numbers, with one playlist spike for analytics to point at.
+    const series: DailyStat[] = [];
+    if (status === 'live') {
+      const daily = streams30d / 30;
+      const spikeStart = between(random, 20, 60);
+      for (let back = 89; back >= 0; back -= 1) {
+        const date = new Date(NOW.getTime() - back * DAY_MS);
+        const inSpike = back <= spikeStart && back > spikeStart - 6;
+        const wobble = 0.75 + random() * 0.5;
+        const streams = Math.round(daily * wobble * (inSpike ? 3.4 : 1));
+        series.push({
+          releaseId: id,
+          date: day(date),
+          streams,
+          // ~$0.0032 a stream, the industry's famously grim rate.
+          revenue: Math.round(streams * 0.0032 * 100) / 100,
+        });
+      }
+    }
+    stats.push(...series);
+
     releases.push({
       id,
       catalogNumber,
@@ -204,6 +225,7 @@ export function buildSeed(seed = 20140611): Seed {
       submittedAt,
       artwork: { from, to },
       streams30d,
+      streamsTrend: series.slice(-16).map((stat) => stat.streams),
       deliveries: stores.map((store) => ({
         storeId: store.id,
         status: deliveryStatusFor(status, random),
@@ -235,25 +257,6 @@ export function buildSeed(seed = 20140611): Seed {
         audioStatus: catalogNumber === 'LOR-0052' && number === 2 ? 'processing' : 'ready',
       });
       trackIndex += 1;
-    }
-
-    // 90 days of numbers, with one playlist spike for analytics to point at.
-    if (status === 'live') {
-      const daily = streams30d / 30;
-      const spikeStart = between(random, 20, 60);
-      for (let back = 89; back >= 0; back -= 1) {
-        const date = new Date(NOW.getTime() - back * DAY_MS);
-        const inSpike = back <= spikeStart && back > spikeStart - 6;
-        const wobble = 0.75 + random() * 0.5;
-        const streams = Math.round(daily * wobble * (inSpike ? 3.4 : 1));
-        stats.push({
-          releaseId: id,
-          date: day(date),
-          streams,
-          // ~$0.0032 a stream, the industry's famously grim rate.
-          revenue: Math.round(streams * 0.0032 * 100) / 100,
-        });
-      }
     }
   }
 
