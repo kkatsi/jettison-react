@@ -96,6 +96,8 @@ export function useDistributionBoard(): DistributionBoardModel {
     0,
   );
 
+  const placements = schedulePlacements(pipeline, now);
+
   return {
     isLoading,
     failure: isError ? { retry: () => void refetch() } : null,
@@ -105,8 +107,9 @@ export function useDistributionBoard(): DistributionBoardModel {
     countLabel: `${pipeline.length} in pipeline`,
     footerLabel: `Showing ${visible.length} of ${pipeline.length} submissions`,
     schedule: {
-      axis: scheduleAxis(now),
-      pins: schedulePlacements(pipeline, now).map((placement) => {
+      // The axis is drawn around the pins, so the pins are placed first.
+      axis: scheduleAxis(now, placements),
+      pins: placements.map((placement) => {
         const release = pipeline.find((candidate) => candidate.id === placement.id);
         if (!release) throw new Error(`board: placement for a release that left the pipeline`);
 

@@ -20,8 +20,8 @@ export type SchedulePlacement = {
 };
 
 export type ScheduleAxis = {
-  /** Week ticks, left to right. */
-  weeks: { left: number; label: string }[];
+  /** Week ticks, left to right. The tick always shows; its label gives way to a pin. */
+  weeks: { left: number; label: string; showLabel: boolean }[];
   /** Where "now" sits on the axis, or null when it has scrolled off it. */
   todayLeft: number | null;
   rangeLabel: string;
@@ -35,14 +35,29 @@ export function placeOnAxis(date: string, now: number): number | null {
   return percent >= 0 && percent <= 100 ? percent : null;
 }
 
-export function scheduleAxis(now: number): ScheduleAxis {
+/**
+ * The ruler. Its week labels are dates, and so are the pins' — two dates on the
+ * same line at nearly the same x read as one broken date, so the ruler gives way
+ * to the release. The tick stays: losing the mark would move the ruler, losing
+ * the label only makes it sparser.
+ */
+export function scheduleAxis(
+  now: number,
+  placements: readonly SchedulePlacement[] = [],
+  minGapPercent = 5,
+): ScheduleAxis {
   const start = axisStart(now);
 
   return {
-    weeks: [0, 7, 14, 21, 28].map((offset) => ({
-      left: (offset / SPAN_DAYS) * 100,
-      label: shortDate(start + offset * DAY_MS),
-    })),
+    weeks: [0, 7, 14, 21, 28].map((offset) => {
+      const left = (offset / SPAN_DAYS) * 100;
+
+      return {
+        left,
+        label: shortDate(start + offset * DAY_MS),
+        showLabel: !placements.some((placement) => Math.abs(placement.left - left) < minGapPercent),
+      };
+    }),
     todayLeft: ((now - start) / (SPAN_DAYS * DAY_MS)) * 100,
     rangeLabel: `${shortDate(start)} → ${shortDate(start + SPAN_DAYS * DAY_MS)}`,
   };

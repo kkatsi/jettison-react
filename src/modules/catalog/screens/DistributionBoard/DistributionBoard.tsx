@@ -101,7 +101,8 @@ export function DistributionBoard() {
       </div>
 
       <Card className="min-h-60 flex-1 gap-0 overflow-hidden py-0">
-        <div className="min-h-0 flex-1">
+        {/* The kit's own table wrapper is the scroll container — see Catalog.tsx. */}
+        <div className="min-h-0 flex-1 [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:overflow-y-auto">
           <Table className="table-fixed">
             <colgroup>
               {COLUMNS.map((width, index) => (
@@ -109,7 +110,7 @@ export function DistributionBoard() {
               ))}
             </colgroup>
 
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-panel">
               <TableRow className="h-9 border-line hover:bg-transparent">
                 <TableHead className="pl-4" />
                 <TableHead className="text-xs font-medium text-idle">Release</TableHead>

@@ -43,6 +43,17 @@ describe('placeOnAxis', () => {
 });
 
 describe('scheduleAxis', () => {
+  it('gives a week label up to a pin sitting on top of it', () => {
+    // Two dates on the same line at the same x read as one broken date.
+    const pins = schedulePlacements([release('a', '2026-08-16')], NOW);
+    const axis = scheduleAxis(NOW, pins);
+
+    expect(axis.weeks.map((week) => week.showLabel)).toEqual([true, false, true, true, true]);
+    // The tick itself stays — losing it would move the ruler.
+    expect(axis.weeks).toHaveLength(5);
+    expect(scheduleAxis(NOW).weeks.every((week) => week.showLabel)).toBe(true);
+  });
+
   it('labels the four week marks and says where today is', () => {
     const axis = scheduleAxis(NOW);
 

@@ -32,12 +32,14 @@ export function ReleaseSchedule({ axis, pins }: { axis: ScheduleAxis; pins: Sche
               className="absolute top-13 h-1.5 w-px bg-line-strong/70"
               style={{ left: `${week.left}%` }}
             />
-            <div
-              className="absolute top-16 font-mono text-2xs whitespace-nowrap text-dim"
-              style={{ left: `${week.left}%` }}
-            >
-              {week.label}
-            </div>
+            {week.showLabel ? (
+              <div
+                className="absolute top-16 font-mono text-2xs whitespace-nowrap text-dim"
+                style={{ left: `${week.left}%` }}
+              >
+                {week.label}
+              </div>
+            ) : null}
           </div>
         ))}
 

@@ -167,6 +167,14 @@ const NOW = new Date('2026-08-12T09:14:00.000Z');
 /** Real ISRC format, fictional codes. */
 const isrc = (index: number): string => `GBLOR26${String(index + 1).padStart(5, '0')}`;
 
+/**
+ * A time of day somebody could have been at their desk. Every timestamp in the
+ * console is shown to the minute, and a whole column reading 00:00 is the tell
+ * that nobody generated the data with a working day in mind.
+ */
+const atWorkingHour = (timestamp: number, random: () => number): string =>
+  iso(new Date(timestamp + between(random, 8, 18) * 3600000 + between(random, 0, 59) * 60000));
+
 export function buildSeed(seed = 20140611): Seed {
   const random = prng(seed);
 
@@ -189,8 +197,21 @@ export function buildSeed(seed = 20140611): Seed {
     if (!artist) throw new Error(`seed: unknown artist ${artistName}`);
 
     const releasedAt = new Date(releaseDate).getTime();
+    // A release is submitted before its street date — but nothing is submitted in
+    // the future, whatever its street date says. Without the clamp, a release
+    // planned for November carries a September submission, and every screen that
+    // takes its clock from the newest submission (the board, the stat tiles) reads
+    // the label's own dates as if they had already happened.
     const submittedAt =
-      status === 'draft' ? null : iso(new Date(releasedAt - between(random, 6, 40) * DAY_MS));
+      status === 'draft'
+        ? null
+        : atWorkingHour(
+            Math.min(
+              releasedAt - between(random, 6, 40) * DAY_MS,
+              NOW.getTime() - between(random, 1, 9) * DAY_MS,
+            ),
+            random,
+          );
 
     // 90 days of numbers, with one playlist spike for analytics to point at.
     const series: DailyStat[] = [];
@@ -230,7 +251,9 @@ export function buildSeed(seed = 20140611): Seed {
         storeId: store.id,
         status: deliveryStatusFor(status, random),
         deliveredAt:
-          status === 'live' ? iso(new Date(releasedAt + between(random, 0, 3) * DAY_MS)) : null,
+          status === 'live'
+            ? atWorkingHour(releasedAt + between(random, 0, 3) * DAY_MS, random)
+            : null,
       })),
     });
 

@@ -80,9 +80,10 @@ export function Catalog() {
       </div>
 
       <Card className="min-h-60 flex-1 gap-0 overflow-hidden py-0">
-        {/* No inner scroll: the table is paginated so twelve rows always fit, which
-            is the whole reason the design paginates rather than scrolling. */}
-        <div className="min-h-0 flex-1">
+        {/* The kit wraps every table in its own scroll container, so that is what
+            gets the height and does the scrolling — the header sticks to it, and
+            the footer below stays put instead of being painted over. */}
+        <div className="min-h-0 flex-1 [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:overflow-y-auto">
           <Table className="table-fixed">
             <colgroup>
               {CATALOG_COLUMNS.map((width, index) => (
@@ -90,7 +91,7 @@ export function Catalog() {
               ))}
             </colgroup>
 
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-panel">
               <TableRow className="h-9 border-line hover:bg-transparent">
                 <TableHead className="pl-4" />
                 <TableHead className="text-xs font-medium text-idle">Release</TableHead>
