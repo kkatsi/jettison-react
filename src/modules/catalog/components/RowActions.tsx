@@ -71,7 +71,7 @@ function Item({ action }: { action: RowAction }) {
   return (
     <DropdownMenuItem
       variant={action.isDestructive ? 'destructive' : 'default'}
-      className="h-8 px-2.5 text-base"
+      className="px-2.5 py-1.5 text-base"
       onClick={(event) => {
         event.stopPropagation();
         action.onSelect();

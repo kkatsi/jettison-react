@@ -101,7 +101,9 @@ export function Catalog() {
                 <TableHead className="text-xs font-medium text-idle">Status</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Release date</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Trend</TableHead>
-                <TableHead className="text-xs font-medium text-idle">Streams · 30d</TableHead>
+                <TableHead className="text-right text-xs font-medium text-idle">
+                  Streams · 30d
+                </TableHead>
               </TableRow>
             </TableHeader>
 
