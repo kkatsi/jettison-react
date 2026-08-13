@@ -16,7 +16,12 @@ export type SparklineProps = {
 /** A trend, not a chart: no axes, no tooltip, no library. */
 export function Sparkline({ points, label, width = 64, height = 18, className }: SparklineProps) {
   const peak = Math.max(0, ...points);
-  const described = label ? { role: 'img' as const, 'aria-label': label } : { 'aria-hidden': true };
+  // With a label the line is content and says so; without one it is decoration and
+  // hides. `title` gives the pointer the same sentence the screen reader gets —
+  // upgrade to the kit's Tooltip if it ever needs to be styled or touch-friendly.
+  const described = label
+    ? { role: 'img' as const, 'aria-label': label, title: label }
+    : { 'aria-hidden': true };
 
   // Nothing to plot — a flat rule keeps the column aligned instead of collapsing it.
   if (points.length < 2 || peak === 0) {

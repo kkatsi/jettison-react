@@ -109,8 +109,10 @@ export function useDistributionBoard(): DistributionBoardModel {
     rows: visible.map(toRow(navigate, withdraw)),
     isEmpty: !isLoading && !isError && visible.length === 0 && pipeline.length > 0,
     isPipelineEmpty: !isLoading && !isError && pipeline.length === 0,
-    countLabel: `${pipeline.length} in pipeline`,
-    footerLabel: `Showing ${visible.length} of ${pipeline.length} submissions`,
+    countLabel: isLoading ? '' : `${pipeline.length} in pipeline`,
+    // The counts are not known yet, and stating them under a table of skeletons
+    // would be the screen asserting something it has not been told.
+    footerLabel: isLoading ? '' : `Showing ${visible.length} of ${pipeline.length} submissions`,
     schedule: {
       // The axis is drawn around the pins, so the pins are placed first.
       axis: scheduleAxis(now, placements),

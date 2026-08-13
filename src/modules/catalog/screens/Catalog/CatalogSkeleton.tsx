@@ -63,7 +63,7 @@ export function ReleaseRowSkeleton({ index }: { index: number }) {
 
 export function StatTileSkeleton() {
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-card py-4 ring-1 ring-foreground/10">
+    <div className="flex flex-col gap-3 rounded-xl bg-card py-5 ring-1 ring-foreground/10">
       <Skeleton className="mx-4 h-3 w-24" />
       <Skeleton className="mx-4 h-6.5 w-20" />
       <Skeleton className="mx-4 h-3 w-32" />

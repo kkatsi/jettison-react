@@ -8,6 +8,7 @@ import {
   EmptyMedia,
   EmptyTitle,
   FilterSelect,
+  Skeleton,
   StatusBadge,
   Table,
   TableBody,
@@ -20,6 +21,7 @@ import { cn } from '@shared/utils/cn';
 import { Rocket } from 'lucide-react';
 
 import { WithdrawDialog } from '../../components/WithdrawDialog';
+import { PipelineRowSkeleton, ReleaseScheduleSkeleton } from './BoardSkeleton';
 import { ReleaseSchedule } from './ReleaseSchedule';
 import { useDistributionBoard, type BoardRow } from './useDistributionBoard';
 
@@ -27,6 +29,9 @@ import { useDistributionBoard, type BoardRow } from './useDistributionBoard';
 // the body honest, which a grid template repeated in two places does not. The
 // artwork rides in the Release cell — it names the release, it is not a column.
 const COLUMNS = ['w-auto', 'w-37.5', 'w-37.5', 'w-33', 'w-33', 'w-28'];
+
+/** Enough to fill the card at 1440x900, so nothing moves when the data lands. */
+const PLACEHOLDERS = Array.from({ length: 9 }, (_, index) => `placeholder-${index}`);
 
 // Everything the label has handed to the stores, and how far each one got.
 export function DistributionBoard() {
@@ -68,7 +73,11 @@ export function DistributionBoard() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-6">
-      <ReleaseSchedule axis={schedule.axis} pins={schedule.pins} />
+      {isLoading ? (
+        <ReleaseScheduleSkeleton />
+      ) : (
+        <ReleaseSchedule axis={schedule.axis} pins={schedule.pins} />
+      )}
 
       <div className="flex flex-none items-center gap-2">
         <FilterSelect
@@ -90,17 +99,25 @@ export function DistributionBoard() {
           </Button>
         ) : null}
 
-        <div className="ml-auto flex items-center gap-3.5 font-mono text-xs text-faint">
-          <span>
-            <span className="text-warning">●</span> {counts.inFlight} in flight
-          </span>
-          <span>
-            <span className="text-danger">●</span> {counts.blocked} blocked
-          </span>
-          <span>
-            <span className="text-live">●</span> {counts.live} live
-          </span>
-        </div>
+        {isLoading ? (
+          <div className="ml-auto flex items-center gap-3.5">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        ) : (
+          <div className="ml-auto flex items-center gap-3.5 font-mono text-xs text-faint">
+            <span>
+              <span className="text-warning">●</span> {counts.inFlight} in flight
+            </span>
+            <span>
+              <span className="text-danger">●</span> {counts.blocked} blocked
+            </span>
+            <span>
+              <span className="text-live">●</span> {counts.live} live
+            </span>
+          </div>
+        )}
       </div>
 
       <Card className="min-h-60 flex-1 gap-0 overflow-hidden py-0">
@@ -127,13 +144,11 @@ export function DistributionBoard() {
             </TableHeader>
 
             <TableBody>
-              {rows.map((release) => (
-                <PipelineRow key={release.id} release={release} />
-              ))}
+              {isLoading
+                ? PLACEHOLDERS.map((key, index) => <PipelineRowSkeleton key={key} index={index} />)
+                : rows.map((release) => <PipelineRow key={release.id} release={release} />)}
             </TableBody>
           </Table>
-
-          {isLoading ? <Notice>Loading the pipeline…</Notice> : null}
 
           {failure ? (
             <Notice>
