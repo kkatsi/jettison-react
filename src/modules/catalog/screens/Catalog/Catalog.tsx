@@ -5,6 +5,7 @@ import {
   Card,
   FilterSelect,
   Input,
+  ScreenFallback,
   StatTile,
   Table,
   TableBody,
@@ -15,14 +16,9 @@ import {
 import { cn } from '@shared/utils/cn';
 
 import { WithdrawDialog } from '../../components/WithdrawDialog';
-import { ReleaseRowSkeleton, StatTileSkeleton } from './CatalogSkeleton';
-import { PAGE_SIZE } from './catalog-filters';
 import { CATALOG_COLUMNS } from './columns';
 import { ReleaseRow } from './ReleaseRow';
 import { useCatalog } from './useCatalog';
-
-/** A full page of them, so the table does not resize when the data lands. */
-const PLACEHOLDERS = Array.from({ length: PAGE_SIZE }, (_, index) => `placeholder-${index}`);
 
 // The label's whole catalogue, dense enough that the filters earn their place.
 export function Catalog() {
@@ -39,12 +35,14 @@ export function Catalog() {
     withdraw,
   } = useCatalog();
 
+  if (isLoading) return <ScreenFallback />;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-6">
       <div className="grid flex-none grid-cols-4 gap-3">
-        {isLoading
-          ? PLACEHOLDERS.slice(0, 4).map((key) => <StatTileSkeleton key={key} />)
-          : tiles.map((tile) => <StatTile key={tile.label} {...tile} />)}
+        {tiles.map((tile) => (
+          <StatTile key={tile.label} {...tile} />
+        ))}
       </div>
 
       <div className="flex flex-none items-center gap-2">
@@ -113,9 +111,9 @@ export function Catalog() {
             </TableHeader>
 
             <TableBody>
-              {isLoading
-                ? PLACEHOLDERS.map((key, index) => <ReleaseRowSkeleton key={key} index={index} />)
-                : rows.map((release) => <ReleaseRow key={release.id} release={release} />)}
+              {rows.map((release) => (
+                <ReleaseRow key={release.id} release={release} />
+              ))}
             </TableBody>
           </Table>
 

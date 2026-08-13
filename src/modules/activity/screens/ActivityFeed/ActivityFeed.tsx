@@ -1,9 +1,8 @@
 import { Search } from 'lucide-react';
 
-import { Button, FilterSelect, Input } from '@shared/ui';
+import { Button, FilterSelect, Input, ScreenFallback } from '@shared/ui';
 
 import { RANGE_OPTIONS, TYPE_OPTIONS } from '../../constants';
-import { ActivityFeedSkeleton } from './ActivityFeedSkeleton';
 import { EventRow } from './EventRow';
 import { useActivityFeed } from './useActivityFeed';
 
@@ -11,6 +10,8 @@ import { useActivityFeed } from './useActivityFeed';
 // cross a module boundary, named exactly as `shared/events/` names it.
 export function ActivityFeed() {
   const { isLoading, failure, groups, isEmpty, resultLabel, filters } = useActivityFeed();
+
+  if (isLoading) return <ScreenFallback />;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -62,8 +63,6 @@ export function ActivityFeed() {
             ))}
           </div>
         ))}
-
-        {isLoading ? <ActivityFeedSkeleton /> : null}
 
         {failure ? (
           <Notice>

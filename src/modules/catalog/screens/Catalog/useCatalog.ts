@@ -145,9 +145,7 @@ export function useCatalog(): CatalogModel {
     resultLabel:
       matching.length === releases.length ? '' : `${matching.length} of ${releases.length}`,
     countLabel: `${releases.length} releases`,
-    // Nothing is known about the count yet, and "Showing 0 releases" under a
-    // table of skeletons states a fact the screen has not been told.
-    footerLabel: isLoading ? '' : page.label,
+    footerLabel: page.label,
     withdraw,
     filters: {
       query: filters.query,
