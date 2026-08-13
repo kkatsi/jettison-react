@@ -23,8 +23,9 @@ import { ReleaseSchedule } from './ReleaseSchedule';
 import { useDistributionBoard, type BoardRow } from './useDistributionBoard';
 
 // Widths for <colgroup>: the browser's own column algorithm keeps the header and
-// the body honest, which a grid template repeated in two places does not.
-const COLUMNS = ['w-11', 'w-auto', 'w-37.5', 'w-37.5', 'w-33', 'w-33'];
+// the body honest, which a grid template repeated in two places does not. The
+// artwork rides in the Release cell — it names the release, it is not a column.
+const COLUMNS = ['w-auto', 'w-37.5', 'w-37.5', 'w-33', 'w-33'];
 
 // Everything the label has handed to the stores, and how far each one got.
 export function DistributionBoard() {
@@ -112,8 +113,7 @@ export function DistributionBoard() {
 
             <TableHeader className="sticky top-0 z-10 bg-panel">
               <TableRow className="h-9 border-line hover:bg-transparent">
-                <TableHead className="pl-4" />
-                <TableHead className="text-xs font-medium text-idle">Release</TableHead>
+                <TableHead className="pl-4 text-xs font-medium text-idle">Release</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Artist</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Submitted</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Stores</TableHead>
@@ -164,14 +164,15 @@ function PipelineRow({ release }: { release: BoardRow }) {
       onClick={release.onOpen}
       className="h-13 cursor-pointer border-panel hover:bg-raised/60"
     >
-      <TableCell className="pl-4">
-        <Artwork artwork={release.artwork} className="size-8" />
-      </TableCell>
-
-      <TableCell className="max-w-0 pr-6">
-        <div className="truncate font-medium">{release.title}</div>
-        <div className="font-mono text-2xs text-idle">
-          {release.catalogNumber} · {release.type}
+      <TableCell className="max-w-0 pr-6 pl-4">
+        <div className="flex items-center gap-3">
+          <Artwork artwork={release.artwork} className="size-8" />
+          <div className="min-w-0">
+            <div className="truncate font-medium">{release.title}</div>
+            <div className="font-mono text-2xs text-idle">
+              {release.catalogNumber} · {release.type}
+            </div>
+          </div>
         </div>
       </TableCell>
 

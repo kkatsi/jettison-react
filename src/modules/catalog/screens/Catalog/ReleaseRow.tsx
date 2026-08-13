@@ -9,14 +9,15 @@ export function ReleaseRow({ release }: { release: CatalogRow }) {
       onClick={release.onOpen}
       className="h-13 cursor-pointer border-panel hover:bg-raised/60"
     >
-      <TableCell className="pl-4">
-        <Artwork artwork={release.artwork} className="size-8" />
-      </TableCell>
-
       {/* max-w-0 lets the auto column truncate instead of pushing the table wide. */}
-      <TableCell className="max-w-0 pr-6">
-        <div className="truncate font-medium">{release.title}</div>
-        <div className="font-mono text-2xs text-idle">{release.catalogNumber}</div>
+      <TableCell className="max-w-0 pr-6 pl-4">
+        <div className="flex items-center gap-3">
+          <Artwork artwork={release.artwork} className="size-8" />
+          <div className="min-w-0">
+            <div className="truncate font-medium">{release.title}</div>
+            <div className="font-mono text-2xs text-idle">{release.catalogNumber}</div>
+          </div>
+        </div>
       </TableCell>
 
       <TableCell className="truncate pr-4 text-sm text-subtle">{release.artistName}</TableCell>

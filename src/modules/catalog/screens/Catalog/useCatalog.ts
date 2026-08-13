@@ -19,6 +19,7 @@ import {
   isFiltered,
   pageWindow,
   paginate,
+  sortCatalogue,
 } from './catalog-filters';
 import { catalogClock, summarise, type CatalogSummary } from './catalog-summary';
 
@@ -93,9 +94,10 @@ export function useCatalog(): CatalogModel {
   const navigate = useNavigate();
 
   const releases = data ?? [];
-  const matching = filterReleases(releases, filters);
+  const clock = catalogClock(releases);
+  const matching = filterReleases(sortCatalogue(releases, clock), filters);
   const page = paginate(matching, filters.page);
-  const summary = summarise(releases, catalogClock(releases));
+  const summary = summarise(releases, clock);
 
   // Any filter change returns to page one: page 4 of a two-page result is a blank
   // table, and the user didn't ask to go anywhere.

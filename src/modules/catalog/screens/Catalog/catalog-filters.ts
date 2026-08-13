@@ -51,6 +51,27 @@ export function isFiltered(filters: CatalogFilters): boolean {
   );
 }
 
+/**
+ * A catalogue reads as the back catalogue first — newest release at the top —
+ * with everything still to come after it, soonest first.
+ *
+ * Sorting by date alone opens the console on next year's drafts: the least useful
+ * rows in the label, and the only ones with no numbers to show, so the first
+ * screen anyone sees is a column of dashes.
+ */
+export function sortCatalogue(releases: readonly Release[], now: number): Release[] {
+  const isReleased = (release: Release) =>
+    Date.parse(`${release.releaseDate}T00:00:00.000Z`) <= now;
+
+  return releases.toSorted((a, b) => {
+    if (isReleased(a) !== isReleased(b)) return isReleased(a) ? -1 : 1;
+
+    return isReleased(a)
+      ? b.releaseDate.localeCompare(a.releaseDate)
+      : a.releaseDate.localeCompare(b.releaseDate);
+  });
+}
+
 export function filterReleases(releases: readonly Release[], filters: CatalogFilters): Release[] {
   const needle = filters.query.trim().toLowerCase();
 

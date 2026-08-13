@@ -93,8 +93,7 @@ export function Catalog() {
 
             <TableHeader className="sticky top-0 z-10 bg-panel">
               <TableRow className="h-9 border-line hover:bg-transparent">
-                <TableHead className="pl-4" />
-                <TableHead className="text-xs font-medium text-idle">Release</TableHead>
+                <TableHead className="pl-4 text-xs font-medium text-idle">Release</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Artist</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Type</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Status</TableHead>
