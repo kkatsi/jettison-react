@@ -173,7 +173,6 @@ export const ISSUE: Record<
 };
 
 export const REVIEW = {
-  heading: 'Review & submit',
   lede: (stores: number) =>
     `Once submitted, delivery to ${stores} stores begins and metadata locks for 24 hours.`,
   clear: {

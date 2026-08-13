@@ -57,6 +57,10 @@ describe('toRelease', () => {
     expect(row.submittedLabel).toBe('—');
     expect(row.submittedAt).toBeNull();
   });
+
+  it('names a draft that has a catalogue number but not yet a title', () => {
+    expect(toRelease({ ...release, status: 'draft', title: '' }).title).toBe('Untitled release');
+  });
 });
 
 describe('toReleaseDetail', () => {

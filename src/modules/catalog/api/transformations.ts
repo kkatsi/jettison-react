@@ -24,7 +24,9 @@ export function toRelease(dto: ReleaseDto): Release {
   return {
     id: dto.id,
     catalogNumber: dto.catalogNumber,
-    title: dto.title,
+    // A draft started in the wizard has a number before it has a name, and a
+    // blank cell in the catalogue reads as a broken row rather than a new one.
+    title: dto.title || 'Untitled release',
     artistId: dto.artistId,
     artistName: dto.artistName,
     type: dto.type,
