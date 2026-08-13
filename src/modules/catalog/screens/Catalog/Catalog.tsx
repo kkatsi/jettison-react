@@ -83,7 +83,7 @@ export function Catalog() {
         {/* The kit wraps every table in its own scroll container, so that is what
             gets the height and does the scrolling — the header sticks to it, and
             the footer below stays put instead of being painted over. */}
-        <div className="min-h-0 flex-1 [&>[data-slot=table-container]]:h-full [&>[data-slot=table-container]]:overflow-y-auto">
+        <div className="min-h-0 flex-1 *:data-[slot=table-container]:h-full *:data-[slot=table-container]:overflow-y-auto">
           <Table className="table-fixed">
             <colgroup>
               {CATALOG_COLUMNS.map((width, index) => (
@@ -98,6 +98,9 @@ export function Catalog() {
                 <TableHead className="text-xs font-medium text-idle">Type</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Status</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Release date</TableHead>
+                {/* Right-aligned, like the values under them — a number column
+                    reads up the right edge. */}
+                <TableHead className="text-right text-xs font-medium text-idle">Trend</TableHead>
                 <TableHead className="pr-4 text-right text-xs font-medium text-idle">
                   Streams · 30d
                 </TableHead>

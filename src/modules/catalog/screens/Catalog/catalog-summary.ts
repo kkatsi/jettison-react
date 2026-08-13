@@ -64,6 +64,30 @@ export function summarise(releases: readonly Release[], now: number): CatalogSum
   };
 }
 
+/** Which way the sparkline points. A code, not words — constants.ts owns those (R6). */
+export type TrendDirection = 'rising' | 'falling' | 'steady' | 'none';
+
+/**
+ * The second half of the trend against the first. A threshold, because a line
+ * that wobbles by a percent is not a story — calling that "rising" would make
+ * the word mean nothing on the rows where it is true.
+ */
+export function trendDirection(points: readonly number[], threshold = 0.05): TrendDirection {
+  if (points.length < 2) return 'none';
+
+  const middle = Math.floor(points.length / 2);
+  const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
+  const earlier = sum(points.slice(0, middle));
+  const later = sum(points.slice(middle));
+
+  if (earlier === 0) return later > 0 ? 'rising' : 'none';
+
+  const change = (later - earlier) / earlier;
+  if (change > threshold) return 'rising';
+  if (change < -threshold) return 'falling';
+  return 'steady';
+}
+
 /** The trend is newest-last, so the tail is the recent end of it. */
 function sumTail(releases: readonly Release[], days: number): number {
   return releases.reduce(

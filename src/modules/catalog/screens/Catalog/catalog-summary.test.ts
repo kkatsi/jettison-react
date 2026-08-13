@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Release } from '../../api/types';
-import { catalogClock, summarise } from './catalog-summary';
+import { catalogClock, summarise, trendDirection } from './catalog-summary';
 
 const NOW = Date.parse('2026-08-12T09:14:00.000Z');
 const days = (count: number) => new Date(NOW - count * 86_400_000).toISOString();
@@ -96,5 +96,26 @@ describe('summarise', () => {
     expect(summary.live).toEqual({ count: 0, total: 0 });
     expect(summary.pendingReview).toEqual({ count: 0, oldestWaitingDays: 0 });
     expect(summary.streams30d.label).toBe('—');
+  });
+});
+
+describe('trendDirection', () => {
+  it('compares the recent half of the line against the earlier one', () => {
+    expect(trendDirection([10, 10, 10, 10, 40, 40, 40, 40])).toBe('rising');
+    expect(trendDirection([40, 40, 40, 40, 10, 10, 10, 10])).toBe('falling');
+  });
+
+  it('will not call a wobble a trend', () => {
+    // 2% apart. Saying "rising" here makes the word mean nothing on the rows
+    // where it is true.
+    expect(trendDirection([100, 100, 102, 102])).toBe('steady');
+  });
+
+  it('has nothing to say about a release with no streams', () => {
+    expect(trendDirection([])).toBe('none');
+    expect(trendDirection([5])).toBe('none');
+    expect(trendDirection([0, 0, 0, 0])).toBe('none');
+    // Nothing, then something: that is a rise, not a division by zero.
+    expect(trendDirection([0, 0, 30, 30])).toBe('rising');
   });
 });

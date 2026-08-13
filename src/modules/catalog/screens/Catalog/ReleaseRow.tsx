@@ -36,12 +36,15 @@ export function ReleaseRow({ release }: { release: CatalogRow }) {
 
       <TableCell className="font-mono text-xs text-subtle">{release.releaseDate}</TableCell>
 
-      <TableCell className="pr-4">
-        <div className="flex items-center justify-end gap-3">
-          <Sparkline points={release.streamsTrend} className="text-brand" />
-          <span className="w-15 text-right font-mono text-sm">{release.streamsLabel}</span>
-        </div>
+      <TableCell>
+        <Sparkline
+          points={release.streamsTrend}
+          label={release.trendLabel}
+          className="text-brand"
+        />
       </TableCell>
+
+      <TableCell className="pr-4 font-mono text-sm">{release.streamsLabel}</TableCell>
     </TableRow>
   );
 }

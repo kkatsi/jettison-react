@@ -10,5 +10,6 @@ export const CATALOG_COLUMNS = [
   'w-23', // type
   'w-29', // status
   'w-29', // release date
-  'w-42', // streams
+  'w-22', // trend
+  'w-25', // streams
 ];

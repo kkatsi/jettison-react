@@ -21,11 +21,14 @@ import {
   paginate,
   sortCatalogue,
 } from './catalog-filters';
-import { catalogClock, summarise, type CatalogSummary } from './catalog-summary';
+import { catalogClock, summarise, trendDirection, type CatalogSummary } from './catalog-summary';
+import { TREND_LABEL } from './constants';
 
 /** A release with everything the row renders already decided. */
 export type CatalogRow = Release & {
   stage: { label: string; tone: Tone; busy: boolean };
+  /** The sparkline's own column, so the line carries its own description. */
+  trendLabel: string;
   onOpen: () => void;
 };
 
@@ -112,6 +115,7 @@ export function useCatalog(): CatalogModel {
     rows: page.items.map((release) => ({
       ...release,
       stage: STAGE[pipelineStage(release)],
+      trendLabel: TREND_LABEL[trendDirection(release.streamsTrend)],
       onOpen: () => void navigate(`/catalog/${release.id}`),
     })),
     isEmpty: !isLoading && !isError && matching.length === 0,

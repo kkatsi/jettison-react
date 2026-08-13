@@ -2,23 +2,26 @@ import { cn } from '@shared/utils/cn';
 
 export type SparklineProps = {
   points: readonly number[];
+  /**
+   * What the line says, for anyone who cannot see it. Give it whenever the
+   * sparkline stands in a column of its own; leave it off when the exact number
+   * sits beside it and the line is decoration.
+   */
+  label?: string;
   width?: number;
   height?: number;
   className?: string;
 };
 
-/**
- * A trend, not a chart: no axes, no tooltip, no library. The exact number sits
- * next to it in every place this is used, so the line is decoration and the svg
- * is hidden from assistive tech.
- */
-export function Sparkline({ points, width = 64, height = 18, className }: SparklineProps) {
+/** A trend, not a chart: no axes, no tooltip, no library. */
+export function Sparkline({ points, label, width = 64, height = 18, className }: SparklineProps) {
   const peak = Math.max(0, ...points);
+  const described = label ? { role: 'img' as const, 'aria-label': label } : { 'aria-hidden': true };
 
   // Nothing to plot — a flat rule keeps the column aligned instead of collapsing it.
   if (points.length < 2 || peak === 0) {
     return (
-      <div aria-hidden className={cn('flex items-center', className)} style={{ width, height }}>
+      <div {...described} className={cn('flex items-center', className)} style={{ width, height }}>
         <div className="h-px w-full bg-line-strong/70" />
       </div>
     );
@@ -34,7 +37,7 @@ export function Sparkline({ points, width = 64, height = 18, className }: Sparkl
 
   return (
     <svg
-      aria-hidden
+      {...described}
       width={width}
       height={height}
       className={cn('block overflow-visible', className)}
