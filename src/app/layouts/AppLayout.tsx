@@ -1,5 +1,8 @@
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v8';
+import { Suspense } from 'react';
 import { Outlet } from 'react-router';
+
+import { ScreenFallback } from '@shared/ui';
 
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -7,7 +10,7 @@ import { useAppLayout } from './useAppLayout';
 
 // The console frame: sidebar, topbar, and whatever the router mounted.
 export function AppLayout() {
-  const { title, backend } = useAppLayout();
+  const { title, backend, screenKey } = useAppLayout();
 
   return (
     <div className="grid h-full grid-cols-[232px_1fr] overflow-hidden">
@@ -22,7 +25,14 @@ export function AppLayout() {
               — in app, never inside a module, or ejecting that module would take
               the other screens' filters with it (ADR-004). */}
           <NuqsAdapter>
-            <Outlet />
+            {/* Keyed on the path (useAppLayout): the screen slot is a new mount on
+                every navigation, not an update, which is the only way React shows
+                a fallback for code that is still downloading. Without it the
+                console sits on the old screen doing nothing until the chunk
+                lands, which reads as a dead click on a slow connection. */}
+            <Suspense key={screenKey} fallback={<ScreenFallback />}>
+              <Outlet />
+            </Suspense>
           </NuqsAdapter>
         </div>
       </main>
