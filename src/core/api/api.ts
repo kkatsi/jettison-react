@@ -27,6 +27,11 @@ export const api = createApi({
   tagTypes: [
     // activity
     'ActivityFeed',
+
+    // catalog
+    'Releases',
+    'ReleaseDetail',
+    'Stores',
   ],
 
   endpoints: () => ({}),
