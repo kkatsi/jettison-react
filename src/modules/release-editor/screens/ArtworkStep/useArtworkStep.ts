@@ -11,11 +11,11 @@ import { z } from 'zod';
 import type { Tone } from '@shared/ui';
 
 import { useDraftQuery } from '../../api/endpoints';
-import type { Artwork, Credits } from '../../api/types';
+import type { Artwork, ArtworkFile, Credits } from '../../api/types';
 import { ARTWORK, CREDIT_FIELDS, EMPTY_CREDITS } from '../../constants';
 import { useDraftAutosave } from '../../hooks/useDraftAutosave';
 import { useDraftSave } from '../../hooks/useDraftSave';
-import { readArtworkFile } from '../../services/artwork';
+import { artworkFromSample } from '../../services/artwork';
 import { meetsArtworkRequirements } from '../../services/release-eligibility';
 import { mergeEdits, selectPendingEdits, type WithDraft } from '../../state/draft-slice';
 
@@ -107,5 +107,39 @@ export function useArtworkStep(): ArtworkModel {
       void save({ artworkFile: null });
     },
     error,
+  };
+}
+
+type ArtworkReading = {
+  file: ArtworkFile;
+  artwork: Artwork;
+  /** Lives as long as the tab does — the mock backend stores no files. */
+  previewUrl: string;
+};
+
+/**
+ * The DOM half of reading a cover, beside the hook that orchestrates it: the
+ * whole image is drawn into two pixels, and the browser does the averaging.
+ * Services stay pure, so the colour decision itself is in artwork.ts (Ch. 3 §1).
+ */
+async function readArtworkFile(file: File): Promise<ArtworkReading> {
+  const bitmap = await createImageBitmap(file);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = 2;
+
+  const context = canvas.getContext('2d');
+  if (!context) throw new Error('artwork: no 2d context');
+
+  context.imageSmoothingQuality = 'high';
+  context.drawImage(bitmap, 0, 0, 1, 2);
+  const { data } = context.getImageData(0, 0, 1, 2);
+  bitmap.close();
+
+  return {
+    file: { name: file.name, width: bitmap.width, height: bitmap.height },
+    artwork: artworkFromSample(data),
+    previewUrl: URL.createObjectURL(file),
   };
 }

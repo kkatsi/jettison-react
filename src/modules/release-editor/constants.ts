@@ -5,6 +5,7 @@ import type { Tone } from '@shared/ui';
 
 import type { AudioStatus, Credits, ReleaseType } from './api/types';
 import { MIN_ARTWORK_PX, MIN_LEAD_DAYS } from './services/release-eligibility';
+import type { IssueCode, ReleaseIssue } from './services/release-eligibility';
 import type { SaveState } from './state/draft-slice';
 
 /** Who the console acts as. A real app reads this off the session. */
@@ -101,6 +102,94 @@ export const UNAVAILABLE = {
   description:
     'It has been submitted for distribution, or discarded. Either way the stores decide what happens to it now — the console can only show you where it stands.',
   action: 'Back to catalog',
+};
+
+/**
+ * One entry per issue code (R6): what it says, which step fixes it, and how badly
+ * it reads. The service decides *whether* — this decides how it is put.
+ */
+export const ISSUE: Record<
+  IssueCode,
+  {
+    title: (issue: ReleaseIssue) => string;
+    detail: (issue: ReleaseIssue) => string;
+    action: string;
+    step: StepSlug;
+    tone: Tone;
+  }
+> = {
+  'details-incomplete': {
+    title: () => 'The release has no title or no artist',
+    detail: () => 'Every store indexes a release by those two fields before anything else.',
+    action: 'Fill in details',
+    step: 'details',
+    tone: 'danger',
+  },
+  'no-tracks': {
+    title: () => 'There is no audio to deliver',
+    detail: () => 'A release needs at least one track before the stores will take it.',
+    action: 'Add tracks',
+    step: 'tracks',
+    tone: 'danger',
+  },
+  'track-metadata-incomplete': {
+    title: (issue) => `Track ${issue.amount} has no title`,
+    detail: () => 'A delivery with an untitled track is rejected on ingest.',
+    action: 'Name it',
+    step: 'tracks',
+    tone: 'warning',
+  },
+  'audio-still-processing': {
+    title: (issue) => `Track ${issue.amount} audio is still processing`,
+    detail: (issue) => `“${issue.subject}” — loudness analysis finishes shortly after the upload.`,
+    action: 'View tracks',
+    step: 'tracks',
+    tone: 'warning',
+  },
+  'artwork-missing': {
+    title: () => 'The release has no cover art',
+    detail: () =>
+      `Every store needs a square cover of at least ${MIN_ARTWORK_PX}×${MIN_ARTWORK_PX}.`,
+    action: 'Upload artwork',
+    step: 'artwork',
+    tone: 'warning',
+  },
+  'artwork-too-small': {
+    title: () => `Artwork is below the ${MIN_ARTWORK_PX}×${MIN_ARTWORK_PX} minimum`,
+    detail: (issue) =>
+      `${issue.subject} is ${issue.amount} across — Soundry and Pulsar will reject it.`,
+    action: 'Replace the cover',
+    step: 'artwork',
+    tone: 'warning',
+  },
+  'release-date-too-soon': {
+    title: () => 'The release date is too soon',
+    detail: (issue) =>
+      `${issue.subject} gives stores ${issue.amount} days — ${MIN_LEAD_DAYS} is the minimum.`,
+    action: 'Pick a later date',
+    step: 'details',
+    tone: 'danger',
+  },
+};
+
+export const REVIEW = {
+  heading: 'Review & submit',
+  lede: (stores: number) =>
+    `Once submitted, delivery to ${stores} stores begins and metadata locks for 24 hours.`,
+  clear: {
+    title: 'No blocking issues',
+    line: 'Everything checks out — this release is ready for delivery.',
+    note: (stores: number) => `Submission opens delivery to all ${stores} stores.`,
+  },
+  blocked: {
+    title: 'Issues blocking submission',
+    note: 'Submission stays locked until every blocking issue is cleared.',
+    count: (open: number) => `${open} to resolve`,
+    footer: (open: number) => `${open} issue${open === 1 ? '' : 's'} to resolve first`,
+  },
+  submit: 'Submit for distribution',
+  submitting: 'Submitting…',
+  failed: 'The stores could not be reached. Nothing was submitted — try again.',
 };
 
 export const CREDIT_FIELDS: readonly {

@@ -1,3 +1,4 @@
+import { TONE_TEXT } from '@shared/ui';
 import { cn } from '@shared/utils/cn';
 
 import type { RailEntry, RailFooter } from './useReleaseWizard';
@@ -61,6 +62,16 @@ export function StepRail({ steps, footer, flagged = [] }: StepRailProps) {
       <div className="mt-auto border-t border-line pt-4">
         {footer.kind === 'note' ? (
           <p className="text-xs leading-relaxed text-faint">{footer.text}</p>
+        ) : footer.kind === 'issues' ? (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-faint">{footer.label}</span>
+              <span className={cn('font-mono text-xs', TONE_TEXT[footer.tone])}>
+                {footer.count}
+              </span>
+            </div>
+            <p className="text-xs leading-relaxed text-faint">{footer.note}</p>
+          </div>
         ) : (
           <div className="flex flex-col gap-2.5">
             <div className="flex items-center justify-between">

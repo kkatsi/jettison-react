@@ -1,17 +1,9 @@
-// Cover art, twice over: what the stores measure (the file), and what this
-// console can actually render (two colours). No React, no store (R5).
+// The colour half of cover art: a sampled image in, the pair the console renders
+// out. Pure (R5) — reading the file is the hook's job, deciding is this file's.
 
-import type { Artwork, ArtworkFile } from '../api/types';
+import type { Artwork } from '../api/types';
 
-export type ArtworkReading = {
-  file: ArtworkFile;
-  /** Sampled from the cover, so a release's colours are its own. */
-  artwork: Artwork;
-  /** Lives as long as the tab does — the mock backend stores no files. */
-  previewUrl: string;
-};
-
-/** How much darker the lower half is drawn, to match the catalogue's own covers. */
+/** How much darker the lower half is drawn, to match the seeded covers' depth. */
 const DEPTH = 0.42;
 
 export function toHex(channels: readonly number[]): string {
@@ -30,30 +22,14 @@ export function shade(channels: readonly number[], factor: number): number[] {
 }
 
 /**
- * The whole cover, downsampled to two pixels: the browser averages the top and
- * bottom halves for us, which is the only colour reading this console needs.
+ * A cover downsampled to two pixels — top half, bottom half, RGBA each — becomes
+ * the gradient every screen draws for this release.
  */
-export async function readArtworkFile(file: File): Promise<ArtworkReading> {
-  const bitmap = await createImageBitmap(file);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = 1;
-  canvas.height = 2;
-
-  const context = canvas.getContext('2d');
-  if (!context) throw new Error('artwork: no 2d context');
-
-  context.imageSmoothingQuality = 'high';
-  context.drawImage(bitmap, 0, 0, 1, 2);
-  const { data } = context.getImageData(0, 0, 1, 2);
-  bitmap.close();
+export function artworkFromSample(sample: ArrayLike<number>): Artwork {
+  const pixels = [...Array.from(sample)];
 
   return {
-    file: { name: file.name, width: bitmap.width, height: bitmap.height },
-    artwork: {
-      from: toHex([...data].slice(0, 3)),
-      to: toHex(shade([...data].slice(4, 7), DEPTH)),
-    },
-    previewUrl: URL.createObjectURL(file),
+    from: toHex(pixels.slice(0, 3)),
+    to: toHex(shade(pixels.slice(4, 7), DEPTH)),
   };
 }

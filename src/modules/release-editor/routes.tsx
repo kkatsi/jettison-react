@@ -27,6 +27,10 @@ const ArtworkStep = lazy(() =>
   import('./screens/ArtworkStep/ArtworkStep').then((module) => ({ default: module.ArtworkStep })),
 );
 
+const ReviewStep = lazy(() =>
+  import('./screens/ReviewStep/ReviewStep').then((module) => ({ default: module.ReviewStep })),
+);
+
 export const releaseEditorRoutes: RouteObject[] = [
   {
     path: 'releases/new',
@@ -48,6 +52,7 @@ export const releaseEditorRoutes: RouteObject[] = [
       { path: 'details', element: <DetailsStep /> },
       { path: 'tracks', element: <TracksStep /> },
       { path: 'artwork', element: <ArtworkStep /> },
+      { path: 'review', element: <ReviewStep /> },
     ],
   },
 ];

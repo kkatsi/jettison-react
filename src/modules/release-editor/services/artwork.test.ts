@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { shade, toHex } from './artwork';
+import { artworkFromSample, shade, toHex } from './artwork';
 
 describe('toHex', () => {
   it('writes the colour the way the theme does', () => {
@@ -25,5 +25,21 @@ describe('shade', () => {
 
   it('leaves a colour alone at full strength', () => {
     expect(toHex(shade([109, 59, 143], 1))).toBe('#6d3b8f');
+  });
+});
+
+describe('artworkFromSample', () => {
+  it('reads the two pixels a canvas hands back as one gradient', () => {
+    // Top half violet, bottom half the same violet — the depth is what separates them.
+    const sample = new Uint8ClampedArray([109, 59, 143, 255, 109, 59, 143, 255]);
+
+    expect(artworkFromSample(sample)).toEqual({ from: '#6d3b8f', to: '#2e193c' });
+  });
+
+  it('survives a cover that is one flat colour', () => {
+    expect(artworkFromSample([0, 0, 0, 255, 0, 0, 0, 255])).toEqual({
+      from: '#000000',
+      to: '#000000',
+    });
   });
 });

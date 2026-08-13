@@ -82,7 +82,7 @@ export function ReleaseWizard() {
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <StepRail steps={rail.steps} footer={rail.footer} />
+        <StepRail steps={rail.steps} footer={rail.footer} flagged={rail.flagged} />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="min-h-0 flex-1 overflow-y-auto px-10 py-8">
@@ -95,7 +95,11 @@ export function ReleaseWizard() {
           <div className="flex h-16 flex-none items-center justify-between border-t border-line px-10">
             <span className="font-mono text-xs text-faint">{footer.counter}</span>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {footer.submit?.note ? (
+                <span className="text-sm text-faint">{footer.submit.note}</span>
+              ) : null}
+
               <Button
                 variant="outline"
                 size="sm"
@@ -104,9 +108,20 @@ export function ReleaseWizard() {
               >
                 Back
               </Button>
+
               {footer.next ? (
                 <Button size="sm" onClick={footer.next.onSelect}>
                   {footer.next.label}
+                </Button>
+              ) : null}
+
+              {footer.submit ? (
+                <Button
+                  size="sm"
+                  onClick={footer.submit.onSubmit}
+                  disabled={footer.submit.isDisabled}
+                >
+                  {footer.submit.label}
                 </Button>
               ) : null}
             </div>

@@ -12,6 +12,7 @@ import { useDiscardDraftMutation, useDraftQuery } from '../../api/endpoints';
 import type { ReleaseDraft } from '../../api/types';
 import { CONTINUE, DISCARD, SAVE, UNAVAILABLE, type StepSlug } from '../../constants';
 import { useDraftSave } from '../../hooks/useDraftSave';
+import { useSubmitRelease, type SubmitModel } from '../../hooks/useSubmitRelease';
 import {
   draftClosed,
   draftOpened,
@@ -35,7 +36,8 @@ export type RailEntry = {
 /** The panel under the rail says something different on every step. */
 export type RailFooter =
   | { kind: 'note'; text: string }
-  | { kind: 'progress'; label: string; value: string; percent: number };
+  | { kind: 'progress'; label: string; value: string; percent: number }
+  | { kind: 'issues'; label: string; count: string; note: string; tone: Tone };
 
 export type WizardModel = {
   isLoading: boolean;
@@ -48,11 +50,13 @@ export type WizardModel = {
     save: { label: string; tone: Tone; at: string | null; onRetry: (() => void) | null };
     onDiscard: () => void;
   };
-  rail: { steps: RailEntry[]; footer: RailFooter };
+  rail: { steps: RailEntry[]; footer: RailFooter; flagged: StepSlug[] };
   footer: {
     counter: string;
     onBack: (() => void) | null;
     next: { label: string; onSelect: () => void } | null;
+    /** Only on the last step, where the button stops being "next". */
+    submit: SubmitModel['submit'] | null;
   };
   discard: {
     isOpen: boolean;
@@ -74,6 +78,8 @@ export function useReleaseWizard(): WizardModel {
   const edits = useSelector((state: WithDraft) => selectPendingEdits(state, id));
   const saved = useSelector(selectSaveStatus);
   const { retry } = useDraftSave(id);
+  // The rail flags problems from every step, not only the one that lists them.
+  const submission = useSubmitRelease();
   const [discardDraft] = useDiscardDraftMutation();
   const [isDiscarding, setIsDiscarding] = useState(false);
 
@@ -109,12 +115,14 @@ export function useReleaseWizard(): WizardModel {
     },
     rail: {
       steps: railSteps(current).map((step) => ({ ...step, onSelect: goTo(step.slug) })),
-      footer: railFooter(current, draft),
+      footer: railFooter(current, draft, submission),
+      flagged: submission.flaggedSteps,
     },
     footer: {
       counter: stepCounter(current),
       onBack: previous ? goTo(previous) : null,
       next: next ? { label: CONTINUE[next], onSelect: goTo(next) } : null,
+      submit: next === null ? submission.submit : null,
     },
     discard: {
       isOpen: isDiscarding,
@@ -138,7 +146,21 @@ function currentStep(pathname: string): StepSlug {
   return isStepSlug(last) ? last : 'details';
 }
 
-function railFooter(current: StepSlug, draft: ReleaseDraft | null): RailFooter {
+function railFooter(
+  current: StepSlug,
+  draft: ReleaseDraft | null,
+  submission: SubmitModel,
+): RailFooter {
+  if (current === 'review') {
+    return {
+      kind: 'issues',
+      label: 'Blocking issues',
+      count: submission.headline.count,
+      note: submission.headline.note,
+      tone: submission.headline.tone,
+    };
+  }
+
   if (current !== 'tracks') return { kind: 'note', text: RAIL_NOTE[current] };
 
   const total = draft?.tracks.length ?? 0;
