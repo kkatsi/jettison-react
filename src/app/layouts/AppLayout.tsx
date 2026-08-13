@@ -1,3 +1,4 @@
+import { NuqsAdapter } from 'nuqs/adapters/react-router/v8';
 import { Outlet } from 'react-router';
 
 import { Sidebar } from './Sidebar';
@@ -16,7 +17,13 @@ export function AppLayout() {
         {/* No padding here: screens differ — the catalogue is a padded page, the
             activity feed is full-bleed rows — so each screen owns its own chrome. */}
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <Outlet />
+          {/* Filters live in the URL on every screen in this console (Ch. 4 §2),
+              so the adapter that makes that one hook call sits above all of them
+              — in app, never inside a module, or ejecting that module would take
+              the other screens' filters with it (ADR-004). */}
+          <NuqsAdapter>
+            <Outlet />
+          </NuqsAdapter>
         </div>
       </main>
     </div>

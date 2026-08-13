@@ -1,7 +1,8 @@
 // The screen's one hook (R2): the same releases query the catalogue uses, filtered
 // down to what is actually in the pipeline, and one view-model out (R3).
 
-import { useNavigate, useSearchParams } from 'react-router';
+import { parseAsString, parseAsStringLiteral, useQueryStates } from 'nuqs';
+import { useNavigate } from 'react-router';
 
 import type { FilterOption, Tone } from '@shared/ui';
 
@@ -11,14 +12,11 @@ import { STAGE } from '../../constants';
 import { deliveryProgress, isInFlight, pipelineStage } from '../../services/release-status';
 import { artistOptions } from '../Catalog/catalog-filters';
 import {
+  BOARD_STAGE_VALUES,
   DEFAULT_BOARD_FILTERS,
-  PIPELINE_ONLY_STAGES,
-  boardParams,
   filterPipeline,
   isBoardFiltered,
-  readBoardFilters,
   sortByNewestSubmission,
-  type BoardFilters,
 } from './board-filters';
 import { scheduleAxis, schedulePlacements, type ScheduleAxis } from './board-timeline';
 
@@ -75,12 +73,17 @@ export type DistributionBoardModel = {
 
 const ALL: FilterOption = { value: 'all', label: 'all' };
 
+/** The board's URL contract — the same two rules as the catalogue's (ADR-004). */
+const FILTER_PARSERS = {
+  artist: parseAsString.withDefault(DEFAULT_BOARD_FILTERS.artist),
+  stage: parseAsStringLiteral(BOARD_STAGE_VALUES).withDefault(DEFAULT_BOARD_FILTERS.stage),
+};
+
 export function useDistributionBoard(): DistributionBoardModel {
   const { data, isLoading, isError, refetch } = useReleasesQuery();
-  const [params, setParams] = useSearchParams();
+  const [filters, setFilters] = useQueryStates(FILTER_PARSERS);
   const navigate = useNavigate();
 
-  const filters = readBoardFilters(params);
   const pipeline = sortByNewestSubmission(data ?? []);
   const visible = filterPipeline(pipeline, filters);
   const stages = pipeline.map(pipelineStage);
@@ -92,10 +95,6 @@ export function useDistributionBoard(): DistributionBoardModel {
     (latest, release) => Math.max(latest, Date.parse(release.submittedAt ?? '') || 0),
     0,
   );
-
-  const update = (patch: Partial<BoardFilters>) => {
-    setParams(boardParams({ ...filters, ...patch }), { replace: true });
-  };
 
   return {
     isLoading,
@@ -139,14 +138,13 @@ export function useDistributionBoard(): DistributionBoardModel {
       artist: filters.artist,
       stage: filters.stage,
       artists: [ALL, ...artistOptions(pipeline)],
-      stages: [
-        ALL,
-        ...PIPELINE_ONLY_STAGES.map((stage) => ({ value: stage, label: STAGE[stage].label })),
-      ],
+      stages: BOARD_STAGE_VALUES.map((stage) =>
+        stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
+      ),
       isActive: isBoardFiltered(filters),
-      onArtist: (artist) => update({ artist }),
-      onStage: (stage) => update({ stage: stage as BoardFilters['stage'] }),
-      onReset: () => setParams(boardParams(DEFAULT_BOARD_FILTERS), { replace: true }),
+      onArtist: (artist) => void setFilters({ artist }),
+      onStage: (stage) => void setFilters({ stage: stage as (typeof BOARD_STAGE_VALUES)[number] }),
+      onReset: () => void setFilters(null),
     },
     onNewRelease: () => void navigate('/releases/new'),
   };

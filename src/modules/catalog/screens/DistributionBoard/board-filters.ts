@@ -1,44 +1,29 @@
-// Which submissions the board shows, and in what order. Colocated with the one
-// screen that calls it (Ch. 2 §6). No React, no store, no fetching (R5).
+// Which submissions the board shows, and in what order. The URL itself is nuqs's
+// job (ADR-004). No React, no store, no fetching (R5).
 
 import type { Release } from '../../api/types';
 import { isInPipeline, pipelineStage, type PipelineStage } from '../../services/release-status';
 
-export type BoardFilters = {
-  /** Artist id, or 'all'. */
-  artist: string;
-  stage: PipelineStage | 'all';
-};
-
-/** Draft never appears here: a draft is not in the pipeline by definition. */
-export const PIPELINE_ONLY_STAGES: readonly PipelineStage[] = [
+/** Draft is missing on purpose: a draft is not in the pipeline by definition. */
+export const BOARD_STAGE_VALUES = [
+  'all',
   'submitted',
   'in-review',
   'delivering',
   'live',
   'blocked',
-];
+] as const satisfies readonly ('all' | PipelineStage)[];
+
+export type BoardFilters = {
+  /** Artist id, or 'all'. */
+  artist: string;
+  stage: (typeof BOARD_STAGE_VALUES)[number];
+};
 
 export const DEFAULT_BOARD_FILTERS: BoardFilters = { artist: 'all', stage: 'all' };
 
-export function readBoardFilters(params: URLSearchParams): BoardFilters {
-  const stage = params.get('stage');
-
-  return {
-    artist: params.get('artist') ?? DEFAULT_BOARD_FILTERS.artist,
-    stage: PIPELINE_ONLY_STAGES.includes(stage as PipelineStage) ? (stage as PipelineStage) : 'all',
-  };
-}
-
-export function boardParams(filters: BoardFilters): Record<string, string> {
-  const params: Record<string, string> = {};
-  if (filters.artist !== 'all') params.artist = filters.artist;
-  if (filters.stage !== 'all') params.stage = filters.stage;
-  return params;
-}
-
 export function isBoardFiltered(filters: BoardFilters): boolean {
-  return Object.keys(boardParams(filters)).length > 0;
+  return filters.artist !== 'all' || filters.stage !== 'all';
 }
 
 /**

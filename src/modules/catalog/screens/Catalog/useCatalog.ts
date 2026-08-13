@@ -1,7 +1,8 @@
 // The screen's one hook (R2). Query in, filters from the URL, one view-model out
 // (R3) — the view below it decides nothing.
 
-import { useNavigate, useSearchParams } from 'react-router';
+import { parseAsInteger, parseAsString, parseAsStringLiteral, useQueryStates } from 'nuqs';
+import { useNavigate } from 'react-router';
 
 import type { FilterOption, Tone } from '@shared/ui';
 
@@ -11,16 +12,13 @@ import { STAGE } from '../../constants';
 import { pipelineStage } from '../../services/release-status';
 import {
   DEFAULT_FILTERS,
-  PIPELINE_STAGES,
-  RELEASE_TYPES,
+  STAGE_VALUES,
+  TYPE_VALUES,
   artistOptions,
-  filterParams,
   filterReleases,
   isFiltered,
   pageWindow,
   paginate,
-  readFilters,
-  type CatalogFilters,
 } from './catalog-filters';
 import { catalogClock, summarise, type CatalogSummary } from './catalog-summary';
 
@@ -74,27 +72,36 @@ export type CatalogModel = {
 
 const ALL: FilterOption = { value: 'all', label: 'all' };
 
+/**
+ * The screen's URL contract. Filters belong in the URL — a label manager sends
+ * colleagues a filtered catalogue, and a reload has to survive it (Ch. 4 §2) —
+ * and the parsers carry the two rules that go with it: a value equal to its
+ * default never reaches the query string, and a value the allowlist does not
+ * recognise falls back instead of blanking the table (ADR-004).
+ */
+const FILTER_PARSERS = {
+  query: parseAsString.withDefault(DEFAULT_FILTERS.query),
+  artist: parseAsString.withDefault(DEFAULT_FILTERS.artist),
+  type: parseAsStringLiteral(TYPE_VALUES).withDefault(DEFAULT_FILTERS.type),
+  stage: parseAsStringLiteral(STAGE_VALUES).withDefault(DEFAULT_FILTERS.stage),
+  page: parseAsInteger.withDefault(DEFAULT_FILTERS.page),
+};
+
 export function useCatalog(): CatalogModel {
   const { data, isLoading, isError, refetch } = useReleasesQuery();
-  // Filters belong in the URL: a label manager sends colleagues a filtered
-  // catalogue, and a reload has to survive it (Ch. 4 §2).
-  const [params, setParams] = useSearchParams();
+  const [filters, setFilters] = useQueryStates(FILTER_PARSERS, { urlKeys: { query: 'q' } });
   const navigate = useNavigate();
 
-  const filters = readFilters(params);
   const releases = data ?? [];
   const matching = filterReleases(releases, filters);
   const page = paginate(matching, filters.page);
   const summary = summarise(releases, catalogClock(releases));
 
-  const update = (patch: Partial<CatalogFilters>) => {
-    // Any filter change returns to page one: page 4 of a two-page result is a
-    // blank table, and the user didn't ask to go anywhere.
-    const next = { ...filters, page: 1, ...patch };
-    setParams(filterParams(next), { replace: true });
-  };
+  // Any filter change returns to page one: page 4 of a two-page result is a blank
+  // table, and the user didn't ask to go anywhere.
+  const update = (patch: Partial<typeof filters>) => void setFilters({ page: 1, ...patch });
 
-  const goTo = (target: number) => () => update({ ...filters, page: target });
+  const goTo = (target: number) => () => void setFilters({ page: target });
 
   return {
     isLoading,
@@ -116,17 +123,17 @@ export function useCatalog(): CatalogModel {
       type: filters.type,
       stage: filters.stage,
       artists: [ALL, ...artistOptions(releases)],
-      types: [ALL, ...RELEASE_TYPES.map((type) => ({ value: type, label: type }))],
-      stages: [
-        ALL,
-        ...PIPELINE_STAGES.map((stage) => ({ value: stage, label: STAGE[stage].label })),
-      ],
+      types: TYPE_VALUES.map((type) => (type === 'all' ? ALL : { value: type, label: type })),
+      stages: STAGE_VALUES.map((stage) =>
+        stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
+      ),
       isActive: isFiltered(filters),
       onQuery: (query) => update({ query }),
       onArtist: (artist) => update({ artist }),
-      onType: (type) => update({ type: type as CatalogFilters['type'] }),
-      onStage: (stage) => update({ stage: stage as CatalogFilters['stage'] }),
-      onReset: () => setParams(filterParams(DEFAULT_FILTERS), { replace: true }),
+      onType: (type) => update({ type: type as (typeof TYPE_VALUES)[number] }),
+      onStage: (stage) => update({ stage: stage as (typeof STAGE_VALUES)[number] }),
+      // null clears every key this hook owns — the whole filter set, in one call.
+      onReset: () => void setFilters(null),
     },
     pagination: {
       pages: pageWindow(page.page, page.pageCount).map((entry, index) =>

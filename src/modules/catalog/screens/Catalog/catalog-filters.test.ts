@@ -4,12 +4,10 @@ import type { Release } from '../../api/types';
 import {
   DEFAULT_FILTERS,
   artistOptions,
-  filterParams,
   filterReleases,
   isFiltered,
   pageWindow,
   paginate,
-  readFilters,
 } from './catalog-filters';
 
 const release = (overrides: Partial<Release> = {}): Release => ({
@@ -31,35 +29,12 @@ const release = (overrides: Partial<Release> = {}): Release => ({
   ...overrides,
 });
 
-describe('readFilters', () => {
-  it('falls back rather than blanking the table on a hand-edited URL', () => {
-    const filters = readFilters(new URLSearchParams('type=Cassette&stage=exploded&page=-3'));
-    expect(filters).toEqual(DEFAULT_FILTERS);
-  });
-
-  it('takes the values it recognises', () => {
-    const filters = readFilters(new URLSearchParams('q=neon&artist=kessa-nu&type=EP&page=3'));
-    expect(filters).toMatchObject({ query: 'neon', artist: 'kessa-nu', type: 'EP', page: 3 });
-  });
-});
-
-describe('filterParams', () => {
-  it('keeps a clean view on a clean link', () => {
-    expect(filterParams(DEFAULT_FILTERS)).toEqual({});
-  });
-
-  it('writes only what differs from the default', () => {
-    expect(filterParams({ ...DEFAULT_FILTERS, stage: 'live', page: 2 })).toEqual({
-      stage: 'live',
-      page: '2',
-    });
-  });
-});
-
 describe('isFiltered', () => {
   it('ignores the page — turning to page 2 is a position, not a filter', () => {
     expect(isFiltered({ ...DEFAULT_FILTERS, page: 4 })).toBe(false);
     expect(isFiltered({ ...DEFAULT_FILTERS, stage: 'draft' })).toBe(true);
+    // Whitespace is not a search — it must not light Reset up either.
+    expect(isFiltered({ ...DEFAULT_FILTERS, query: '   ' })).toBe(false);
   });
 });
 

@@ -3,10 +3,8 @@ import { describe, expect, it } from 'vitest';
 import type { Release } from '../../api/types';
 import {
   DEFAULT_BOARD_FILTERS,
-  boardParams,
   filterPipeline,
   isBoardFiltered,
-  readBoardFilters,
   sortByNewestSubmission,
 } from './board-filters';
 
@@ -29,18 +27,11 @@ const release = (overrides: Partial<Release> = {}): Release => ({
   ...overrides,
 });
 
-describe('readBoardFilters', () => {
-  it('refuses draft — a draft is not in the pipeline, so it cannot be filtered to', () => {
-    expect(readBoardFilters(new URLSearchParams('stage=draft'))).toEqual(DEFAULT_BOARD_FILTERS);
-    expect(readBoardFilters(new URLSearchParams('stage=live')).stage).toBe('live');
-  });
-});
-
-describe('boardParams', () => {
+describe('isBoardFiltered', () => {
   it('leaves a clean board on a clean link', () => {
-    expect(boardParams(DEFAULT_BOARD_FILTERS)).toEqual({});
     expect(isBoardFiltered(DEFAULT_BOARD_FILTERS)).toBe(false);
     expect(isBoardFiltered({ artist: 'kessa-nu', stage: 'all' })).toBe(true);
+    expect(isBoardFiltered({ artist: 'all', stage: 'blocked' })).toBe(true);
   });
 });
 

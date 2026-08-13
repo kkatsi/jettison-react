@@ -1,33 +1,34 @@
 // What the catalogue screen decides: which releases the filters admit, and which
-// page of them is on screen. Born colocated — one screen calls it (Ch. 2 §6).
-// No React, no store, no fetching (R5).
+// page of them is on screen. Reading and writing the URL is nuqs's job (ADR-004);
+// what is left here is the part that is ours. No React, no store, no fetching (R5).
 
 import type { Release, ReleaseType } from '../../api/types';
 import { pipelineStage, type PipelineStage } from '../../services/release-status';
 
-export type CatalogFilters = {
-  query: string;
-  /** Artist id, or 'all'. */
-  artist: string;
-  type: ReleaseType | 'all';
-  /** The stage the chip shows, not the raw status: people filter by what they see. */
-  stage: PipelineStage | 'all';
-  page: number;
-};
+/** `all` is a filter value, not the absence of one — it belongs in the allowlist. */
+export const TYPE_VALUES = ['all', 'Single', 'EP', 'Album'] as const satisfies readonly (
+  'all' | ReleaseType
+)[];
 
-export const RELEASE_TYPES: readonly ReleaseType[] = ['Single', 'EP', 'Album'];
-
-export const PIPELINE_STAGES: readonly PipelineStage[] = [
+export const STAGE_VALUES = [
+  'all',
   'draft',
   'submitted',
   'in-review',
   'delivering',
   'live',
   'blocked',
-];
+] as const satisfies readonly ('all' | PipelineStage)[];
 
-/** Twelve rows fills the table at 1440×900 without the page scrolling. */
-export const PAGE_SIZE = 12;
+export type CatalogFilters = {
+  query: string;
+  /** Artist id, or 'all'. */
+  artist: string;
+  type: (typeof TYPE_VALUES)[number];
+  /** The stage the chip shows, not the raw status: people filter by what they see. */
+  stage: (typeof STAGE_VALUES)[number];
+  page: number;
+};
 
 export const DEFAULT_FILTERS: CatalogFilters = {
   query: '',
@@ -37,35 +38,17 @@ export const DEFAULT_FILTERS: CatalogFilters = {
   page: 1,
 };
 
-/** Anything unrecognised falls back — a hand-edited URL must not blank the table. */
-export function readFilters(params: URLSearchParams): CatalogFilters {
-  const type = params.get('type');
-  const stage = params.get('stage');
-  const page = Number(params.get('page'));
+/** Twelve rows fills the table at 1440×900 without the page scrolling. */
+export const PAGE_SIZE = 12;
 
-  return {
-    query: params.get('q') ?? DEFAULT_FILTERS.query,
-    artist: params.get('artist') ?? DEFAULT_FILTERS.artist,
-    type: RELEASE_TYPES.includes(type as ReleaseType) ? (type as ReleaseType) : 'all',
-    stage: PIPELINE_STAGES.includes(stage as PipelineStage) ? (stage as PipelineStage) : 'all',
-    page: Number.isInteger(page) && page > 0 ? page : 1,
-  };
-}
-
-/** Only what differs from the default reaches the URL, so a clean view has a clean link. */
-export function filterParams(filters: CatalogFilters): Record<string, string> {
-  const params: Record<string, string> = {};
-  if (filters.query.trim()) params.q = filters.query;
-  if (filters.artist !== 'all') params.artist = filters.artist;
-  if (filters.type !== 'all') params.type = filters.type;
-  if (filters.stage !== 'all') params.stage = filters.stage;
-  if (filters.page > 1) params.page = String(filters.page);
-  return params;
-}
-
-/** The page number is a position, not a filter — Reset shouldn't light up because of it. */
+/** The page is a position, not a filter — Reset shouldn't light up because of it. */
 export function isFiltered(filters: CatalogFilters): boolean {
-  return Object.keys(filterParams({ ...filters, page: 1 })).length > 0;
+  return (
+    filters.query.trim() !== '' ||
+    filters.artist !== 'all' ||
+    filters.type !== 'all' ||
+    filters.stage !== 'all'
+  );
 }
 
 export function filterReleases(releases: readonly Release[], filters: CatalogFilters): Release[] {
