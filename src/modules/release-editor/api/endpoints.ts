@@ -79,9 +79,24 @@ export const releaseEditorApi = api.injectEndpoints({
       query: ({ id, tracks }) => ({ url: `/releases/${id}/tracks`, method: 'PUT', body: tracks }),
       transformResponse: (dto: ReleaseDraftDto) => toDraft(dto),
 
-      async onQueryStarted({ id }, { dispatch, queryFulfilled }) {
-        const { data: saved } = await queryFulfilled;
-        dispatch(releaseEditorApi.util.updateQueryData('draft', id, () => saved));
+      // The only optimistic write in the app, and it earns it: a dragged track that
+      // snapped back for the length of a round trip would read as a failed drag.
+      async onQueryStarted({ id, tracks }, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          releaseEditorApi.util.updateQueryData('draft', id, (draft) => {
+            draft.tracks = tracks.flatMap((entry, index) => {
+              const track = draft.tracks.find((candidate) => candidate.id === entry.id);
+              return track ? [{ ...track, title: entry.title, number: index + 1 }] : [];
+            });
+          }),
+        );
+
+        try {
+          const { data: saved } = await queryFulfilled;
+          dispatch(releaseEditorApi.util.updateQueryData('draft', id, () => saved));
+        } catch {
+          optimistic.undo();
+        }
       },
     }),
 

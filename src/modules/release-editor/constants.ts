@@ -3,7 +3,7 @@
 
 import type { Tone } from '@shared/ui';
 
-import type { Credits, ReleaseType } from './api/types';
+import type { AudioStatus, Credits, ReleaseType } from './api/types';
 import { MIN_LEAD_DAYS } from './services/release-eligibility';
 import type { SaveState } from './state/draft-slice';
 
@@ -51,6 +51,14 @@ export const DISCARD = {
   description:
     'The draft, its tracks and its uploads are deleted. The catalogue number is not reissued — the label numbers releases in the order they were started.',
   confirm: 'Discard draft',
+};
+
+/** Ingestion, in the words the wizard uses for it. Catalog names the same states
+    from its own side — three lines at a module boundary, duplicated on purpose. */
+export const AUDIO: Record<AudioStatus, { label: string; tone: Tone }> = {
+  uploading: { label: 'Uploading', tone: 'brand' },
+  processing: { label: 'Processing audio', tone: 'warning' },
+  ready: { label: 'Ready', tone: 'live' },
 };
 
 export type StepSlug = 'details' | 'tracks' | 'artwork' | 'review';

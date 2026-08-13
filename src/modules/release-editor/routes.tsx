@@ -19,6 +19,10 @@ const DetailsStep = lazy(() =>
   import('./screens/DetailsStep/DetailsStep').then((module) => ({ default: module.DetailsStep })),
 );
 
+const TracksStep = lazy(() =>
+  import('./screens/TracksStep/TracksStep').then((module) => ({ default: module.TracksStep })),
+);
+
 export const releaseEditorRoutes: RouteObject[] = [
   {
     path: 'releases/new',
@@ -38,6 +42,7 @@ export const releaseEditorRoutes: RouteObject[] = [
     children: [
       { index: true, element: <Navigate to="details" replace /> },
       { path: 'details', element: <DetailsStep /> },
+      { path: 'tracks', element: <TracksStep /> },
     ],
   },
 ];
