@@ -42,6 +42,23 @@ export const trackSchema = z.object({
   durationMs: z.number().int().positive(),
   isrc: z.string().length(12),
   audioStatus: audioStatusSchema,
+  /** Set when the file arrived through the wizard; ingestion is timed from it. */
+  uploadedAt: z.iso.datetime().nullish(),
+});
+
+/** What the stores check the cover against. The colours above are what we can render. */
+export const artworkFileSchema = z.object({
+  name: z.string(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+});
+
+export const creditsSchema = z.object({
+  composer: z.string(),
+  producer: z.string(),
+  publisher: z.string(),
+  pLine: z.string(),
+  cLine: z.string(),
 });
 
 export const deliverySchema = z.object({
@@ -65,7 +82,34 @@ export const releaseSchema = z.object({
   /** Sixteen days of streams for the catalogue's sparkline. Empty until a release is live. */
   streamsTrend: z.array(z.number().int().nonnegative()),
   deliveries: z.array(deliverySchema),
+
+  // What the wizard fills in and nothing else reads yet. Absent on everything the
+  // seed built, which is why they are optional rather than nullable.
+  genre: z.string().nullish(),
+  credits: creditsSchema.nullish(),
+  artworkFile: artworkFileSchema.nullish(),
 });
+
+// The write contracts. A handler parses the body through these before it touches
+// the write model — the one place the mock is allowed to be strict.
+
+export const draftPatchSchema = z.object({
+  title: z.string().max(120).optional(),
+  artistId: z.string().optional(),
+  type: releaseTypeSchema.optional(),
+  releaseDate: z.iso.date().optional(),
+  genre: z.string().nullish(),
+  credits: creditsSchema.nullish(),
+  artwork: artworkSchema.optional(),
+  artworkFile: artworkFileSchema.nullish(),
+});
+
+export const audioUploadSchema = z.object({
+  name: z.string().min(1),
+  size: z.number().int().nonnegative(),
+});
+
+export const tracklistSchema = z.array(z.object({ id: z.string(), title: z.string() }));
 
 export const activityEventSchema = z.object({
   id: z.string(),
@@ -105,6 +149,8 @@ export type AudioStatus = z.infer<typeof audioStatusSchema>;
 export type DeliveryStatus = z.infer<typeof deliveryStatusSchema>;
 export type Artist = z.infer<typeof artistSchema>;
 export type Store = z.infer<typeof storeSchema>;
+export type ArtworkFile = z.infer<typeof artworkFileSchema>;
+export type Credits = z.infer<typeof creditsSchema>;
 export type Track = z.infer<typeof trackSchema>;
 export type Delivery = z.infer<typeof deliverySchema>;
 export type Release = z.infer<typeof releaseSchema>;
