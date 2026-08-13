@@ -1,7 +1,11 @@
 // Server response → UI shape, and nothing else (Ch. 4 §1). The boundary where
 // the backend's shape stops mattering — which is why it is tested first.
 
+import type { SubmittedRelease } from '@shared/events';
+
 import type {
+  ActivityEntry,
+  ActivityEntryDto,
   DeliveryDto,
   Release,
   ReleaseDetail,
@@ -73,6 +77,51 @@ export function toStoreDeliveries(
       deliveredLabel: formatTimestamp(delivery?.deliveredAt ?? null),
     };
   });
+}
+
+export function toActivityEntry(dto: ActivityEntryDto): ActivityEntry {
+  return {
+    id: dto.id,
+    at: formatTimestamp(dto.at),
+    actor: dto.actor,
+    summary: dto.summary,
+    kind: dto.type.endsWith('/withdrawn')
+      ? 'withdrawn'
+      : dto.type.endsWith('/processed')
+        ? 'processed'
+        : 'submitted',
+  };
+}
+
+/**
+ * A row built from a domain event rather than a response. The catalogue has to
+ * show a release the list endpoint will not return for another few seconds
+ * (Ch. 4 §3), so the announcement itself is the source — and this is the one
+ * place that knows how to read it.
+ */
+export function toRowFromSubmission(release: SubmittedRelease): Release {
+  return {
+    id: release.id,
+    catalogNumber: release.catalogNumber,
+    title: release.title,
+    artistId: release.artistId,
+    artistName: release.artistName,
+    type: release.type,
+    status: 'submitted',
+    releaseDate: release.releaseDate,
+    submittedAt: release.submittedAt,
+    submittedLabel: formatTimestamp(release.submittedAt),
+    artwork: release.artwork,
+    streamsLabel: formatStreams(0),
+    streams30d: 0,
+    streamsTrend: [],
+    // Nothing has been delivered yet — that is what makes the chip say Submitted.
+    deliveries: release.storeIds.map((storeId) => ({
+      storeId,
+      status: 'pending',
+      deliveredAt: null,
+    })),
+  };
 }
 
 /** Millions to two decimals, thousands whole — the range a label reads at a glance. */

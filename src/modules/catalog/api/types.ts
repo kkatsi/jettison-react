@@ -83,6 +83,25 @@ export type Track = {
 
 export type ReleaseDetail = Release & { tracks: Track[] };
 
+/** One line of a release's history, as the detail screen shows it. */
+export type ActivityEntryDto = {
+  id: string;
+  type: string;
+  at: string;
+  actor: string;
+  summary: string;
+};
+
+export type ActivityEntry = {
+  id: string;
+  /** '2026-05-08 09:12'. */
+  at: string;
+  actor: string;
+  summary: string;
+  /** Which colour the dot gets — the module's own reading of the event name. */
+  kind: 'submitted' | 'withdrawn' | 'processed';
+};
+
 /** A release's standing at one store, with the store named rather than keyed. */
 export type StoreDelivery = {
   storeId: string;

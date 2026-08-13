@@ -43,9 +43,19 @@ export const handlers = [
     );
   }),
 
-  http.get(url('/activity'), async () => {
+  // `?releaseId=` narrows the same feed: catalog's detail screen shows one
+  // release's history, and asking the client to fetch forty events to render six
+  // would be a slow screen (Ch. 4 §1 — two modules, one resource).
+  http.get(url('/activity'), async ({ request }) => {
     await delay(NETWORK_MS);
-    return HttpResponse.json(activityEventSchema.array().parse(activityFeedModel.read()));
+    const releaseId = new URL(request.url).searchParams.get('releaseId');
+    const feed = activityFeedModel.read();
+
+    return HttpResponse.json(
+      activityEventSchema
+        .array()
+        .parse(releaseId ? feed.filter((event) => event.release.id === releaseId) : feed),
+    );
   }),
 
   http.get(url('/stores'), async () => {

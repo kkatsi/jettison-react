@@ -15,6 +15,12 @@ const DistributionBoard = lazy(() =>
   })),
 );
 
+const ReleaseDetail = lazy(() =>
+  import('./screens/ReleaseDetail/ReleaseDetail').then((module) => ({
+    default: module.ReleaseDetail,
+  })),
+);
+
 export const catalogRoutes: RouteObject[] = [
   {
     path: 'catalog',
@@ -22,6 +28,16 @@ export const catalogRoutes: RouteObject[] = [
       <ScreenErrorBoundary name="catalog.list">
         <Suspense fallback={null}>
           <Catalog />
+        </Suspense>
+      </ScreenErrorBoundary>
+    ),
+  },
+  {
+    path: 'catalog/:id',
+    element: (
+      <ScreenErrorBoundary name="catalog.detail">
+        <Suspense fallback={null}>
+          <ReleaseDetail />
         </Suspense>
       </ScreenErrorBoundary>
     ),

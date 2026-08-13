@@ -4,8 +4,10 @@ import {
   formatDuration,
   formatStreams,
   formatTimestamp,
+  toActivityEntry,
   toRelease,
   toReleaseDetail,
+  toRowFromSubmission,
   toStoreDeliveries,
 } from './transformations';
 import type { ReleaseDetailDto, ReleaseDto, TrackDto } from './types';
@@ -83,6 +85,54 @@ describe('toStoreDeliveries', () => {
     expect(rows[1]).toMatchObject({ status: 'pending', deliveredLabel: '—' });
     // Never sent: pending, not an error, and not silently dropped.
     expect(rows[2]).toMatchObject({ status: 'pending', deliveredLabel: '—' });
+  });
+});
+
+describe('toRowFromSubmission', () => {
+  it('builds a row the table can show before the list endpoint knows about it', () => {
+    const row = toRowFromSubmission({
+      id: 'lor-0099',
+      catalogNumber: 'LOR-0099',
+      title: 'Signal Lost',
+      artwork: { from: '#3B4B8F', to: '#141D40' },
+      artistId: 'halcyon-drift',
+      artistName: 'Halcyon Drift',
+      type: 'Single',
+      releaseDate: '2026-09-04',
+      submittedAt: '2026-08-12T07:55:00.000Z',
+      storeIds: ['soundry', 'vela-music'],
+    });
+
+    expect(row).toMatchObject({
+      status: 'submitted',
+      submittedLabel: '2026-08-12 07:55',
+      streamsLabel: '—',
+      streams30d: 0,
+    });
+    // Nothing delivered yet — which is what makes the chip read Submitted.
+    expect(row.deliveries).toEqual([
+      { storeId: 'soundry', status: 'pending', deliveredAt: null },
+      { storeId: 'vela-music', status: 'pending', deliveredAt: null },
+    ]);
+  });
+});
+
+describe('toActivityEntry', () => {
+  it('reads the event name for its kind, without knowing the whole vocabulary', () => {
+    const entry = (type: string) =>
+      toActivityEntry({
+        id: 'e1',
+        type,
+        at: '2026-08-11T09:12:33.000Z',
+        actor: 'Mara',
+        summary: 's',
+      });
+
+    expect(entry('domain/releases/withdrawn').kind).toBe('withdrawn');
+    expect(entry('domain/tracks/processed').kind).toBe('processed');
+    expect(entry('domain/releases/submitted').kind).toBe('submitted');
+    expect(entry('domain/releases/something-new').kind).toBe('submitted');
+    expect(entry('domain/releases/withdrawn').at).toBe('2026-08-11 09:12');
   });
 });
 

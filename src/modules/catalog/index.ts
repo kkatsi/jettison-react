@@ -2,3 +2,4 @@
 // which is exactly what the jettison test removes.
 
 export { catalogRoutes } from './routes';
+export { registerCatalogReactions } from './state/reactions';

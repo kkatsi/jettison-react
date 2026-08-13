@@ -24,7 +24,29 @@ type ReleaseEvent = {
   actor: string;
 };
 
-export const releaseSubmitted = createAction<ReleaseEvent>('domain/releases/submitted');
+/**
+ * Submission carries more, because it asks more: a listener has to put a row on
+ * screen for a release its own list endpoint will not return for another few
+ * seconds, and a row needs more than a name. Still the smallest thing a listener
+ * needs — it is that this listener needs a row.
+ *
+ * The type vocabulary is repeated here rather than imported: shared cannot see
+ * inside a module, and a boundary is the one place duplication is the cheap
+ * answer (Ch. 2 §6).
+ */
+export type SubmittedRelease = EventRelease & {
+  artistId: string;
+  artistName: string;
+  type: 'Single' | 'EP' | 'Album';
+  releaseDate: string;
+  submittedAt: string;
+  /** The stores it went to — enough to draw a delivery row with nothing delivered yet. */
+  storeIds: string[];
+};
+
+export const releaseSubmitted = createAction<{ release: SubmittedRelease; actor: string }>(
+  'domain/releases/submitted',
+);
 
 export const releaseWithdrawn = createAction<ReleaseEvent>('domain/releases/withdrawn');
 

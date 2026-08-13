@@ -31,6 +31,7 @@ export const api = createApi({
     // catalog
     'Releases',
     'ReleaseDetail',
+    'ReleaseActivity',
     'Stores',
   ],
 
