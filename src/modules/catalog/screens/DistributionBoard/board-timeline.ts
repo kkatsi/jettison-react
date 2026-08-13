@@ -1,0 +1,94 @@
+// The release-schedule strip: street dates placed on a four-week axis. Pure
+// arithmetic over dates — no React, no store, no fetching (R5).
+
+import type { Release } from '../../api/types';
+
+const DAY_MS = 86_400_000;
+
+/** Three days of history on the left, four weeks ahead: what a label plans against. */
+export const SPAN_DAYS = 31;
+export const LOOKBACK_DAYS = 3;
+
+export type SchedulePlacement = {
+  id: string;
+  /** 0–100, as a percentage across the axis. */
+  left: number;
+  /** '08/14' — the strip is too narrow for a year that never changes. */
+  dateLabel: string;
+  /** Dropped when a neighbour is close enough that the two would overlap. */
+  showTitle: boolean;
+};
+
+export type ScheduleAxis = {
+  /** Week ticks, left to right. */
+  weeks: { left: number; label: string }[];
+  /** Where "now" sits on the axis, or null when it has scrolled off it. */
+  todayLeft: number | null;
+  rangeLabel: string;
+};
+
+/** Percent along the axis, or null for a date the window doesn't cover. */
+export function placeOnAxis(date: string, now: number): number | null {
+  const start = axisStart(now);
+  const percent = ((Date.parse(`${date}T00:00:00.000Z`) - start) / (SPAN_DAYS * DAY_MS)) * 100;
+
+  return percent >= 0 && percent <= 100 ? percent : null;
+}
+
+export function scheduleAxis(now: number): ScheduleAxis {
+  const start = axisStart(now);
+
+  return {
+    weeks: [0, 7, 14, 21, 28].map((offset) => ({
+      left: (offset / SPAN_DAYS) * 100,
+      label: shortDate(start + offset * DAY_MS),
+    })),
+    todayLeft: ((now - start) / (SPAN_DAYS * DAY_MS)) * 100,
+    rangeLabel: `${shortDate(start)} → ${shortDate(start + SPAN_DAYS * DAY_MS)}`,
+  };
+}
+
+/**
+ * Places the releases whose street date falls inside the window, in date order.
+ * A title is hidden when its nearest neighbour is closer than the width of one —
+ * the dot and the date stay, so nothing disappears, it just stops colliding.
+ */
+export function schedulePlacements(
+  releases: readonly Release[],
+  now: number,
+  minGapPercent = 13,
+): SchedulePlacement[] {
+  const placed = releases
+    .map((release) => ({ release, left: placeOnAxis(release.releaseDate, now) }))
+    .filter((entry): entry is { release: Release; left: number } => entry.left !== null)
+    .sort((a, b) => a.left - b.left);
+
+  return placed.map((entry, index) => {
+    const previous = placed[index - 1];
+    const next = placed[index + 1];
+    const gap = Math.min(
+      previous ? entry.left - previous.left : Infinity,
+      next ? next.left - entry.left : Infinity,
+    );
+
+    return {
+      id: entry.release.id,
+      left: entry.left,
+      dateLabel: entry.release.releaseDate.slice(5).replace('-', '/'),
+      showTitle: gap >= minGapPercent,
+    };
+  });
+}
+
+function axisStart(now: number): number {
+  return startOfDay(now) - LOOKBACK_DAYS * DAY_MS;
+}
+
+function startOfDay(timestamp: number): number {
+  return Date.parse(`${new Date(timestamp).toISOString().slice(0, 10)}T00:00:00.000Z`);
+}
+
+/** '08/14' — month and day, the way a release calendar is read aloud. */
+function shortDate(timestamp: number): string {
+  return new Date(timestamp).toISOString().slice(5, 10).replace('-', '/');
+}
