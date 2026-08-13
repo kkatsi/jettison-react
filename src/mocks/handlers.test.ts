@@ -9,7 +9,13 @@ import type { ActivityEvent, Release, ReleaseDetail } from './schemas';
 // Shorter than the app's 2.5s, but longer than the handlers' network delay, or the
 // projection lands while the response is still in flight.
 vi.mock('@core/config/config', () => ({
-  config: { apiBaseUrl: '/api', cacheMode: 'events', readModelLagMs: 400, reconcileDelayMs: 1400 },
+  config: {
+    apiBaseUrl: '/api',
+    cacheMode: 'events',
+    readModelLagMs: 400,
+    reconcileDelayMs: 1400,
+    networkMs: 20,
+  },
 }));
 
 const server = setupServer(...handlers);

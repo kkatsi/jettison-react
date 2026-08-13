@@ -3,12 +3,14 @@
 
 import { delay, http, HttpResponse } from 'msw';
 
+import { config } from '@core/config/config';
+
 import { db, tracksFor, withdrawRelease } from './db';
 import { activityFeedModel, releaseListModel, scheduleProjections } from './projection';
 import { activityEventSchema, releaseDetailSchema, releaseSchema } from './schemas';
 
-/** Enough latency for loading states to be real. */
-const NETWORK_MS = 140;
+/** Enough latency for loading states to be real. Turn it up with VITE_NETWORK_MS. */
+const NETWORK_MS = config.networkMs;
 
 /** Origin-agnostic so the node tests hit the same handlers. */
 const url = (path: string) => `*/api${path}`;

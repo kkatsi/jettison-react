@@ -49,6 +49,7 @@ export {
 export { FilterSelect, type FilterOption } from './filter-select';
 export { Input } from './input';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
+export { Skeleton } from './skeleton';
 export {
   Table,
   TableBody,
