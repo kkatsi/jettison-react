@@ -30,6 +30,7 @@ export function toRelease(dto: ReleaseDto): Release {
     submittedLabel: formatTimestamp(dto.submittedAt),
     artwork: dto.artwork,
     streamsLabel: formatStreams(dto.streams30d),
+    streams30d: dto.streams30d,
     streamsTrend: dto.streamsTrend,
     deliveries: dto.deliveries,
   };

@@ -6,13 +6,14 @@ import type { Tone } from '@shared/ui';
 import type { AudioStatus, DeliveryStatus } from './api/types';
 import type { PipelineStage } from './services/release-status';
 
-export const STAGE: Record<PipelineStage, { label: string; tone: Tone }> = {
-  draft: { label: 'Draft', tone: 'idle' },
-  submitted: { label: 'Submitted', tone: 'idle' },
-  'in-review': { label: 'In review', tone: 'warning' },
-  delivering: { label: 'Delivering', tone: 'warning' },
-  live: { label: 'Live', tone: 'live' },
-  blocked: { label: 'Blocked', tone: 'danger' },
+/** `busy` pulses the chip's dot: the stores are still working on this one. */
+export const STAGE: Record<PipelineStage, { label: string; tone: Tone; busy: boolean }> = {
+  draft: { label: 'Draft', tone: 'idle', busy: false },
+  submitted: { label: 'Submitted', tone: 'idle', busy: false },
+  'in-review': { label: 'In review', tone: 'warning', busy: true },
+  delivering: { label: 'Delivering', tone: 'warning', busy: true },
+  live: { label: 'Live', tone: 'live', busy: false },
+  blocked: { label: 'Blocked', tone: 'danger', busy: false },
 };
 
 export const DELIVERY: Record<DeliveryStatus, { label: string; tone: Tone }> = {

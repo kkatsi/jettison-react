@@ -24,6 +24,7 @@ export {
   EmptyMedia,
   EmptyTitle,
 } from './empty';
+export { FilterSelect, type FilterOption } from './filter-select';
 export { Input } from './input';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 export {

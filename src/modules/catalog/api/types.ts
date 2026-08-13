@@ -64,8 +64,9 @@ export type Release = {
   /** '2026-08-11 09:12', or an em dash for a release nobody has submitted. */
   submittedLabel: string;
   artwork: Artwork;
-  /** '1.28M' · '482K' · '—'. */
+  /** '1.28M' · '482K' · '—'. The raw count survives it: the stat tiles sum on it. */
   streamsLabel: string;
+  streams30d: number;
   streamsTrend: number[];
   deliveries: DeliveryDto[];
 };

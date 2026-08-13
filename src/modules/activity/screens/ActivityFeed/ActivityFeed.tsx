@@ -1,14 +1,6 @@
 import { Search } from 'lucide-react';
 
-import {
-  Button,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@shared/ui';
+import { Button, FilterSelect, Input } from '@shared/ui';
 
 import { RANGE_OPTIONS, TYPE_OPTIONS } from '../../constants';
 import { EventRow } from './EventRow';
@@ -97,33 +89,6 @@ export function ActivityFeed() {
         ) : null}
       </div>
     </div>
-  );
-}
-
-type FilterSelectProps = {
-  label: string;
-  options: { value: string; label: string }[];
-  value: string;
-  onValueChange: (value: string) => void;
-};
-
-function FilterSelect({ label, options, value, onValueChange }: FilterSelectProps) {
-  return (
-    // An empty value can't happen here — the select isn't clearable — and would
-    // fall back to the default on the next read anyway.
-    <Select items={options} value={value} onValueChange={(next) => onValueChange(next ?? '')}>
-      <SelectTrigger size="sm" className="h-7.5 gap-2 bg-panel text-sm">
-        <span className="text-idle">{label}</span>
-        <SelectValue className="font-mono text-xs text-subtle" />
-      </SelectTrigger>
-      <SelectContent className="min-w-44">
-        {options.map((option) => (
-          <SelectItem key={option.value} value={option.value} className="font-mono text-xs">
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   );
 }
 
