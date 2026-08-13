@@ -1,0 +1,111 @@
+// Step 3's one hook (R2). The cover is a file the stores measure and a pair of
+// colours this console can draw; both are decided the moment one is dropped.
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
+import { useForm, type UseFormReturn } from 'react-hook-form';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router';
+import { z } from 'zod';
+
+import type { Tone } from '@shared/ui';
+
+import { useDraftQuery } from '../../api/endpoints';
+import type { Artwork, Credits } from '../../api/types';
+import { ARTWORK, CREDIT_FIELDS, EMPTY_CREDITS } from '../../constants';
+import { useDraftAutosave } from '../../hooks/useDraftAutosave';
+import { useDraftSave } from '../../hooks/useDraftSave';
+import { readArtworkFile } from '../../services/artwork';
+import { meetsArtworkRequirements } from '../../services/release-eligibility';
+import { mergeEdits, selectPendingEdits, type WithDraft } from '../../state/draft-slice';
+
+const line = z.string().max(200);
+
+/** Credits are free text the stores print verbatim; only the length is ours to hold. */
+const creditsSchema = z.object({
+  composer: line,
+  producer: line,
+  publisher: line,
+  pLine: line,
+  cLine: line,
+});
+
+export type CreditsValues = z.infer<typeof creditsSchema>;
+
+export type ArtworkModel = {
+  form: UseFormReturn<CreditsValues>;
+  fields: typeof CREDIT_FIELDS;
+  cover: {
+    /** The file itself while this tab is open; the colours after that. */
+    previewUrl: string | null;
+    artwork: Artwork;
+    fileLabel: string;
+    verdict: { label: string; tone: Tone } | null;
+    isEmpty: boolean;
+  };
+  requirements: string[];
+  onFile: (file: File | null | undefined) => void;
+  onRemove: () => void;
+  /** Reading a file the browser cannot decode is the one failure worth naming. */
+  error: string | null;
+};
+
+export function useArtworkStep(): ArtworkModel {
+  const { id = '' } = useParams();
+  const { data: release } = useDraftQuery(id);
+  const edits = useSelector((state: WithDraft) => selectPendingEdits(state, id));
+  const { save } = useDraftSave(id);
+
+  const draft = release ? mergeEdits(release, edits) : null;
+  const credits = draft?.credits ?? EMPTY_CREDITS;
+  const artworkFile = draft?.artworkFile ?? null;
+
+  const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const form = useForm<CreditsValues>({
+    resolver: zodResolver(creditsSchema),
+    mode: 'onBlur',
+    defaultValues: credits,
+  });
+
+  useDraftAutosave(id, form, (values) => ({ credits: values as Credits }));
+
+  return {
+    form,
+    fields: CREDIT_FIELDS,
+    cover: {
+      previewUrl: preview,
+      artwork: draft?.artwork ?? { from: '#2A3040', to: '#12161F' },
+      fileLabel: artworkFile
+        ? `${artworkFile.name} · ${artworkFile.width}×${artworkFile.height}`
+        : '',
+      verdict: artworkFile
+        ? meetsArtworkRequirements(artworkFile)
+          ? { label: ARTWORK.passes, tone: 'live' }
+          : { label: ARTWORK.tooSmall, tone: 'warning' }
+        : null,
+      isEmpty: artworkFile === null,
+    },
+    requirements: ARTWORK.requirements,
+
+    onFile: (file) => {
+      if (!file) return;
+      setError(null);
+
+      void readArtworkFile(file)
+        .then((reading) => {
+          setPreview(reading.previewUrl);
+          // Saved together: the colours are only true of this file.
+          return save({ artworkFile: reading.file, artwork: reading.artwork });
+        })
+        .catch(() => setError(ARTWORK.unreadable));
+    },
+
+    onRemove: () => {
+      setPreview(null);
+      void save({ artworkFile: null });
+    },
+    error,
+  };
+}

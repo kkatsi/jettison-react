@@ -89,5 +89,6 @@ export type DraftPatch = Partial<{
   genre: string;
   credits: Credits;
   artwork: Artwork;
-  artworkFile: ArtworkFile;
+  /** Null removes the cover; absent leaves it alone. */
+  artworkFile: ArtworkFile | null;
 }>;

@@ -4,7 +4,7 @@
 import type { Tone } from '@shared/ui';
 
 import type { AudioStatus, Credits, ReleaseType } from './api/types';
-import { MIN_LEAD_DAYS } from './services/release-eligibility';
+import { MIN_ARTWORK_PX, MIN_LEAD_DAYS } from './services/release-eligibility';
 import type { SaveState } from './state/draft-slice';
 
 /** Who the console acts as. A real app reads this off the session. */
@@ -69,6 +69,17 @@ export const STEPS: readonly { slug: StepSlug; label: string; hint: string }[] =
   { slug: 'artwork', label: 'Artwork & Credits', hint: '3000×3000 cover, writers, splits' },
   { slug: 'review', label: 'Review', hint: 'Check and submit for delivery' },
 ];
+
+/** The cover, in words. The numbers behind them live in release-eligibility.ts. */
+export const ARTWORK = {
+  passes: 'Passes',
+  tooSmall: 'Below the minimum',
+  unreadable: 'That file could not be read as an image.',
+  requirements: [
+    `${MIN_ARTWORK_PX}×${MIN_ARTWORK_PX} min · square`,
+    'JPG or PNG · RGB · under 20 MB',
+  ],
+};
 
 /** What the footer button says about where it goes, keyed by the step it goes to. */
 export const CONTINUE: Record<StepSlug, string> = {

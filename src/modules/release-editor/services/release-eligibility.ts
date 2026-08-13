@@ -1,8 +1,19 @@
 // What stops a release being submitted. Pure functions returning codes, never
 // copy (R5, R6) — constants.ts owns the words, the hook owns the actions.
 
+import type { ArtworkFile } from '../api/types';
+
 /** Stores need a week to ingest, index and schedule a release. */
 export const MIN_LEAD_DAYS = 7;
+
+/** The strictest store's requirement, so one cover satisfies all five. */
+export const MIN_ARTWORK_PX = 3000;
+
+/** Square, and big enough for the largest grid any store renders. */
+export function meetsArtworkRequirements(file: ArtworkFile | null): boolean {
+  if (!file) return false;
+  return file.width >= MIN_ARTWORK_PX && file.height >= MIN_ARTWORK_PX;
+}
 
 const DAY_MS = 86400000;
 

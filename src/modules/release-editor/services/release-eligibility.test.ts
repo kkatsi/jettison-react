@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { hasEnoughLead, leadDays, MIN_LEAD_DAYS } from './release-eligibility';
+import {
+  hasEnoughLead,
+  leadDays,
+  meetsArtworkRequirements,
+  MIN_ARTWORK_PX,
+  MIN_LEAD_DAYS,
+} from './release-eligibility';
 
 describe('lead time', () => {
   it('counts calendar days to the street date', () => {
@@ -24,5 +30,23 @@ describe('lead time', () => {
 
   it('treats a date it cannot read as no lead at all', () => {
     expect(leadDays('not-a-date', '2026-08-13')).toBe(0);
+  });
+});
+
+describe('artwork requirements', () => {
+  const cover = (width: number, height = width) => ({ name: 'cover.png', width, height });
+
+  it('takes the minimum and anything above it', () => {
+    expect(meetsArtworkRequirements(cover(MIN_ARTWORK_PX))).toBe(true);
+    expect(meetsArtworkRequirements(cover(4000))).toBe(true);
+  });
+
+  it('refuses anything the biggest store grid would blur', () => {
+    expect(meetsArtworkRequirements(cover(1400))).toBe(false);
+    expect(meetsArtworkRequirements(cover(3000, 1400))).toBe(false);
+  });
+
+  it('counts no cover at all as not meeting them', () => {
+    expect(meetsArtworkRequirements(null)).toBe(false);
   });
 });
