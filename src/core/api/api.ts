@@ -21,12 +21,13 @@ export const api = createApi({
   // A mutation that isn't idempotent must opt out: extraOptions: { maxRetries: 0 }.
   baseQuery: retry(baseQuery, { maxRetries: 2 }),
 
-  // The tag registry, one block per module. Empty because no module exists yet,
-  // and an unused tag is a lie about what the app caches.
-  //
-  //   // catalog
-  //   'Release', 'ReleaseList', 'DistributionBoard',
-  tagTypes: [],
+  // The tag registry, one block per module. Modules inject endpoints but cannot
+  // add tag types, so this list is the one shared file they append to — the cost
+  // Chapter 4 §6 owns up to. An unused tag is a lie about what the app caches.
+  tagTypes: [
+    // activity
+    'ActivityFeed',
+  ],
 
   endpoints: () => ({}),
 });

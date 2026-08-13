@@ -23,6 +23,8 @@ export {
   EmptyMedia,
   EmptyTitle,
 } from './empty';
+export { Input } from './input';
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 
 // Ours — shadcn has no equivalent.
 export { ScreenErrorBoundary } from './screen-error-boundary';
