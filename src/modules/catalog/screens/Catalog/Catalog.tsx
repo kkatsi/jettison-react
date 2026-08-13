@@ -14,7 +14,7 @@ import {
 } from '@shared/ui';
 import { cn } from '@shared/utils/cn';
 
-import { COLUMNS } from './columns';
+import { CATALOG_COLUMNS } from './columns';
 import { ReleaseRow } from './ReleaseRow';
 import { useCatalog } from './useCatalog';
 
@@ -80,17 +80,25 @@ export function Catalog() {
       </div>
 
       <Card className="min-h-60 flex-1 gap-0 overflow-hidden py-0">
-        <div className="min-h-0 flex-1 overflow-auto">
-          <Table>
-            <TableHeader className="sticky top-0 z-10 bg-panel">
-              <TableRow className={cn(COLUMNS, 'h-9 items-center border-line px-4')}>
-                <TableHead className="p-0" />
-                <TableHead className="p-0 text-xs font-medium text-idle">Release</TableHead>
-                <TableHead className="p-0 text-xs font-medium text-idle">Artist</TableHead>
-                <TableHead className="p-0 text-xs font-medium text-idle">Type</TableHead>
-                <TableHead className="p-0 text-xs font-medium text-idle">Status</TableHead>
-                <TableHead className="p-0 text-xs font-medium text-idle">Release date</TableHead>
-                <TableHead className="p-0 text-right text-xs font-medium text-idle">
+        {/* No inner scroll: the table is paginated so twelve rows always fit, which
+            is the whole reason the design paginates rather than scrolling. */}
+        <div className="min-h-0 flex-1">
+          <Table className="table-fixed">
+            <colgroup>
+              {CATALOG_COLUMNS.map((width, index) => (
+                <col key={index} className={width} />
+              ))}
+            </colgroup>
+
+            <TableHeader>
+              <TableRow className="h-9 border-line hover:bg-transparent">
+                <TableHead className="pl-4" />
+                <TableHead className="text-xs font-medium text-idle">Release</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Artist</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Type</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Status</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Release date</TableHead>
+                <TableHead className="pr-4 text-right text-xs font-medium text-idle">
                   Streams · 30d
                 </TableHead>
               </TableRow>

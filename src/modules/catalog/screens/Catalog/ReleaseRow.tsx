@@ -1,6 +1,5 @@
 import { Artwork, Badge, Sparkline, StatusBadge, TableCell, TableRow } from '@shared/ui';
 
-import { COLUMNS } from './columns';
 import type { CatalogRow } from './useCatalog';
 
 // Props in, JSX out — no hook, because there is nothing to orchestrate (R2).
@@ -8,36 +7,39 @@ export function ReleaseRow({ release }: { release: CatalogRow }) {
   return (
     <TableRow
       onClick={release.onOpen}
-      className={`${COLUMNS} h-13 cursor-pointer items-center border-panel px-4 hover:bg-raised/60`}
+      className="h-13 cursor-pointer border-panel hover:bg-raised/60"
     >
-      <TableCell className="p-0">
+      <TableCell className="pl-4">
         <Artwork artwork={release.artwork} className="size-8" />
       </TableCell>
 
-      <TableCell className="flex min-w-0 flex-col gap-0.5 p-0 pr-4">
-        <span className="truncate font-medium">{release.title}</span>
-        <span className="font-mono text-2xs text-idle">{release.catalogNumber}</span>
+      {/* max-w-0 lets the auto column truncate instead of pushing the table wide. */}
+      <TableCell className="max-w-0 pr-6">
+        <div className="truncate font-medium">{release.title}</div>
+        <div className="font-mono text-2xs text-idle">{release.catalogNumber}</div>
       </TableCell>
 
-      <TableCell className="truncate p-0 pr-3 text-sm text-subtle">{release.artistName}</TableCell>
+      <TableCell className="truncate pr-4 text-sm text-subtle">{release.artistName}</TableCell>
 
-      <TableCell className="p-0">
+      <TableCell>
         <Badge variant="outline" className="rounded-sm bg-raised text-xs text-subtle">
           {release.type}
         </Badge>
       </TableCell>
 
-      <TableCell className="p-0">
+      <TableCell>
         <StatusBadge tone={release.stage.tone} busy={release.stage.busy}>
           {release.stage.label}
         </StatusBadge>
       </TableCell>
 
-      <TableCell className="p-0 font-mono text-xs text-subtle">{release.releaseDate}</TableCell>
+      <TableCell className="font-mono text-xs text-subtle">{release.releaseDate}</TableCell>
 
-      <TableCell className="flex items-center justify-end gap-3 p-0">
-        <Sparkline points={release.streamsTrend} className="text-brand" />
-        <span className="w-15 text-right font-mono text-sm">{release.streamsLabel}</span>
+      <TableCell className="pr-4">
+        <div className="flex items-center justify-end gap-3">
+          <Sparkline points={release.streamsTrend} className="text-brand" />
+          <span className="w-15 text-right font-mono text-sm">{release.streamsLabel}</span>
+        </div>
       </TableCell>
     </TableRow>
   );

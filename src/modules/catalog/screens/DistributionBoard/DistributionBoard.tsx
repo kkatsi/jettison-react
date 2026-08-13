@@ -22,7 +22,9 @@ import { Rocket } from 'lucide-react';
 import { ReleaseSchedule } from './ReleaseSchedule';
 import { useDistributionBoard, type BoardRow } from './useDistributionBoard';
 
-const COLUMNS = 'grid grid-cols-[44px_1fr_150px_150px_132px_132px]';
+// Widths for <colgroup>: the browser's own column algorithm keeps the header and
+// the body honest, which a grid template repeated in two places does not.
+const COLUMNS = ['w-11', 'w-auto', 'w-37.5', 'w-37.5', 'w-33', 'w-33'];
 
 // Everything the label has handed to the stores, and how far each one got.
 export function DistributionBoard() {
@@ -99,16 +101,22 @@ export function DistributionBoard() {
       </div>
 
       <Card className="min-h-60 flex-1 gap-0 overflow-hidden py-0">
-        <div className="min-h-0 flex-1 overflow-auto">
-          <Table>
-            <TableHeader className="sticky top-0 z-10 bg-panel">
-              <TableRow className={cn(COLUMNS, 'h-9 items-center border-line px-4')}>
-                <TableHead className="p-0" />
-                <TableHead className="p-0 text-xs font-medium text-idle">Release</TableHead>
-                <TableHead className="p-0 text-xs font-medium text-idle">Artist</TableHead>
-                <TableHead className="p-0 text-xs font-medium text-idle">Submitted</TableHead>
-                <TableHead className="p-0 text-xs font-medium text-idle">Stores</TableHead>
-                <TableHead className="p-0 text-xs font-medium text-idle">Status</TableHead>
+        <div className="min-h-0 flex-1">
+          <Table className="table-fixed">
+            <colgroup>
+              {COLUMNS.map((width, index) => (
+                <col key={index} className={width} />
+              ))}
+            </colgroup>
+
+            <TableHeader>
+              <TableRow className="h-9 border-line hover:bg-transparent">
+                <TableHead className="pl-4" />
+                <TableHead className="text-xs font-medium text-idle">Release</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Artist</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Submitted</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Stores</TableHead>
+                <TableHead className="pr-4 text-xs font-medium text-idle">Status</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -153,42 +161,41 @@ function PipelineRow({ release }: { release: BoardRow }) {
   return (
     <TableRow
       onClick={release.onOpen}
-      className={cn(
-        COLUMNS,
-        'h-13 cursor-pointer items-center border-panel px-4 hover:bg-raised/60',
-      )}
+      className="h-13 cursor-pointer border-panel hover:bg-raised/60"
     >
-      <TableCell className="p-0">
+      <TableCell className="pl-4">
         <Artwork artwork={release.artwork} className="size-8" />
       </TableCell>
 
-      <TableCell className="flex min-w-0 flex-col gap-0.5 p-0 pr-4">
-        <span className="truncate font-medium">{release.title}</span>
-        <span className="font-mono text-2xs text-idle">
+      <TableCell className="max-w-0 pr-6">
+        <div className="truncate font-medium">{release.title}</div>
+        <div className="font-mono text-2xs text-idle">
           {release.catalogNumber} · {release.type}
-        </span>
+        </div>
       </TableCell>
 
-      <TableCell className="truncate p-0 pr-3 text-sm text-subtle">{release.artistName}</TableCell>
+      <TableCell className="truncate pr-4 text-sm text-subtle">{release.artistName}</TableCell>
 
-      <TableCell className="p-0 font-mono text-xs text-subtle">{release.submittedLabel}</TableCell>
+      <TableCell className="font-mono text-xs text-subtle">{release.submittedLabel}</TableCell>
 
-      <TableCell className="flex items-center gap-2 p-0">
-        <span className="flex gap-0.5">
-          {release.segments.map((segment) => (
-            <span
-              key={segment.storeId}
-              className={cn(
-                'h-1 w-2 rounded-xs',
-                segment.rejected ? 'bg-danger' : segment.done ? 'bg-live' : 'bg-line-strong',
-              )}
-            />
-          ))}
-        </span>
-        <span className="font-mono text-xs text-subtle">{release.storeLabel}</span>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <span className="flex gap-0.5">
+            {release.segments.map((segment) => (
+              <span
+                key={segment.storeId}
+                className={cn(
+                  'h-1 w-2 rounded-xs',
+                  segment.rejected ? 'bg-danger' : segment.done ? 'bg-live' : 'bg-line-strong',
+                )}
+              />
+            ))}
+          </span>
+          <span className="font-mono text-xs text-subtle">{release.storeLabel}</span>
+        </div>
       </TableCell>
 
-      <TableCell className="p-0">
+      <TableCell className="pr-4">
         <StatusBadge tone={release.stage.tone} busy={release.stage.busy}>
           {release.stage.label}
         </StatusBadge>
