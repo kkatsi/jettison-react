@@ -1,5 +1,6 @@
 import { Artwork, Badge, Sparkline, StatusBadge, TableCell, TableRow } from '@shared/ui';
 
+import { RowActions } from '../../components/RowActions';
 import type { CatalogRow } from './useCatalog';
 
 // Props in, JSX out — no hook, because there is nothing to orchestrate (R2).
@@ -37,14 +38,20 @@ export function ReleaseRow({ release }: { release: CatalogRow }) {
       <TableCell className="font-mono text-xs text-subtle">{release.releaseDate}</TableCell>
 
       <TableCell>
-        <Sparkline
-          points={release.streamsTrend}
-          label={release.trendLabel}
-          className="text-brand"
-        />
+        <div className="flex justify-end">
+          <Sparkline
+            points={release.streamsTrend}
+            label={release.trendLabel}
+            className="text-brand"
+          />
+        </div>
       </TableCell>
 
-      <TableCell className="pr-4 font-mono text-sm">{release.streamsLabel}</TableCell>
+      <TableCell className="text-right font-mono text-sm">{release.streamsLabel}</TableCell>
+
+      <TableCell className="pr-2 text-right">
+        <RowActions label={`Actions for ${release.title}`} actions={release.actions} />
+      </TableCell>
     </TableRow>
   );
 }

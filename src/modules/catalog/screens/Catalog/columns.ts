@@ -12,4 +12,5 @@ export const CATALOG_COLUMNS = [
   'w-29', // release date
   'w-22', // trend
   'w-25', // streams
+  'w-12', // actions
 ];

@@ -14,6 +14,7 @@ import {
 } from '@shared/ui';
 import { cn } from '@shared/utils/cn';
 
+import { WithdrawDialog } from '../../components/WithdrawDialog';
 import { CATALOG_COLUMNS } from './columns';
 import { ReleaseRow } from './ReleaseRow';
 import { useCatalog } from './useCatalog';
@@ -30,6 +31,7 @@ export function Catalog() {
     footerLabel,
     filters,
     pagination,
+    withdraw,
   } = useCatalog();
 
   return (
@@ -98,12 +100,8 @@ export function Catalog() {
                 <TableHead className="text-xs font-medium text-idle">Type</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Status</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Release date</TableHead>
-                {/* Right-aligned, like the values under them — a number column
-                    reads up the right edge. */}
-                <TableHead className="text-right text-xs font-medium text-idle">Trend</TableHead>
-                <TableHead className="pr-4 text-right text-xs font-medium text-idle">
-                  Streams · 30d
-                </TableHead>
+                <TableHead className="text-xs font-medium text-idle">Trend</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Streams · 30d</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -158,6 +156,8 @@ export function Catalog() {
           </div>
         </div>
       </Card>
+
+      <WithdrawDialog dialog={withdraw.dialog} />
     </div>
   );
 }

@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import type { DeliveryDto, DeliveryStatus, ReleaseStatus } from '../api/types';
 import {
-  canWithdraw,
   deliveryProgress,
   isInFlight,
   isInPipeline,
   pipelineStage,
+  withdrawalAction,
 } from './release-status';
 
 const stores = (...statuses: DeliveryStatus[]): DeliveryDto[] =>
@@ -77,10 +77,18 @@ describe('the predicates the board filters on', () => {
     expect(isInPipeline({ status: 'draft', submittedAt: '2026-04-11T09:12:33.000Z' })).toBe(false);
   });
 
-  it('offers withdrawal only while stores still hold it', () => {
-    expect(canWithdraw('live')).toBe(true);
-    expect(canWithdraw('delivering')).toBe(true);
-    expect(canWithdraw('submitted')).toBe(false);
-    expect(canWithdraw('blocked')).toBe(false);
+  it('calls it a withdrawal only when stores actually have the record', () => {
+    expect(withdrawalAction('live')).toBe('withdraw');
+    expect(withdrawalAction('delivering')).toBe('withdraw');
+
+    // Nothing was ever delivered: pulling the submission is not a withdrawal, and
+    // telling the label it is would describe stores taking down a record they
+    // never received.
+    expect(withdrawalAction('submitted')).toBe('cancel');
+    expect(withdrawalAction('in-review')).toBe('cancel');
+    expect(withdrawalAction('blocked')).toBe('cancel');
+
+    // Never submitted, so there is nothing to take back.
+    expect(withdrawalAction('draft')).toBeNull();
   });
 });

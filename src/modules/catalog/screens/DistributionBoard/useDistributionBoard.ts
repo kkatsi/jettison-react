@@ -9,6 +9,7 @@ import type { FilterOption, Tone } from '@shared/ui';
 import { useReleasesQuery } from '../../api/endpoints';
 import type { Release } from '../../api/types';
 import { STAGE } from '../../constants';
+import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
 import { deliveryProgress, isInFlight, pipelineStage } from '../../services/release-status';
 import { artistOptions } from '../Catalog/catalog-filters';
 import {
@@ -26,6 +27,8 @@ export type BoardRow = Release & {
   storeLabel: string;
   segments: { storeId: string; done: boolean; rejected: boolean }[];
   onOpen: () => void;
+  /** null for a release nothing can be taken back from. */
+  action: { label: string; onSelect: () => void } | null;
 };
 
 export type SchedulePin = {
@@ -58,6 +61,7 @@ export type DistributionBoardModel = {
   footerLabel: string;
   schedule: { axis: ScheduleAxis; pins: SchedulePin[] };
   counts: { inFlight: number; blocked: number; live: number };
+  withdraw: WithdrawModel;
   filters: {
     artist: string;
     stage: string;
@@ -82,6 +86,7 @@ const FILTER_PARSERS = {
 export function useDistributionBoard(): DistributionBoardModel {
   const { data, isLoading, isError, refetch } = useReleasesQuery();
   const [filters, setFilters] = useQueryStates(FILTER_PARSERS);
+  const withdraw = useWithdrawRelease();
   const navigate = useNavigate();
 
   const pipeline = sortByNewestSubmission(data ?? []);
@@ -101,7 +106,7 @@ export function useDistributionBoard(): DistributionBoardModel {
   return {
     isLoading,
     failure: isError ? { retry: () => void refetch() } : null,
-    rows: visible.map(toRow(navigate)),
+    rows: visible.map(toRow(navigate, withdraw)),
     isEmpty: !isLoading && !isError && visible.length === 0 && pipeline.length > 0,
     isPipelineEmpty: !isLoading && !isError && pipeline.length === 0,
     countLabel: `${pipeline.length} in pipeline`,
@@ -132,6 +137,7 @@ export function useDistributionBoard(): DistributionBoardModel {
         };
       }),
     },
+    withdraw,
     counts: {
       inFlight: stages.filter(isInFlight).length,
       blocked: stages.filter((stage) => stage === 'blocked').length,
@@ -153,13 +159,16 @@ export function useDistributionBoard(): DistributionBoardModel {
   };
 }
 
-function toRow(navigate: (to: string) => void) {
+function toRow(navigate: (to: string) => void, withdraw: WithdrawModel) {
   return (release: Release): BoardRow => {
     const progress = deliveryProgress(release.deliveries);
+    const stage = pipelineStage(release);
+    const target = { id: release.id, title: release.title, stage };
+    const takeBack = withdraw.actionFor(target);
 
     return {
       ...release,
-      stage: STAGE[pipelineStage(release)],
+      stage: STAGE[stage],
       storeLabel: `${progress.delivered}/${progress.total}`,
       segments: release.deliveries.map((delivery) => ({
         storeId: delivery.storeId,
@@ -167,6 +176,7 @@ function toRow(navigate: (to: string) => void) {
         rejected: delivery.status === 'rejected',
       })),
       onOpen: () => void navigate(`/catalog/${release.id}`),
+      action: takeBack ? { label: takeBack.short, onSelect: () => withdraw.request(target) } : null,
     };
   };
 }

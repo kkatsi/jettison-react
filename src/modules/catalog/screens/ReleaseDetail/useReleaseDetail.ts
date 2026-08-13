@@ -1,7 +1,6 @@
 // The screen's one hook (R2). Three queries and a mutation in, one view-model
 // out (R3) — including the confirm dialog's whole state, so the view holds none.
 
-import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
 import type { Tone } from '@shared/ui';
@@ -10,12 +9,12 @@ import {
   useReleaseActivityQuery,
   useReleaseDetailQuery,
   useStoresQuery,
-  useWithdrawReleaseMutation,
 } from '../../api/endpoints';
 import { toStoreDeliveries } from '../../api/transformations';
 import type { ActivityEntry, ReleaseDetail, StoreDelivery, Track } from '../../api/types';
 import { AUDIO, DELIVERY, STAGE } from '../../constants';
-import { canWithdraw, deliveryProgress, pipelineStage } from '../../services/release-status';
+import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
+import { deliveryProgress, pipelineStage } from '../../services/release-status';
 
 export type TrackRow = Track & { audio: { label: string; tone: Tone; busy: boolean } };
 
@@ -36,11 +35,11 @@ export type ReleaseDetailModel = {
   stores: StoreRow[];
   storeSummary: string;
   activity: ActivityEntry[];
-  withdraw: {
-    /** Absent entirely when withdrawal is not on the table for this release. */
-    isAvailable: boolean;
-    isPending: boolean;
-    confirm: { isOpen: boolean; open: () => void; cancel: () => void; submit: () => void };
+  /** One release on screen, so the flow needs no target passing through the view. */
+  withdraw: Omit<WithdrawModel, 'actionFor' | 'request'> & {
+    /** null when this release cannot be taken back — the button is not rendered. */
+    button: { label: string } | null;
+    request: () => void;
   };
   onBack: () => void;
 };
@@ -52,13 +51,12 @@ export function useReleaseDetail(): ReleaseDetailModel {
   const { data: release, isLoading, isError, refetch } = useReleaseDetailQuery(id);
   const { data: stores } = useStoresQuery();
   const { data: activity } = useReleaseActivityQuery(id);
-  const [withdrawRelease, { isLoading: isWithdrawing }] = useWithdrawReleaseMutation();
-
-  // Whether a dialog is open is local flow state, and it belongs to the one hook
-  // that orchestrates the flow (Ch. 4 §2).
-  const [isConfirming, setIsConfirming] = useState(false);
+  const withdraw = useWithdrawRelease();
 
   const stage = release ? pipelineStage(release) : 'draft';
+  const takeBack = release
+    ? withdraw.actionFor({ id: release.id, title: release.title, stage })
+    : null;
   const progress = release ? deliveryProgress(release.deliveries) : null;
   const storeRows = release ? toStoreDeliveries(release.deliveries, stores ?? []) : [];
 
@@ -86,18 +84,10 @@ export function useReleaseDetail(): ReleaseDetailModel {
     storeSummary: progress ? `${progress.delivered}/${progress.total} delivered` : '',
     activity: activity ?? [],
     withdraw: {
-      isAvailable: canWithdraw(stage),
-      isPending: isWithdrawing,
-      confirm: {
-        isOpen: isConfirming,
-        open: () => setIsConfirming(true),
-        cancel: () => setIsConfirming(false),
-        submit: () => {
-          setIsConfirming(false);
-          // The mutation owns everything that follows — the caller just awaits it
-          // (Ch. 4 §4). Nothing to remember, so nothing to forget.
-          void withdrawRelease(id);
-        },
+      ...withdraw,
+      button: takeBack ? { label: takeBack.label } : null,
+      request: () => {
+        if (release) withdraw.request({ id: release.id, title: release.title, stage });
       },
     },
     onBack: () => void navigate('/catalog'),

@@ -19,13 +19,14 @@ import {
 import { cn } from '@shared/utils/cn';
 import { Rocket } from 'lucide-react';
 
+import { WithdrawDialog } from '../../components/WithdrawDialog';
 import { ReleaseSchedule } from './ReleaseSchedule';
 import { useDistributionBoard, type BoardRow } from './useDistributionBoard';
 
 // Widths for <colgroup>: the browser's own column algorithm keeps the header and
 // the body honest, which a grid template repeated in two places does not. The
 // artwork rides in the Release cell — it names the release, it is not a column.
-const COLUMNS = ['w-auto', 'w-37.5', 'w-37.5', 'w-33', 'w-33'];
+const COLUMNS = ['w-auto', 'w-37.5', 'w-37.5', 'w-33', 'w-33', 'w-28'];
 
 // Everything the label has handed to the stores, and how far each one got.
 export function DistributionBoard() {
@@ -40,6 +41,7 @@ export function DistributionBoard() {
     schedule,
     counts,
     filters,
+    withdraw,
     onNewRelease,
   } = useDistributionBoard();
 
@@ -117,7 +119,10 @@ export function DistributionBoard() {
                 <TableHead className="text-xs font-medium text-idle">Artist</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Submitted</TableHead>
                 <TableHead className="text-xs font-medium text-idle">Stores</TableHead>
-                <TableHead className="pr-4 text-xs font-medium text-idle">Status</TableHead>
+                <TableHead className="text-xs font-medium text-idle">Status</TableHead>
+                <TableHead className="pr-4 text-right text-xs font-medium text-idle">
+                  Actions
+                </TableHead>
               </TableRow>
             </TableHeader>
 
@@ -154,6 +159,8 @@ export function DistributionBoard() {
           <span>{countLabel}</span>
         </div>
       </Card>
+
+      <WithdrawDialog dialog={withdraw.dialog} />
     </div>
   );
 }
@@ -197,10 +204,26 @@ function PipelineRow({ release }: { release: BoardRow }) {
         </div>
       </TableCell>
 
-      <TableCell className="pr-4">
+      <TableCell>
         <StatusBadge tone={release.stage.tone} busy={release.stage.busy}>
           {release.stage.label}
         </StatusBadge>
+      </TableCell>
+
+      <TableCell className="pr-4 text-right">
+        {release.action ? (
+          <button
+            type="button"
+            onClick={(event) => {
+              // The row opens the release; this does not.
+              event.stopPropagation();
+              release.action?.onSelect();
+            }}
+            className="text-sm text-idle hover:text-danger"
+          >
+            {release.action.label}
+          </button>
+        ) : null}
       </TableCell>
     </TableRow>
   );

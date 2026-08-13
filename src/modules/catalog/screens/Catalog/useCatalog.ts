@@ -8,7 +8,9 @@ import type { FilterOption, Tone } from '@shared/ui';
 
 import { useReleasesQuery } from '../../api/endpoints';
 import type { Release } from '../../api/types';
+import type { RowAction } from '../../components/RowActions';
 import { STAGE } from '../../constants';
+import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
 import { pipelineStage } from '../../services/release-status';
 import {
   DEFAULT_FILTERS,
@@ -30,6 +32,7 @@ export type CatalogRow = Release & {
   /** The sparkline's own column, so the line carries its own description. */
   trendLabel: string;
   onOpen: () => void;
+  actions: RowAction[];
 };
 
 export type CatalogTile = {
@@ -50,6 +53,7 @@ export type CatalogModel = {
   resultLabel: string;
   countLabel: string;
   footerLabel: string;
+  withdraw: WithdrawModel;
   filters: {
     query: string;
     artist: string;
@@ -94,6 +98,7 @@ const FILTER_PARSERS = {
 export function useCatalog(): CatalogModel {
   const { data, isLoading, isError, refetch } = useReleasesQuery();
   const [filters, setFilters] = useQueryStates(FILTER_PARSERS, { urlKeys: { query: 'q' } });
+  const withdraw = useWithdrawRelease();
   const navigate = useNavigate();
 
   const releases = data ?? [];
@@ -112,17 +117,36 @@ export function useCatalog(): CatalogModel {
     isLoading,
     failure: isError ? { retry: () => void refetch() } : null,
     tiles: tilesFor(summary),
-    rows: page.items.map((release) => ({
-      ...release,
-      stage: STAGE[pipelineStage(release)],
-      trendLabel: TREND_LABEL[trendDirection(release.streamsTrend)],
-      onOpen: () => void navigate(`/catalog/${release.id}`),
-    })),
+    rows: page.items.map((release) => {
+      const stage = pipelineStage(release);
+      const open = () => void navigate(`/catalog/${release.id}`);
+      const takeBack = withdraw.actionFor({ id: release.id, title: release.title, stage });
+
+      return {
+        ...release,
+        stage: STAGE[stage],
+        trendLabel: TREND_LABEL[trendDirection(release.streamsTrend)],
+        onOpen: open,
+        actions: [
+          { label: 'Open release', onSelect: open },
+          ...(takeBack
+            ? [
+                {
+                  label: takeBack.label,
+                  isDestructive: takeBack.isDestructive,
+                  onSelect: () => withdraw.request({ id: release.id, title: release.title, stage }),
+                },
+              ]
+            : []),
+        ],
+      };
+    }),
     isEmpty: !isLoading && !isError && matching.length === 0,
     resultLabel:
       matching.length === releases.length ? '' : `${matching.length} of ${releases.length}`,
     countLabel: `${releases.length} releases`,
     footerLabel: page.label,
+    withdraw,
     filters: {
       query: filters.query,
       artist: filters.artist,

@@ -60,7 +60,16 @@ export function isInPipeline(release: {
   return release.status !== 'draft' && release.submittedAt !== null;
 }
 
-/** Withdrawal is only meaningful while stores still hold it. */
-export function canWithdraw(stage: PipelineStage): boolean {
-  return stage === 'delivering' || stage === 'live';
+/**
+ * Taking a release back out of distribution. It is the same call either way, but
+ * not the same act, and the console must not tell the label it is withdrawing a
+ * record from stores that never received one:
+ *
+ * - `withdraw` — stores have it, and are being asked to take it down.
+ * - `cancel` — nothing was ever delivered, so the submission is simply pulled.
+ * - `null` — a draft was never submitted; there is nothing to take back.
+ */
+export function withdrawalAction(stage: PipelineStage): 'withdraw' | 'cancel' | null {
+  if (stage === 'draft') return null;
+  return stage === 'delivering' || stage === 'live' ? 'withdraw' : 'cancel';
 }

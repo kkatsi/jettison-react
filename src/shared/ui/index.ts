@@ -29,6 +29,16 @@ export {
   DialogTrigger,
 } from './dialog';
 export {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from './dropdown-menu';
+export {
   Empty,
   EmptyContent,
   EmptyDescription,

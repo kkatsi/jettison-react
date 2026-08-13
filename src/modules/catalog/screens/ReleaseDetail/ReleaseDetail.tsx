@@ -1,19 +1,9 @@
 import { ChevronRight } from 'lucide-react';
 
-import {
-  Artwork,
-  Badge,
-  Button,
-  Card,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  StatusBadge,
-} from '@shared/ui';
+import { Artwork, Badge, Button, Card, StatusBadge } from '@shared/ui';
 import { cn } from '@shared/utils/cn';
+
+import { WithdrawDialog } from '../../components/WithdrawDialog';
 
 import { useReleaseDetail, type StoreRow, type TrackRow } from './useReleaseDetail';
 
@@ -62,7 +52,7 @@ export function ReleaseDetail() {
         </button>
         <ChevronRight className="size-3 text-dim" />
         <span className="font-semibold">{release.title}</span>
-        <span className="font-mono text-xs text-idle">{release.catalogNumber}</span>
+        <span className="font-mono text-xs text-idle mt-1">{release.catalogNumber}</span>
       </div>
 
       <div className="flex flex-col gap-4 p-6">
@@ -92,21 +82,21 @@ export function ReleaseDetail() {
             </dl>
           </div>
 
-          {withdraw.isAvailable ? (
+          {withdraw.button ? (
             <Button
               variant="outline"
               size="sm"
               disabled={withdraw.isPending}
-              onClick={withdraw.confirm.open}
+              onClick={() => withdraw.request()}
               className="flex-none border-danger/30 text-danger hover:border-danger/50 hover:bg-danger/10 hover:text-danger"
             >
-              {withdraw.isPending ? 'Withdrawing…' : 'Withdraw from distribution'}
+              {withdraw.button.label}
             </Button>
           ) : null}
         </Card>
 
         <div className="grid grid-cols-[1fr_460px] items-start gap-4">
-          <Card className="gap-0 overflow-hidden py-0">
+          <Card className="gap-0 overflow-hidden py-0 self-stretch">
             <PanelHeader title="Tracklist" note={trackSummary} />
             <div
               className={cn(
@@ -125,7 +115,7 @@ export function ReleaseDetail() {
             ))}
           </Card>
 
-          <Card className="gap-0 overflow-hidden py-0">
+          <Card className="gap-0 overflow-hidden py-0 self-stretch">
             <PanelHeader title="Distribution status" note={storeSummary} />
             {stores.map((store) => (
               <StoreLine key={store.storeId} store={store} />
@@ -137,7 +127,7 @@ export function ReleaseDetail() {
           <PanelHeader title="Recent activity" note={`${activity.length} events`} />
           {activity.length === 0 ? (
             <div className="flex h-20 items-center justify-center font-mono text-xs text-dim">
-              nothing recorded for this release yet
+              Nothing recorded for this release yet
             </div>
           ) : (
             activity.map((entry) => (
@@ -157,31 +147,7 @@ export function ReleaseDetail() {
         </Card>
       </div>
 
-      <Dialog
-        open={withdraw.confirm.isOpen}
-        onOpenChange={(open) => (open ? withdraw.confirm.open() : withdraw.confirm.cancel())}
-      >
-        <DialogContent className="sm:max-w-105">
-          <DialogHeader>
-            <DialogTitle>Withdraw {release.title}?</DialogTitle>
-            <DialogDescription>
-              Every store is asked to take it down, and the release returns to draft. You can submit
-              it again afterwards — the stores will treat it as a new delivery.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={withdraw.confirm.cancel}>
-              Keep it live
-            </Button>
-            <Button
-              onClick={withdraw.confirm.submit}
-              className="bg-danger text-canvas hover:bg-danger/85"
-            >
-              Withdraw from all stores
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <WithdrawDialog dialog={withdraw.dialog} />
     </div>
   );
 }
