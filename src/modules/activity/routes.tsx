@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router';
 
-import { ScreenErrorBoundary } from '@shared/ui';
+import { ScreenErrorBoundary, ScreenFallback } from '@shared/ui';
 
 // Screens are the code-splitting boundary, and each gets its own boundary so a
 // failure here cannot blank the console (Chapter 2 §3).
@@ -16,8 +16,7 @@ export const activityRoutes: RouteObject[] = [
     path: 'activity',
     element: (
       <ScreenErrorBoundary name="activity.feed">
-        {/* No fallback: the chunk is small and the screen renders its own loading row. */}
-        <Suspense fallback={null}>
+        <Suspense fallback={<ScreenFallback />}>
           <ActivityFeed />
         </Suspense>
       </ScreenErrorBoundary>

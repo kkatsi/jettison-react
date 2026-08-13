@@ -64,6 +64,7 @@ export {
 // Ours — shadcn has no equivalent.
 export { Artwork, type ArtworkColours } from './artwork';
 export { ScreenErrorBoundary } from './screen-error-boundary';
+export { ScreenFallback } from './screen-fallback';
 export { Sparkline } from './sparkline';
 export { StatTile } from './stat-tile';
 export { StatusBadge, TONE_TEXT, type Tone } from './status-badge';

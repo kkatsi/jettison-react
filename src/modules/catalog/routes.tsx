@@ -1,7 +1,7 @@
 import { lazy, Suspense } from 'react';
 import type { RouteObject } from 'react-router';
 
-import { ScreenErrorBoundary } from '@shared/ui';
+import { ScreenErrorBoundary, ScreenFallback } from '@shared/ui';
 
 // Screens are the code-splitting boundary, and each gets its own boundary so a
 // failure here cannot blank the console (Ch. 2 §3).
@@ -26,7 +26,7 @@ export const catalogRoutes: RouteObject[] = [
     path: 'catalog',
     element: (
       <ScreenErrorBoundary name="catalog.list">
-        <Suspense fallback={null}>
+        <Suspense fallback={<ScreenFallback />}>
           <Catalog />
         </Suspense>
       </ScreenErrorBoundary>
@@ -36,7 +36,7 @@ export const catalogRoutes: RouteObject[] = [
     path: 'catalog/:id',
     element: (
       <ScreenErrorBoundary name="catalog.detail">
-        <Suspense fallback={null}>
+        <Suspense fallback={<ScreenFallback />}>
           <ReleaseDetail />
         </Suspense>
       </ScreenErrorBoundary>
@@ -49,7 +49,7 @@ export const catalogRoutes: RouteObject[] = [
     path: 'distribution',
     element: (
       <ScreenErrorBoundary name="catalog.distribution">
-        <Suspense fallback={null}>
+        <Suspense fallback={<ScreenFallback />}>
           <DistributionBoard />
         </Suspense>
       </ScreenErrorBoundary>

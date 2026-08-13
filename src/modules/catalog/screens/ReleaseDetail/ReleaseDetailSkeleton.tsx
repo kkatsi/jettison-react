@@ -73,7 +73,7 @@ export function ReleaseDetailSkeleton({ trackColumns }: { trackColumns: string }
             ))}
           </Card>
 
-          <Card className="gap-0 overflow-hidden py-0">
+          <Card className="gap-0 overflow-hidden py-0 self-stretch">
             <PanelHeaderSkeleton title="Distribution status" />
             {STORES.map((key) => (
               <div
@@ -118,6 +118,6 @@ function PanelHeaderSkeleton({ title }: { title: string }) {
   );
 }
 
-const TRACKS = Array.from({ length: 8 }, (_, index) => `track-${index}`);
+const TRACKS = Array.from({ length: 6 }, (_, index) => `track-${index}`);
 const STORES = Array.from({ length: 5 }, (_, index) => `store-${index}`);
 const ENTRIES = Array.from({ length: 4 }, (_, index) => `entry-${index}`);
