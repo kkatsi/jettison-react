@@ -15,12 +15,7 @@ export type CatalogSummary = {
 
 const DAY_MS = 86_400_000;
 
-/**
- * The catalogue's clock is its newest submission, not the wall clock: the
- * simulated label lives on a fixed date (ADR-002), and a console that reports
- * "oldest waiting 400 days" next year proves nothing. A release submitted in
- * this tab carries a real timestamp, so it becomes the clock the moment it lands.
- */
+/** The clock is the newest submission, not the wall clock, so the seed never ages (ADR-002). */
 export function catalogClock(releases: readonly { submittedAt: string | null }[]): number {
   return releases.reduce(
     (latest, release) =>
@@ -67,11 +62,7 @@ export function summarise(releases: readonly Release[], now: number): CatalogSum
 /** Which way the sparkline points. A code, not words — constants.ts owns those (R6). */
 export type TrendDirection = 'rising' | 'falling' | 'steady' | 'none';
 
-/**
- * The second half of the trend against the first. A threshold, because a line
- * that wobbles by a percent is not a story — calling that "rising" would make
- * the word mean nothing on the rows where it is true.
- */
+/** Second half against the first, with a threshold: a wobble is not a trend. */
 export function trendDirection(points: readonly number[], threshold = 0.05): TrendDirection {
   if (points.length < 2) return 'none';
 

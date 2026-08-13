@@ -2,11 +2,7 @@ import { cn } from '@shared/utils/cn';
 
 export type SparklineProps = {
   points: readonly number[];
-  /**
-   * What the line says, for anyone who cannot see it. Give it whenever the
-   * sparkline stands in a column of its own; leave it off when the exact number
-   * sits beside it and the line is decoration.
-   */
+  /** What the line says. Give it when the sparkline stands in a column of its own. */
   label?: string;
   width?: number;
   height?: number;
@@ -16,9 +12,8 @@ export type SparklineProps = {
 /** A trend, not a chart: no axes, no tooltip, no library. */
 export function Sparkline({ points, label, width = 64, height = 18, className }: SparklineProps) {
   const peak = Math.max(0, ...points);
-  // With a label the line is content and says so; without one it is decoration and
-  // hides. `title` gives the pointer the same sentence the screen reader gets —
-  // upgrade to the kit's Tooltip if it ever needs to be styled or touch-friendly.
+  // Labelled, the line is content; unlabelled, decoration. The pointer gets the
+  // same sentence as the screen reader.
   const described = label
     ? { role: 'img' as const, 'aria-label': label, title: label }
     : { 'aria-hidden': true };

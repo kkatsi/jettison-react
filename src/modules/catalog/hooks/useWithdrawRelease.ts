@@ -1,7 +1,5 @@
-// Taking a release out of distribution, from wherever the label happens to be
-// looking at it: a row in the catalogue, a row on the board, the release's own
-// screen. Promoted to the module's hooks/ when the second screen needed it
-// (Ch. 2 §6) — one confirmation flow, so the three cannot drift apart.
+// One confirmation flow for three screens. Promoted here when the second one
+// needed it (Ch. 2 §6).
 
 import { useState } from 'react';
 

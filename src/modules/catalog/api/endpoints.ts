@@ -35,17 +35,15 @@ export const catalogApi = api.injectEndpoints({
       providesTags: (_result, _error, id) => [{ type: 'ReleaseDetail' as const, id }],
     }),
 
-    // The five stores are label configuration: they change about once a year, so
-    // the detail screen joins against them rather than the backend denormalising
-    // a store name onto every delivery.
+    // Label configuration, so the detail screen joins against it rather than have
+    // a store name denormalised onto every delivery.
     stores: build.query<StoreDto[], void>({
       query: () => '/stores',
       providesTags: ['Stores'],
     }),
 
-    // The same resource activity owns a feed of, defined again here rather than
-    // imported from it (Ch. 4 §1). Its own tag: invalidating this panel must not
-    // drag another module's feed into a refetch.
+    // Activity owns a feed of the same resource; this module defines its own
+    // endpoint and its own tag rather than reach for one (Ch. 4 §1).
     releaseActivity: build.query<ActivityEntry[], string>({
       query: (releaseId) => `/activity?releaseId=${releaseId}`,
       transformResponse: (dtos: ActivityEntryDto[]) => dtos.map(toActivityEntry),
@@ -54,11 +52,7 @@ export const catalogApi = api.injectEndpoints({
       ],
     }),
 
-    /**
-     * Withdrawal, and everything that follows from it — declared here, where a
-     * second call path cannot forget it (Ch. 4 §4). Class A: patch this module's
-     * own detail and list. Class C: announce it, and let whoever cares react.
-     */
+    /** Class A on its own cache, Class C to everyone else — declared where a caller cannot forget it (Ch. 4 §4). */
     withdrawRelease: build.mutation<ReleaseDetail, string>({
       query: (id) => ({ url: `/releases/${id}/withdraw`, method: 'POST' }),
       transformResponse: toReleaseDetail,

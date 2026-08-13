@@ -25,11 +25,8 @@ export function AppLayout() {
               — in app, never inside a module, or ejecting that module would take
               the other screens' filters with it (ADR-004). */}
           <NuqsAdapter>
-            {/* Keyed on the path (useAppLayout): the screen slot is a new mount on
-                every navigation, not an update, which is the only way React shows
-                a fallback for code that is still downloading. Without it the
-                console sits on the old screen doing nothing until the chunk
-                lands, which reads as a dead click on a slow connection. */}
+            {/* Keyed per path: React shows a fallback for a mount, not an update,
+                so without it the old screen sits there while the chunk downloads. */}
             <Suspense key={screenKey} fallback={<ScreenFallback />}>
               <Outlet />
             </Suspense>

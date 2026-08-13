@@ -1,8 +1,5 @@
-// This module's reducer switch (Ch. 4 §5): one `on` per fact it cares about,
-// each one a routing table — a lookup, a cache-util call, a delayed invalidation.
-// Nothing here knows which module dispatched, and neither event's producer exists
-// yet: release-editor brings both. An event nobody dispatches costs nothing,
-// which is the same reason jettisoning its producer is safe.
+// This module's reducer switch (Ch. 4 §5). Neither producer exists yet —
+// release-editor brings both, and an event nobody dispatches costs nothing.
 
 import { invalidateTagsAfterDelay, upsertListItem } from '@core/api/cache-utils';
 import { config } from '@core/config/config';
@@ -13,9 +10,8 @@ import { catalogApi } from '../api/endpoints';
 import { toRowFromSubmission } from '../api/transformations';
 
 export const registerCatalogReactions = createReactions((on) => {
-  // The release the editor just submitted has to be on the board now. The list
-  // endpoint will not return it for another couple of seconds (ADR-002), so the
-  // announcement is what puts it there.
+  // The list endpoint won't have it for another couple of seconds (ADR-002), so
+  // the announcement is what puts it on screen.
   on(releaseSubmitted, ({ release }, { dispatch }) => {
     if (config.cacheMode === 'naive') {
       // The demo's broken path: refetch immediately, get the list from before the

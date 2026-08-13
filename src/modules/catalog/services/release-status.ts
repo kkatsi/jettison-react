@@ -22,12 +22,7 @@ export function deliveryProgress(deliveries: readonly DeliveryDto[]): DeliveryPr
   };
 }
 
-/**
- * The aggregate. The stores are the truth: a release the backend still calls
- * `delivering` is live once every store has it, and a single rejection blocks
- * the release however the row describes itself — that is the whole reason this
- * is a service and not a lookup table.
- */
+/** The stores are the truth: all delivered is live, one rejection blocks. */
 export function pipelineStage(release: {
   status: ReleaseStatus;
   deliveries: readonly DeliveryDto[];
@@ -49,10 +44,7 @@ export function isInFlight(stage: PipelineStage): boolean {
   return stage === 'submitted' || stage === 'in-review' || stage === 'delivering';
 }
 
-/**
- * In the pipeline at all. A withdrawn release loses its submission timestamp, so
- * this is what drops it off the board the moment the withdrawal lands.
- */
+/** A withdrawal clears the submission, which is what drops it off the board. */
 export function isInPipeline(release: {
   status: ReleaseStatus;
   submittedAt: string | null;
@@ -60,15 +52,7 @@ export function isInPipeline(release: {
   return release.status !== 'draft' && release.submittedAt !== null;
 }
 
-/**
- * Taking a release back out of distribution. It is the same call either way, but
- * not the same act, and the console must not tell the label it is withdrawing a
- * record from stores that never received one:
- *
- * - `withdraw` — stores have it, and are being asked to take it down.
- * - `cancel` — nothing was ever delivered, so the submission is simply pulled.
- * - `null` — a draft was never submitted; there is nothing to take back.
- */
+/** Same call either way, not the same act: nothing was delivered for a `cancel`. */
 export function withdrawalAction(stage: PipelineStage): 'withdraw' | 'cancel' | null {
   if (stage === 'draft') return null;
   return stage === 'delivering' || stage === 'live' ? 'withdraw' : 'cancel';

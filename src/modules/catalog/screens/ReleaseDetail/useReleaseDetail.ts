@@ -1,5 +1,4 @@
-// The screen's one hook (R2). Three queries and a mutation in, one view-model
-// out (R3) — including the confirm dialog's whole state, so the view holds none.
+// The screen's one hook (R2): three queries and a mutation in, one view-model out.
 
 import { useNavigate, useParams } from 'react-router';
 

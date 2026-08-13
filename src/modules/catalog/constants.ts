@@ -62,9 +62,5 @@ export const WITHDRAWAL: Record<
   },
 };
 
-/**
- * Who the console is acting as. A real app reads this off the session; the mock
- * backend independently stamps the same name on what it records, because across
- * that boundary the two are separate systems agreeing, not one shared constant.
- */
+/** Who the console acts as. A real app reads this off the session. */
 export const SESSION_ACTOR = 'Mara Kessler';

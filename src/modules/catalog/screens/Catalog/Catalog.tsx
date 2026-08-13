@@ -85,9 +85,8 @@ export function Catalog() {
       </div>
 
       <Card className="min-h-60 flex-1 gap-0 overflow-hidden py-0">
-        {/* The kit wraps every table in its own scroll container, so that is what
-            gets the height and does the scrolling — the header sticks to it, and
-            the footer below stays put instead of being painted over. */}
+        {/* The kit's table wrapper is the scroll container, so it takes the height —
+            the header sticks to it and the footer stays put. */}
         <div className="min-h-0 flex-1 *:data-[slot=table-container]:h-full *:data-[slot=table-container]:overflow-y-auto">
           <Table className="table-fixed">
             <colgroup>

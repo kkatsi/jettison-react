@@ -167,11 +167,7 @@ const NOW = new Date('2026-08-12T09:14:00.000Z');
 /** Real ISRC format, fictional codes. */
 const isrc = (index: number): string => `GBLOR26${String(index + 1).padStart(5, '0')}`;
 
-/**
- * A time of day somebody could have been at their desk. Every timestamp in the
- * console is shown to the minute, and a whole column reading 00:00 is the tell
- * that nobody generated the data with a working day in mind.
- */
+/** A time somebody could have been at their desk — a column of 00:00 reads as generated. */
 const atWorkingHour = (timestamp: number, random: () => number): string =>
   iso(new Date(timestamp + between(random, 8, 18) * 3600000 + between(random, 0, 59) * 60000));
 
@@ -197,11 +193,8 @@ export function buildSeed(seed = 20140611): Seed {
     if (!artist) throw new Error(`seed: unknown artist ${artistName}`);
 
     const releasedAt = new Date(releaseDate).getTime();
-    // A release is submitted before its street date — but nothing is submitted in
-    // the future, whatever its street date says. Without the clamp, a release
-    // planned for November carries a September submission, and every screen that
-    // takes its clock from the newest submission (the board, the stat tiles) reads
-    // the label's own dates as if they had already happened.
+    // Before the street date, but never in the future: the screens take their clock
+    // from the newest submission, and would read next year's plans as history.
     const submittedAt =
       status === 'draft'
         ? null

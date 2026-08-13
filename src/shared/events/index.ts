@@ -1,12 +1,6 @@
-// Every fact that crosses a module boundary, in one readable list.
-//
-// Naming: domain/<entity>/<past-tense fact>. Payload: the smallest thing a
-// listener needs, and its type lives here too (shared can't import a module).
-// No logic — createAction calls only.
-//
-// The producers arrive with catalog and release-editor; activity already listens.
-// That order is deliberate: an event nobody dispatches costs nothing, which is
-// the same reason jettisoning a producer is safe.
+// Every fact that crosses a module boundary, in one list.
+// domain/<entity>/<past-tense fact>, no logic, payload types included because
+// shared cannot import a module.
 
 import { createAction } from '@reduxjs/toolkit';
 
@@ -25,14 +19,8 @@ type ReleaseEvent = {
 };
 
 /**
- * Submission carries more, because it asks more: a listener has to put a row on
- * screen for a release its own list endpoint will not return for another few
- * seconds, and a row needs more than a name. Still the smallest thing a listener
- * needs — it is that this listener needs a row.
- *
- * The type vocabulary is repeated here rather than imported: shared cannot see
- * inside a module, and a boundary is the one place duplication is the cheap
- * answer (Ch. 2 §6).
+ * Submission carries a whole row: the catalogue has to show the release seconds
+ * before its own list endpoint will return it.
  */
 export type SubmittedRelease = EventRelease & {
   artistId: string;

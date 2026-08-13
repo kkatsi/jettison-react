@@ -35,12 +35,7 @@ export function placeOnAxis(date: string, now: number): number | null {
   return percent >= 0 && percent <= 100 ? percent : null;
 }
 
-/**
- * The ruler. Its week labels are dates, and so are the pins' — two dates on the
- * same line at nearly the same x read as one broken date, so the ruler gives way
- * to the release. The tick stays: losing the mark would move the ruler, losing
- * the label only makes it sparser.
- */
+/** A week label gives way to a pin on top of it; the tick stays, or the ruler moves. */
 export function scheduleAxis(
   now: number,
   placements: readonly SchedulePlacement[] = [],
@@ -63,11 +58,7 @@ export function scheduleAxis(
   };
 }
 
-/**
- * Places the releases whose street date falls inside the window, in date order.
- * A title is hidden when its nearest neighbour is closer than the width of one —
- * the dot and the date stay, so nothing disappears, it just stops colliding.
- */
+/** Street dates inside the window, in order. Crowded titles drop; dots and dates stay. */
 export function schedulePlacements(
   releases: readonly Release[],
   now: number,

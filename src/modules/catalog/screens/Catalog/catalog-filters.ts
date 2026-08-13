@@ -51,14 +51,7 @@ export function isFiltered(filters: CatalogFilters): boolean {
   );
 }
 
-/**
- * A catalogue reads as the back catalogue first — newest release at the top —
- * with everything still to come after it, soonest first.
- *
- * Sorting by date alone opens the console on next year's drafts: the least useful
- * rows in the label, and the only ones with no numbers to show, so the first
- * screen anyone sees is a column of dashes.
- */
+/** Back catalogue newest-first, then what is coming — date alone opens on next year's drafts. */
 export function sortCatalogue(releases: readonly Release[], now: number): Release[] {
   const isReleased = (release: Release) =>
     Date.parse(`${release.releaseDate}T00:00:00.000Z`) <= now;
@@ -113,10 +106,7 @@ export function paginate<T>(items: readonly T[], page: number, size = PAGE_SIZE)
   };
 }
 
-/**
- * The page numbers a reader can actually use: first, last, and the neighbours of
- * the current one. Gaps become ellipses the view renders as dead space.
- */
+/** First, last, and the current page's neighbours; the gaps become ellipses. */
 export function pageWindow(page: number, pageCount: number): (number | 'gap')[] {
   const window: (number | 'gap')[] = [];
 

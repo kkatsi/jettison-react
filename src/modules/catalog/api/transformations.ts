@@ -58,11 +58,7 @@ export function toTrack(dto: TrackDto): Track {
   };
 }
 
-/**
- * The join the detail screen needs: deliveries are keyed by store, the panel
- * lists stores. A store the release was never sent to still gets a row — the
- * label needs to see the gap, not have it hidden by an inner join.
- */
+/** Every store gets a row, including ones the release never reached — the gap matters. */
 export function toStoreDeliveries(
   deliveries: readonly DeliveryDto[],
   stores: readonly StoreDto[],
@@ -93,12 +89,7 @@ export function toActivityEntry(dto: ActivityEntryDto): ActivityEntry {
   };
 }
 
-/**
- * A row built from a domain event rather than a response. The catalogue has to
- * show a release the list endpoint will not return for another few seconds
- * (Ch. 4 §3), so the announcement itself is the source — and this is the one
- * place that knows how to read it.
- */
+/** A row built from the announcement, for the seconds before the list endpoint has it. */
 export function toRowFromSubmission(release: SubmittedRelease): Release {
   return {
     id: release.id,

@@ -1,17 +1,7 @@
 import { Card } from './card';
 import { Skeleton } from './skeleton';
 
-/**
- * What a routed screen shows while its own code is still arriving. Screens are
- * lazy-loaded (Ch. 2 §3), so between the click and the first render there is a
- * chunk to fetch — invisible on a fast connection, a blank panel on a slow one.
- *
- * Deliberately generic. A screen's own skeleton knows its columns and its
- * panels, but it lives inside the chunk being fetched, so it cannot be the thing
- * that covers the fetch. This is the shape every screen in the console shares —
- * a toolbar over a panel — and it hands over to the real skeleton the moment the
- * screen mounts.
- */
+/** Shown while a screen's code, or its first data, is still on the way. */
 export function ScreenFallback() {
   return (
     <div role="status" aria-label="Loading" className="flex min-h-0 flex-1 flex-col gap-4 p-6">

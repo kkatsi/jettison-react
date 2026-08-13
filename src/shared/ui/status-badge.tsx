@@ -2,11 +2,7 @@ import { cn } from '@shared/utils/cn';
 
 import { Badge } from './badge';
 
-/**
- * The console's status palette. Deliberately not release statuses: `shared` may
- * not speak the domain (Ch. 2 §7), so callers map their own states onto a tone
- * in their `constants.ts`.
- */
+/** Tones, not release statuses: shared may not speak the domain (Ch. 2 §7). */
 export type Tone = 'live' | 'warning' | 'danger' | 'idle' | 'brand';
 
 export const TONE_TEXT: Record<Tone, string> = {

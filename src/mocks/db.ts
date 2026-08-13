@@ -32,11 +32,7 @@ export function tracksFor(releaseId: string): Track[] {
 /** The label's own name for the session. A real backend would read it off the token. */
 const SESSION_ACTOR = 'Mara Kessler';
 
-/**
- * Withdrawing puts a release back in the label's hands: out of the pipeline, out
- * of the stores, back to a draft it can resubmit. Returns undefined for an
- * unknown id so the handler can 404 rather than invent one.
- */
+/** Out of the pipeline, out of the stores, back to a draft. Undefined for an unknown id. */
 export function withdrawRelease(id: string): Release | undefined {
   const release = db.releases.get(id);
   if (!release) return undefined;

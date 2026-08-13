@@ -15,14 +15,7 @@ export type RowAction = {
   isDestructive?: boolean;
 };
 
-/**
- * The per-row menu. Every item arrives already decided by the row's view-model —
- * this knows how to open a menu and nothing about releases.
- *
- * Destructive items sort to the bottom behind a rule, which is the registry's own
- * pattern: the item that cannot be undone should never sit where a reader's hand
- * expects the harmless one.
- */
+/** Destructive items sort last, behind a rule — never where a hand expects the safe one. */
 export function RowActions({ label, actions }: { label: string; actions: RowAction[] }) {
   if (actions.length === 0) return null;
 

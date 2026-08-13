@@ -80,13 +80,7 @@ export type CatalogModel = {
 
 const ALL: FilterOption = { value: 'all', label: 'all' };
 
-/**
- * The screen's URL contract. Filters belong in the URL — a label manager sends
- * colleagues a filtered catalogue, and a reload has to survive it (Ch. 4 §2) —
- * and the parsers carry the two rules that go with it: a value equal to its
- * default never reaches the query string, and a value the allowlist does not
- * recognise falls back instead of blanking the table (ADR-004).
- */
+/** The screen's URL contract: defaults stay out of the query string, junk falls back (ADR-004). */
 const FILTER_PARSERS = {
   query: parseAsString.withDefault(DEFAULT_FILTERS.query),
   artist: parseAsString.withDefault(DEFAULT_FILTERS.artist),

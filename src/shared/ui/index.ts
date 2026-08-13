@@ -1,9 +1,6 @@
-// The kit, and the only door to it. Screens import from '@shared/ui'; nothing
-// outside this folder imports @base-ui/react.
-//
-// Components come from shadcn (`npx shadcn add <name>`) and are ours once added.
-// Customise in a sibling file, not inside a generated one, so `--overwrite` stays
-// a safe way to take upstream fixes. Add them when a screen needs them.
+// The kit's only door: nothing outside this folder imports @base-ui/react.
+// Components come from shadcn and are ours once added — customise in a sibling
+// file, never inside a generated one, so `--overwrite` stays safe.
 
 export { Badge, badgeVariants } from './badge';
 export { Button, buttonVariants } from './button';

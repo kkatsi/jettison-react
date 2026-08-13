@@ -15,14 +15,7 @@ const BACKEND_COPY: Record<typeof config.cacheMode, BackendIndicator> = {
 export function useAppLayout(): {
   title: string;
   backend: BackendIndicator;
-  /**
-   * Identity for the screen slot. React Router navigates inside a transition, and
-   * React will not replace visible content with a fallback during one — so a
-   * screen whose code is still downloading leaves the *previous* screen on show,
-   * doing nothing, until the chunk lands. Keying the boundary on the path makes
-   * each screen a fresh mount instead of an update, which is what lets its
-   * fallback appear the moment the link is clicked.
-   */
+  /** Keys the screen slot: a mount, not an update, or React holds the old screen. */
   screenKey: string;
 } {
   const { pathname } = useLocation();

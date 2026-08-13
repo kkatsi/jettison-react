@@ -26,11 +26,7 @@ export function isBoardFiltered(filters: BoardFilters): boolean {
   return filters.artist !== 'all' || filters.stage !== 'all';
 }
 
-/**
- * The pipeline, newest submission first — and only the pipeline. A withdrawn
- * release loses its submission timestamp, which is what drops it off the board
- * the moment the withdrawal's patch lands.
- */
+/** Newest submission first. A withdrawal clears the timestamp, so the row leaves at once. */
 export function sortByNewestSubmission(releases: readonly Release[]): Release[] {
   return releases
     .filter(isInPipeline)

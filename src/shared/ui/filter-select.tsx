@@ -13,10 +13,7 @@ export type FilterSelectProps = {
   className?: string;
 };
 
-/**
- * The console's filter control. Born inside activity's feed screen; promoted
- * here when the catalogue became a second module needing exactly it (Ch. 2 §6).
- */
+/** Born in activity's feed; promoted when the catalogue needed exactly it (Ch. 2 §6). */
 export function FilterSelect({
   label,
   options,

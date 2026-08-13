@@ -1,9 +1,5 @@
-// The table's column widths. A <colgroup> with `table-fixed` is what makes the
-// header and the body agree — the browser's own column algorithm, rather than a
-// grid template repeated in two places and drifting apart.
-// The artwork has no column of its own: it is part of how a release is named, not
-// a fact about it, so it sits in the Release cell — and the header has no empty
-// first cell to explain.
+// Column widths for <colgroup>: with `table-fixed` the browser keeps the header
+// and the body in step. Artwork rides in the Release cell, it is not a column.
 export const CATALOG_COLUMNS = [
   'w-auto', // release · artwork, title, catalogue number
   'w-42', // artist
