@@ -173,3 +173,21 @@
     background: transparent;
   }
 }
+
+/* Anything you can click says so under the pointer.
+
+   Tailwind v4's preflight dropped the browser default of `cursor: pointer` on
+   buttons, and several generated kit components set `cursor-default` outright —
+   so this rule is deliberately unlayered: unlayered CSS outranks every @layer,
+   which is the only way it beats a utility class sitting on the element itself.
+   Disabled controls are left alone; a pointer over something inert is a lie. */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+[role='menuitem']:not([data-disabled]),
+[role='option']:not([data-disabled]),
+[role='tab']:not([aria-disabled='true']),
+label[for],
+summary,
+a[href] {
+  cursor: pointer;
+}

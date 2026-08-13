@@ -5,9 +5,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@shared/ui';
-import { cn } from '@shared/utils/cn';
 
 export type RowAction = {
   label: string;
@@ -16,11 +16,18 @@ export type RowAction = {
 };
 
 /**
- * The per-row menu. Every item comes from the row's view-model already decided —
+ * The per-row menu. Every item arrives already decided by the row's view-model —
  * this knows how to open a menu and nothing about releases.
+ *
+ * Destructive items sort to the bottom behind a rule, which is the registry's own
+ * pattern: the item that cannot be undone should never sit where a reader's hand
+ * expects the harmless one.
  */
 export function RowActions({ label, actions }: { label: string; actions: RowAction[] }) {
   if (actions.length === 0) return null;
+
+  const ordinary = actions.filter((action) => !action.isDestructive);
+  const destructive = actions.filter((action) => action.isDestructive);
 
   return (
     <DropdownMenu>
@@ -30,7 +37,7 @@ export function RowActions({ label, actions }: { label: string; actions: RowActi
             variant="ghost"
             size="icon"
             aria-label={label}
-            // The row itself is a link to the release; the menu is not.
+            // The row itself opens the release; the menu is not the row.
             onClick={(event) => event.stopPropagation()}
             className="size-7 text-dim hover:text-text data-popup-open:text-text"
           >
@@ -38,20 +45,32 @@ export function RowActions({ label, actions }: { label: string; actions: RowActi
           </Button>
         }
       />
-      <DropdownMenuContent align="end" className="min-w-48">
-        {actions.map((action) => (
-          <DropdownMenuItem
-            key={action.label}
-            onClick={(event) => {
-              event.stopPropagation();
-              action.onSelect();
-            }}
-            className={cn(action.isDestructive && 'text-danger data-highlighted:text-danger')}
-          >
-            {action.label}
-          </DropdownMenuItem>
+
+      <DropdownMenuContent align="end" className="min-w-52">
+        {ordinary.map((action) => (
+          <Item key={action.label} action={action} />
+        ))}
+
+        {ordinary.length > 0 && destructive.length > 0 ? <DropdownMenuSeparator /> : null}
+
+        {destructive.map((action) => (
+          <Item key={action.label} action={action} />
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function Item({ action }: { action: RowAction }) {
+  return (
+    <DropdownMenuItem
+      variant={action.isDestructive ? 'destructive' : 'default'}
+      onClick={(event) => {
+        event.stopPropagation();
+        action.onSelect();
+      }}
+    >
+      {action.label}
+    </DropdownMenuItem>
   );
 }
