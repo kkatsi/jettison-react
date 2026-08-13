@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { Button, FilterSelect, Input } from '@shared/ui';
 
 import { RANGE_OPTIONS, TYPE_OPTIONS } from '../../constants';
+import { ActivityFeedSkeleton } from './ActivityFeedSkeleton';
 import { EventRow } from './EventRow';
 import { useActivityFeed } from './useActivityFeed';
 
@@ -62,7 +63,7 @@ export function ActivityFeed() {
           </div>
         ))}
 
-        {isLoading ? <Notice>Loading the feed…</Notice> : null}
+        {isLoading ? <ActivityFeedSkeleton /> : null}
 
         {failure ? (
           <Notice>

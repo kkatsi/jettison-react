@@ -5,6 +5,7 @@ import { cn } from '@shared/utils/cn';
 
 import { WithdrawDialog } from '../../components/WithdrawDialog';
 
+import { ReleaseDetailSkeleton } from './ReleaseDetailSkeleton';
 import { useReleaseDetail, type StoreRow, type TrackRow } from './useReleaseDetail';
 
 const TRACK_COLUMNS = 'grid grid-cols-[34px_1fr_132px_72px_108px] items-center gap-3 px-4';
@@ -27,19 +28,19 @@ export function ReleaseDetail() {
     onBack,
   } = useReleaseDetail();
 
-  if (isLoading || !release) {
+  if (isLoading) return <ReleaseDetailSkeleton trackColumns={TRACK_COLUMNS} />;
+
+  if (!release) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center font-mono text-xs text-dim">
-        {failure ? (
-          <div className="flex flex-col items-center gap-2">
-            <span>{failure.message}</span>
+        <div className="flex flex-col items-center gap-2">
+          <span>{failure?.message ?? 'This release could not be found.'}</span>
+          {failure ? (
             <Button variant="outline" size="sm" onClick={failure.retry}>
               Try again
             </Button>
-          </div>
-        ) : (
-          'Loading the release…'
-        )}
+          ) : null}
+        </div>
       </div>
     );
   }
