@@ -95,7 +95,11 @@ export function useArtworkStep(): ArtworkModel {
 
       void readArtworkFile(file)
         .then((reading) => {
-          setPreview(reading.previewUrl);
+          // The cover it replaces is off screen the moment this renders.
+          setPreview((previous) => {
+            if (previous) URL.revokeObjectURL(previous);
+            return reading.previewUrl;
+          });
           // Saved together: the colours are only true of this file.
           return save({ artworkFile: reading.file, artwork: reading.artwork });
         })
@@ -103,7 +107,10 @@ export function useArtworkStep(): ArtworkModel {
     },
 
     onRemove: () => {
-      setPreview(null);
+      setPreview((previous) => {
+        if (previous) URL.revokeObjectURL(previous);
+        return null;
+      });
       void save({ artworkFile: null });
     },
     error,
@@ -124,6 +131,8 @@ type ArtworkReading = {
  */
 async function readArtworkFile(file: File): Promise<ArtworkReading> {
   const bitmap = await createImageBitmap(file);
+  // Read before closing: close() zeroes the bitmap's own dimensions.
+  const size = { width: bitmap.width, height: bitmap.height };
 
   const canvas = document.createElement('canvas');
   canvas.width = 1;
@@ -138,7 +147,7 @@ async function readArtworkFile(file: File): Promise<ArtworkReading> {
   bitmap.close();
 
   return {
-    file: { name: file.name, width: bitmap.width, height: bitmap.height },
+    file: { name: file.name, ...size },
     artwork: artworkFromSample(data),
     previewUrl: URL.createObjectURL(file),
   };
