@@ -14,6 +14,18 @@ export {
   CardTitle,
 } from './card';
 export {
+  Combobox,
+  ComboboxCollection,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxLabel,
+  ComboboxList,
+  ComboboxTrigger,
+} from './combobox';
+export {
   Dialog,
   DialogClose,
   DialogContent,
@@ -68,5 +80,11 @@ export { Artwork, type ArtworkColours } from './artwork';
 export { ScreenErrorBoundary } from './screen-error-boundary';
 export { ScreenFallback } from './screen-fallback';
 export { Sparkline } from './sparkline';
+export {
+  TimeSeriesChart,
+  type TimeSeriesBand,
+  type TimeSeriesChartProps,
+  type TimeSeriesPoint,
+} from './time-series-chart';
 export { StatTile } from './stat-tile';
 export { StatusBadge, TONE_TEXT, type Tone } from './status-badge';
