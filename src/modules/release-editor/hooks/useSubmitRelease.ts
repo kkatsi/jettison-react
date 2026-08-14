@@ -18,7 +18,6 @@ export type IssueRow = {
   title: string;
   detail: string;
   action: string;
-  tone: Tone;
   onFix: () => void;
 };
 
@@ -64,7 +63,6 @@ export function useSubmitRelease(): SubmitModel {
         title: copy.title(issue),
         detail: copy.detail(issue),
         action: copy.action,
-        tone: copy.tone,
         onFix: () => void navigate(`/releases/${id}/edit/${copy.step}`),
       };
     }),
@@ -82,8 +80,9 @@ export function useSubmitRelease(): SubmitModel {
           title: REVIEW.blocked.title,
           count: REVIEW.blocked.count(issues.length),
           note: REVIEW.blocked.note,
-          // One blocking issue colours the whole panel — the worst one wins.
-          tone: issues.some((issue) => ISSUE[issue.code].tone === 'danger') ? 'danger' : 'warning',
+          // Amber, not red: an unfinished release has not failed, and red is what
+          // this console says when a store has rejected something.
+          tone: 'warning',
         },
 
     submit: {

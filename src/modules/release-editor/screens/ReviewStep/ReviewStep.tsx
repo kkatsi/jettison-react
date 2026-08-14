@@ -20,13 +20,7 @@ export function ReviewStep() {
         <span className="font-mono text-xs text-faint">{catalogNumber}</span>
       </div>
 
-      <Card
-        className={cn(
-          'gap-0 overflow-hidden py-0',
-          !allClear && headline.tone === 'danger' && 'border-danger/25',
-          !allClear && headline.tone === 'warning' && 'border-warning/25',
-        )}
-      >
+      <Card className={cn('gap-0 overflow-hidden py-0', !allClear && 'border-warning/25')}>
         <div className="flex h-11 items-center gap-2.5 border-b border-line px-4">
           <span className={cn('size-1.5 rounded-full bg-current', TONE_TEXT[headline.tone])} />
           <span className="font-semibold">{headline.title}</span>
@@ -46,15 +40,9 @@ export function ReviewStep() {
               key={issue.code}
               className="flex h-14 items-center gap-3 border-b border-panel px-4 last:border-b-0"
             >
-              <span
-                className={cn(
-                  'flex size-5 flex-none items-center justify-center rounded-sm text-xs font-semibold',
-                  issue.tone === 'danger'
-                    ? 'bg-danger/10 text-danger'
-                    : 'bg-warning/10 text-warning',
-                )}
-              >
-                {issue.tone === 'danger' ? '×' : '!'}
+              {/* One mark for all of them: they block submission equally. */}
+              <span className="flex size-5 flex-none items-center justify-center rounded-sm bg-warning/10 text-xs font-semibold text-warning">
+                !
               </span>
 
               <div className="flex min-w-0 flex-col gap-0.5">

@@ -19,7 +19,7 @@ export function Sidebar() {
             <span className="text-brand">/</span>
             <span>ORBIT</span>
           </div>
-          <div className="mt-1.5 font-mono text-3xs tracking-[0.26em] text-faint">
+          <div className="mt-0.5 font-mono text-3xs tracking-[0.26em] text-faint">
             RECORDS · EST 2014
           </div>
         </div>

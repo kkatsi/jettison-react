@@ -105,8 +105,9 @@ export const UNAVAILABLE = {
 };
 
 /**
- * One entry per issue code (R6): what it says, which step fixes it, and how badly
- * it reads. The service decides *whether* — this decides how it is put.
+ * One entry per issue code (R6): what it says and which step fixes it. No
+ * severity: every one of these blocks submission, so ranking them on screen
+ * would be a distinction the rule does not make.
  */
 export const ISSUE: Record<
   IssueCode,
@@ -115,7 +116,6 @@ export const ISSUE: Record<
     detail: (issue: ReleaseIssue) => string;
     action: string;
     step: StepSlug;
-    tone: Tone;
   }
 > = {
   'details-incomplete': {
@@ -123,28 +123,24 @@ export const ISSUE: Record<
     detail: () => 'Every store indexes a release by those two fields before anything else.',
     action: 'Fill in details',
     step: 'details',
-    tone: 'danger',
   },
   'no-tracks': {
     title: () => 'There is no audio to deliver',
     detail: () => 'A release needs at least one track before the stores will take it.',
     action: 'Add tracks',
     step: 'tracks',
-    tone: 'danger',
   },
   'track-metadata-incomplete': {
     title: (issue) => `Track ${issue.amount} has no title`,
     detail: () => 'A delivery with an untitled track is rejected on ingest.',
     action: 'Name it',
     step: 'tracks',
-    tone: 'warning',
   },
   'audio-still-processing': {
     title: (issue) => `Track ${issue.amount} audio is still processing`,
     detail: (issue) => `“${issue.subject}” — loudness analysis finishes shortly after the upload.`,
     action: 'View tracks',
     step: 'tracks',
-    tone: 'warning',
   },
   'artwork-missing': {
     title: () => 'The release has no cover art',
@@ -152,7 +148,6 @@ export const ISSUE: Record<
       `Every store needs a square cover of at least ${MIN_ARTWORK_PX}×${MIN_ARTWORK_PX}.`,
     action: 'Upload artwork',
     step: 'artwork',
-    tone: 'warning',
   },
   'artwork-too-small': {
     title: () => `Artwork is below the ${MIN_ARTWORK_PX}×${MIN_ARTWORK_PX} minimum`,
@@ -160,7 +155,6 @@ export const ISSUE: Record<
       `${issue.subject} is ${issue.amount} across — Soundry and Pulsar will reject it.`,
     action: 'Replace the cover',
     step: 'artwork',
-    tone: 'warning',
   },
   'release-date-too-soon': {
     title: () => 'The release date is too soon',
@@ -168,7 +162,6 @@ export const ISSUE: Record<
       `${issue.subject} gives stores ${issue.amount} days — ${MIN_LEAD_DAYS} is the minimum.`,
     action: 'Pick a later date',
     step: 'details',
-    tone: 'danger',
   },
 };
 
