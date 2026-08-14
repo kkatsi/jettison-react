@@ -139,6 +139,41 @@ describe('the wizard write paths', () => {
     forget(draft.id);
   });
 
+  it('hands back the blank draft it already has rather than burn a second number', async () => {
+    const first = await post('/releases');
+    const draft = (await first.json()) as ReleaseDetail;
+
+    const second = await post('/releases');
+    const again = (await second.json()) as ReleaseDetail;
+
+    expect(first.status).toBe(201);
+    // Nothing was created the second time, and the status says so.
+    expect(second.status).toBe(200);
+    expect(again.id).toBe(draft.id);
+    expect(db.releases.size).toBe(32);
+
+    forget(draft.id);
+  });
+
+  it('starts a new one once the last has been touched', async () => {
+    const first = await readyDraft();
+    const next = (await (await post('/releases')).json()) as ReleaseDetail;
+
+    expect(next.id).not.toBe(first);
+    expect(next.catalogNumber).toBe('LOR-0075');
+
+    forget(first);
+    forget(next.id);
+  });
+
+  it('never mistakes a real draft for an abandoned one', async () => {
+    // Three seeded drafts have titles, tracks and dates somebody chose.
+    const draft = (await (await post('/releases')).json()) as ReleaseDetail;
+
+    expect(draft.catalogNumber).toBe('LOR-0074');
+    forget(draft.id);
+  });
+
   it('names the artist the console only sent an id for', async () => {
     const id = await readyDraft();
     const saved = (await (await fetch(`${api}/releases/${id}`)).json()) as ReleaseDetail;

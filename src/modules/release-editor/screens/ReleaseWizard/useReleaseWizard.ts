@@ -46,7 +46,6 @@ export type WizardModel = {
   header: {
     title: string;
     catalogNumber: string;
-    path: string;
     save: { label: string; tone: Tone; at: string | null; onRetry: (() => void) | null };
     onDiscard: () => void;
   };
@@ -104,7 +103,6 @@ export function useReleaseWizard(): WizardModel {
     header: {
       title: draft?.title || 'New release',
       catalogNumber: draft?.catalogNumber ?? '',
-      path: pathname,
       save: {
         label: indicator.label,
         tone: indicator.tone,

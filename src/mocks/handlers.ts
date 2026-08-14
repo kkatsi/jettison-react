@@ -7,9 +7,9 @@ import { config } from '@core/config/config';
 
 import {
   addTrack,
-  createDraft,
   db,
   deleteDraft,
+  openDraft,
   replaceTracks,
   submitRelease,
   tracksFor,
@@ -61,13 +61,18 @@ export const handlers = [
   }),
 
   // The wizard opens on a real release: the catalogue number is the label's to
-  // allocate, so the console asks for one rather than inventing it.
+  // allocate, so the console asks for one rather than inventing it. Asking twice
+  // without touching the first answer returns it — 200, not 201, because nothing
+  // was created.
   http.post(url('/releases'), async () => {
     await delay(NETWORK_MS);
-    const draft = createDraft();
+    const { release, isNew } = openDraft();
 
-    scheduleProjections();
-    return HttpResponse.json(releaseDetailSchema.parse({ ...draft, tracks: [] }), { status: 201 });
+    if (isNew) scheduleProjections();
+    return HttpResponse.json(
+      releaseDetailSchema.parse({ ...release, tracks: tracksFor(release.id) }),
+      { status: isNew ? 201 : 200 },
+    );
   }),
 
   http.patch(url('/releases/:id'), async ({ params, request }) => {

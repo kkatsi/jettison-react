@@ -50,8 +50,7 @@ export function ReleaseWizard() {
           which release, whether it is saved, and how to abandon it. */}
       <header className="flex h-11 flex-none items-center gap-2.5 border-b border-line px-6">
         <span className="font-medium">{header.title}</span>
-        <span className="font-mono text-xs text-idle">{header.catalogNumber}</span>
-        <span className="font-mono text-xs text-dim">{header.path}</span>
+        <span className="mt-1 font-mono text-xs text-idle">{header.catalogNumber}</span>
 
         <div className="ml-auto flex items-center gap-3">
           <div className="flex items-center gap-2">

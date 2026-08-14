@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
-import { useCreateDraftMutation } from '../../api/endpoints';
+import { useStartReleaseMutation } from '../../api/endpoints';
 
 export type NewReleaseModel = {
   /** The one thing that can go wrong here: the label never issued a number. */
@@ -10,26 +10,27 @@ export type NewReleaseModel = {
 
 /**
  * `/releases/new` is not a screen, it is an allocation: the label issues the
- * catalogue number, and the wizard opens on the release that now exists.
+ * catalogue number, and the wizard opens on the release that now exists — or on
+ * the blank one it already had.
  */
 export function useNewRelease(): NewReleaseModel {
-  const [createDraft] = useCreateDraftMutation();
+  const [startRelease] = useStartReleaseMutation();
   const navigate = useNavigate();
   const [hasFailed, setHasFailed] = useState(false);
-  // A second draft would burn a second catalogue number, and StrictMode runs
-  // effects twice on purpose.
+  // The backend deduplicates blank drafts, but StrictMode runs effects twice on
+  // purpose and there is no reason to ask twice.
   const started = useRef(false);
 
   const start = useCallback(async () => {
     setHasFailed(false);
 
     try {
-      const draft = await createDraft().unwrap();
+      const draft = await startRelease().unwrap();
       void navigate(`/releases/${draft.id}/edit/details`, { replace: true });
     } catch {
       setHasFailed(true);
     }
-  }, [createDraft, navigate]);
+  }, [startRelease, navigate]);
 
   useEffect(() => {
     if (started.current) return;

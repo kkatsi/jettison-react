@@ -26,11 +26,16 @@ export const releaseEditorApi = api.injectEndpoints({
       providesTags: ['Artists'],
     }),
 
-    /** The catalogue number is the label's to allocate, so the wizard asks for one. */
-    createDraft: build.mutation<ReleaseDraft, void>({
+    /**
+     * The catalogue number is the label's to allocate, so the wizard asks for
+     * one rather than inventing it — and asking again while the last one is
+     * still blank returns that same release instead of a second number.
+     */
+    startRelease: build.mutation<ReleaseDraft, void>({
       query: () => ({ url: '/releases', method: 'POST' }),
       transformResponse: (dto: ReleaseDraftDto) => toDraft(dto),
-      // Two drafts because a click was slow is two catalogue numbers burned.
+      // The backend deduplicates, but a retry would still cost a round trip on a
+      // request whose whole job is to be cheap.
       extraOptions: { maxRetries: 0 },
 
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
@@ -42,6 +47,7 @@ export const releaseEditorApi = api.injectEndpoints({
 
         // A draft belongs in the catalogue, but the list model has not projected
         // it yet — the same window every write in this app lives with (ADR-002).
+        // Harmless when the backend handed back one the list already has.
         invalidateTagsAfterDelay(dispatch, ['Releases']);
       },
     }),
@@ -141,7 +147,7 @@ export const releaseEditorApi = api.injectEndpoints({
 export const {
   useDraftQuery,
   useArtistsQuery,
-  useCreateDraftMutation,
+  useStartReleaseMutation,
   useSaveDraftMutation,
   useDiscardDraftMutation,
   useAddTrackMutation,

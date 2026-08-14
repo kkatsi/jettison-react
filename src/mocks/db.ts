@@ -117,7 +117,35 @@ const DAY_MS = 86400000;
 /** Far enough out that the lead-time rule starts satisfied. */
 const DEFAULT_LEAD_DAYS = 28;
 
-export function createDraft(): Release {
+/** Started, then abandoned before a single field was filled in. */
+function isUntouched(release: Release): boolean {
+  return (
+    release.status === 'draft' &&
+    release.title === '' &&
+    release.artistId === '' &&
+    !release.genre &&
+    !release.credits &&
+    !release.artworkFile &&
+    tracksFor(release.id).length === 0
+  );
+}
+
+/**
+ * The label keeps one blank draft at a time: asking for a new release twice
+ * without touching the first hands back the same one. A catalogue number is a
+ * real thing to burn, and an empty row in the catalogue is somebody's confusion.
+ *
+ * A real backend would scope the search to the session's owner; this one has a
+ * single user, so it searches the label.
+ */
+export function openDraft(): { release: Release; isNew: boolean } {
+  const abandoned = [...db.releases.values()].find(isUntouched);
+  if (abandoned) return { release: abandoned, isNew: false };
+
+  return { release: createDraft(), isNew: true };
+}
+
+function createDraft(): Release {
   const catalogNumber = nextCatalogNumber([...db.releases.values()].map((r) => r.catalogNumber));
 
   const draft: Release = {
