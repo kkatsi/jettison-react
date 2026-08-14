@@ -29,10 +29,7 @@ export const AUDIO: Record<AudioStatus, { label: string; tone: Tone }> = {
   ready: { label: 'Ready', tone: 'live' },
 };
 
-/**
- * Withdrawing is triggered from three screens, and on two of them it changes a
- * chip in a row that may be scrolled out of sight — so the console says so.
- */
+/** Fires from three screens, and on two the changed chip may be scrolled out of sight. */
 export const TOAST = {
   withdrawn: (title: string) => ({
     title: `${title} withdrawn from distribution`,
@@ -84,11 +81,8 @@ export const WITHDRAWAL: Record<
 /** Who the console acts as. A real app reads this off the session. */
 export const SESSION_ACTOR = 'Mara Kessler';
 
-/**
- * A draft is unfinished work, so opening one means opening the wizard — which
- * release-editor owns. The link is a URL rather than an import: modules do not
- * know each other, and the shell's catch-all answers if that module is gone.
- */
+/** A URL, not an import: modules don't know each other, and the shell's catch-all
+    answers once release-editor is gone. */
 export const EDIT = {
   action: 'Continue editing',
   pathFor: (id: string) => `/releases/${id}/edit/details`,

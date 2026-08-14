@@ -124,11 +124,7 @@ type ArtworkReading = {
   previewUrl: string;
 };
 
-/**
- * The DOM half of reading a cover, beside the hook that orchestrates it: the
- * whole image is drawn into two pixels, and the browser does the averaging.
- * Services stay pure, so the colour decision itself is in artwork.ts (Ch. 3 §1).
- */
+/** The DOM half, beside the hook that orchestrates it — services stay pure (Ch. 3 §1). */
 async function readArtworkFile(file: File): Promise<ArtworkReading> {
   const bitmap = await createImageBitmap(file);
   // Read before closing: close() zeroes the bitmap's own dimensions.

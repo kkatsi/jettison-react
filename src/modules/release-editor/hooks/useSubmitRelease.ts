@@ -1,6 +1,5 @@
-// Chapter 3's worked example, in one hook: the service returns codes, this maps
-// them to copy and to the action that fixes each one, and the view renders the
-// result. The mutation owns everything that happens after the click (Ch. 4 §4).
+// Chapter 3's worked example: the service returns codes, this maps them to copy
+// and to the action that fixes each one.
 
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

@@ -1,6 +1,5 @@
-// The wizard frame's one hook (R2). The steps below it read the same release from
-// the same cache entry, so nothing is passed down — the query is the sharing
-// mechanism, and no context has to exist.
+// The wizard frame's one hook (R2). The steps read the same cache entry, so
+// nothing is passed down and no context has to exist.
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

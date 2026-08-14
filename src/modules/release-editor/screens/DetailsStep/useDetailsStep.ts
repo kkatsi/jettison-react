@@ -16,10 +16,7 @@ import { useDraftAutosave } from '../../hooks/useDraftAutosave';
 import { mergeEdits, selectPendingEdits, type WithDraft } from '../../state/draft-slice';
 import { leadDays, MIN_LEAD_DAYS } from '../../services/release-eligibility';
 
-/**
- * A draft is allowed to be incomplete — that is what a draft is. It is not allowed
- * to be malformed, and this is the line between the two.
- */
+/** A draft may be incomplete — that is what a draft is. It may not be malformed. */
 const detailsSchema = z.object({
   title: z.string().max(120, 'Stores truncate anything past 120 characters'),
   artistId: z.string(),

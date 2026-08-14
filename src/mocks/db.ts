@@ -27,10 +27,7 @@ export function releasesNewestFirst(): Release[] {
 export const UPLOAD_MS = 1500;
 export const PROCESSING_MS = 6000;
 
-/**
- * Ingestion progress is computed when someone reads it, never pushed. A timer that
- * wrote the status would race the reconcile window and break the demo it decorates.
- */
+/** Computed on read: a timer that wrote the status would race the reconcile window. */
 export function audioStatusAt(uploadedAt: string, now: number): AudioStatus {
   const elapsed = now - Date.parse(uploadedAt);
   if (elapsed < UPLOAD_MS) return 'uploading';
@@ -130,14 +127,8 @@ function isUntouched(release: Release): boolean {
   );
 }
 
-/**
- * The label keeps one blank draft at a time: asking for a new release twice
- * without touching the first hands back the same one. A catalogue number is a
- * real thing to burn, and an empty row in the catalogue is somebody's confusion.
- *
- * A real backend would scope the search to the session's owner; this one has a
- * single user, so it searches the label.
- */
+/** One blank draft at a time — a catalogue number is a real thing to burn. A real
+    backend would scope the search to the session's owner. */
 export function openDraft(): { release: Release; isNew: boolean } {
   const abandoned = [...db.releases.values()].find(isUntouched);
   if (abandoned) return { release: abandoned, isNew: false };

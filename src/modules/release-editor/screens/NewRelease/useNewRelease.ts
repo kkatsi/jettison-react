@@ -8,11 +8,7 @@ export type NewReleaseModel = {
   failure: { onRetry: () => void } | null;
 };
 
-/**
- * `/releases/new` is not a screen, it is an allocation: the label issues the
- * catalogue number, and the wizard opens on the release that now exists — or on
- * the blank one it already had.
- */
+/** Not a screen, an allocation: the label issues a number, the wizard opens on it. */
 export function useNewRelease(): NewReleaseModel {
   const [startRelease] = useStartReleaseMutation();
   const navigate = useNavigate();

@@ -21,10 +21,7 @@ export function shade(channels: readonly number[], factor: number): number[] {
   return channels.slice(0, 3).map((value) => value * factor);
 }
 
-/**
- * A cover downsampled to two pixels — top half, bottom half, RGBA each — becomes
- * the gradient every screen draws for this release.
- */
+/** Two pixels — top half, bottom half, RGBA each — as the gradient every screen draws. */
 export function artworkFromSample(sample: ArrayLike<number>): Artwork {
   const pixels = [...Array.from(sample)];
 

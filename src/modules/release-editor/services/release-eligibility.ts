@@ -1,6 +1,5 @@
-// What stops a release being submitted. Pure functions returning codes, never
-// copy (R5, R6): constants.ts owns the words, the hook owns the actions, and this
-// file is where the label's rules can be read in one sitting.
+// What stops a release being submitted. Codes, never copy (R5, R6) — the label's
+// rules in one sitting.
 
 import type { ArtworkFile, DraftTrack, ReleaseType } from '../api/types';
 
@@ -39,10 +38,7 @@ export type SubmissionCandidate = {
 
 const DAY_MS = 86400000;
 
-/**
- * Whole days between today and the street date. Both are calendar dates, so this
- * counts days, not hours — a release date is not a time.
- */
+/** Whole days: a release date is a date, not a time. */
 export function leadDays(releaseDate: string, today: string): number {
   const from = Date.parse(`${today}T00:00:00Z`);
   const to = Date.parse(`${releaseDate}T00:00:00Z`);
@@ -61,10 +57,7 @@ export function meetsArtworkRequirements(file: ArtworkFile | null): boolean {
   return file.width >= MIN_ARTWORK_PX && file.height >= MIN_ARTWORK_PX;
 }
 
-/**
- * Everything between this release and the stores, in the order the wizard would
- * have the label fix them. An empty list is the only thing that opens submission.
- */
+/** Everything between this release and the stores. An empty list opens submission. */
 export function releaseIssues(release: SubmissionCandidate, today: string): ReleaseIssue[] {
   const issues: ReleaseIssue[] = [];
   const issue = (code: IssueCode, subject: string | null = null, amount: number | null = null) =>

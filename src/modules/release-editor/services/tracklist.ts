@@ -12,10 +12,7 @@ export function isIngesting(tracks: readonly DraftTrack[]): boolean {
   return tracks.some((track) => track.audioStatus !== 'ready');
 }
 
-/**
- * Tracks that were not ready last time we looked and are now. The transition is
- * the fact worth announcing — a track that has always been ready is not news.
- */
+/** The transition, not the state: a track that was always ready is not news. */
 export function newlyReady(
   before: ReadonlyMap<string, AudioStatus>,
   tracks: readonly DraftTrack[],

@@ -1,6 +1,5 @@
-// The endpoints this module owns, registered with the one client in core
-// (Ch. 4 §1). Catalog reads the same release through its own endpoint; the shared
-// tag is what keeps the two cache entries agreeing.
+// The endpoints this module owns (Ch. 4 §1). Catalog reads the same release
+// through its own; the shared tag is what keeps both cache entries agreeing.
 
 import { invalidateTagsAfterDelay } from '@core/api/cache-utils';
 import { releaseSubmitted } from '@shared/events';
@@ -26,35 +25,25 @@ export const releaseEditorApi = api.injectEndpoints({
       providesTags: ['Artists'],
     }),
 
-    /**
-     * The catalogue number is the label's to allocate, so the wizard asks for
-     * one rather than inventing it — and asking again while the last one is
-     * still blank returns that same release instead of a second number.
-     */
+    /** Asking again while the last one is still blank returns that same release. */
     startRelease: build.mutation<ReleaseDraft, void>({
       query: () => ({ url: '/releases', method: 'POST' }),
       transformResponse: (dto: ReleaseDraftDto) => toDraft(dto),
-      // The backend deduplicates, but a retry would still cost a round trip on a
-      // request whose whole job is to be cheap.
+      // The backend deduplicates; a retry would just cost a round trip.
       extraOptions: { maxRetries: 0 },
 
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         const { data: draft } = await queryFulfilled;
 
-        // The wizard is about to route to this release; seeding its own cache is
-        // the difference between a screen and a spinner.
+        // The wizard is about to route here; seeding the cache saves a spinner.
         dispatch(releaseEditorApi.util.upsertQueryData('draft', draft.id, draft));
 
-        // A draft belongs in the catalogue, but the list model has not projected
-        // it yet — the same window every write in this app lives with (ADR-002).
-        // Harmless when the backend handed back one the list already has.
+        // The list model has not projected it yet (ADR-002).
         invalidateTagsAfterDelay(dispatch, ['Releases']);
       },
     }),
 
-    // The three saves below are Class A alike: the write answers with the whole
-    // release, so the response *is* the patch — earlier than a refetch, and never
-    // a guess.
+    // The three saves below are Class A alike: the response is the patch.
     saveDraft: build.mutation<ReleaseDraft, { id: string; patch: DraftPatch }>({
       query: ({ id, patch }) => ({ url: `/releases/${id}`, method: 'PATCH', body: patch }),
       transformResponse: (dto: ReleaseDraftDto) => toDraft(dto),
@@ -85,8 +74,7 @@ export const releaseEditorApi = api.injectEndpoints({
       query: ({ id, tracks }) => ({ url: `/releases/${id}/tracks`, method: 'PUT', body: tracks }),
       transformResponse: (dto: ReleaseDraftDto) => toDraft(dto),
 
-      // The only optimistic write in the app, and it earns it: a dragged track that
-      // snapped back for the length of a round trip would read as a failed drag.
+      // Optimistic on purpose: a dragged track that snapped back reads as a failed drag.
       async onQueryStarted({ id, tracks }, { dispatch, queryFulfilled }) {
         const optimistic = dispatch(
           releaseEditorApi.util.updateQueryData('draft', id, (draft) => {
@@ -112,8 +100,7 @@ export const releaseEditorApi = api.injectEndpoints({
 
       async onQueryStarted(_id, { dispatch, queryFulfilled }) {
         await queryFulfilled;
-        // The catalogue has to stop showing it, and the list model needs the same
-        // couple of seconds it needs for every other write (ADR-002).
+        // The catalogue has to stop showing it, once the list model catches up (ADR-002).
         invalidateTagsAfterDelay(dispatch, ['Releases']);
       },
     }),
@@ -122,8 +109,7 @@ export const releaseEditorApi = api.injectEndpoints({
     submitRelease: build.mutation<ReleaseDraft, ReleaseDraft>({
       query: (draft) => ({ url: `/releases/${draft.id}/submit`, method: 'POST' }),
       transformResponse: (dto: ReleaseDraftDto) => toDraft(dto),
-      // Submitting twice would deliver twice, and a retry cannot know which
-      // happened.
+      // Submitting twice delivers twice, and a retry cannot know which happened.
       extraOptions: { maxRetries: 0 },
 
       async onQueryStarted(draft, { dispatch, queryFulfilled }) {
@@ -132,13 +118,11 @@ export const releaseEditorApi = api.injectEndpoints({
         // Class A: the write model already agrees, so this is not optimism.
         dispatch(releaseEditorApi.util.updateQueryData('draft', draft.id, () => submitted));
 
-        // Class C: catalog has to show a release its list endpoint will not return
-        // for another couple of seconds, and activity has to log the fact. Neither
-        // is this module's business — they hear it and decide (Ch. 4 §5).
+        // Class C: somebody else's screens are none of this module's business —
+        // they hear the fact and decide (Ch. 4 §5).
         dispatch(releaseSubmitted({ actor: SESSION_ACTOR, release: toSubmission(submitted) }));
 
-        // Nothing Class B: every list that changed belongs to a module that
-        // reacted above, and each one schedules its own reconcile.
+        // Nothing Class B: each listener above schedules its own reconcile.
       },
     }),
   }),

@@ -1,5 +1,5 @@
-// Step 2's one hook (R2). It also owns the one thing in this console the backend
-// does without being asked: audio ingestion, watched to completion and announced.
+// Step 2's one hook (R2), and the only thing here the backend does unasked:
+// ingestion, watched to completion and announced.
 
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -55,10 +55,8 @@ export function useTracksStep(): TracksModel {
   const { data: release } = useDraftQuery(id);
   const tracks = release?.tracks ?? [];
 
-  // Ingestion progress is computed when someone reads it, so asking is the only
-  // way to watch a file finish. A second subscription to the same query is how
-  // this screen asks for that, and only for as long as it can change: RTK polls
-  // at the shortest interval any subscriber wants.
+  // A second subscription is how this screen asks for polling: RTK polls at the
+  // shortest interval any subscriber wants.
   useDraftQuery(id, { pollingInterval: POLL_MS, skip: !isIngesting(tracks) });
 
   useIngestionAnnouncements(release);
@@ -66,8 +64,7 @@ export function useTracksStep(): TracksModel {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
 
-  // Titles are typed straight into the row, and the tracklist is written as a
-  // whole — so what has been typed waits here until the debounce fires.
+  // The tracklist is written as a whole, so typed titles wait here for the debounce.
   const edited = useRef(new Map<string, string>());
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -109,8 +106,7 @@ export function useTracksStep(): TracksModel {
     isUploading,
 
     onFiles: (files) => {
-      // One at a time: every upload answers with the whole release, and two
-      // answers racing would leave the second one's track missing.
+      // One at a time: two answers racing would drop the second one's track.
       void [...(files ?? [])].reduce<Promise<unknown>>(
         (queue, file) =>
           queue.then(() => addTrack({ id, file: { name: file.name, size: file.size } }).unwrap()),
@@ -120,11 +116,8 @@ export function useTracksStep(): TracksModel {
   };
 }
 
-/**
- * Ingestion finishing is the backend telling us something nobody asked for, and
- * this screen is the only one watching — so it is the one that announces it
- * (Ch. 4 §5). Catalog patches its own detail cache; activity logs a line.
- */
+/** The backend telling us something nobody asked for, and this screen is the only
+    one watching — so it announces it (Ch. 4 §5). */
 function useIngestionAnnouncements(release: ReleaseDraft | undefined): void {
   const dispatch = useDispatch();
   const before = useRef<ReadonlyMap<string, AudioStatus>>(new Map());

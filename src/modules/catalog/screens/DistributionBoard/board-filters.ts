@@ -4,10 +4,7 @@
 import type { Release } from '../../api/types';
 import { isOnTheBoard, pipelineStage, type PipelineStage } from '../../services/release-status';
 
-/**
- * Draft and live are both missing on purpose: one has not been submitted, the
- * other has arrived. Neither is something the label is waiting on.
- */
+/** No draft and no live: one has not been submitted, the other has arrived. */
 export const BOARD_STAGE_VALUES = [
   'all',
   'submitted',

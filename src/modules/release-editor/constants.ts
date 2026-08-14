@@ -104,11 +104,7 @@ export const UNAVAILABLE = {
   action: 'Back to catalog',
 };
 
-/**
- * One entry per issue code (R6): what it says and which step fixes it. No
- * severity: every one of these blocks submission, so ranking them on screen
- * would be a distinction the rule does not make.
- */
+/** One entry per code (R6). No severity: they all block submission equally. */
 export const ISSUE: Record<
   IssueCode,
   {
@@ -165,12 +161,8 @@ export const ISSUE: Record<
   },
 };
 
-/**
- * Only for what happens somewhere the user cannot see it: the board they land on
- * after submitting, the catalogue row that is gone after discarding. A state the
- * screen already shows — an autosave failure, a refused submission — belongs on
- * that screen, not in a message that slides away.
- */
+/** Only for what lands somewhere the user cannot see. A state the screen already
+    shows stays on that screen. */
 export const TOAST = {
   submitted: (title: string, stores: number) => ({
     title: `${title} submitted for distribution`,

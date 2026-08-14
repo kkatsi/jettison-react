@@ -52,12 +52,8 @@ export function isInPipeline(release: {
   return release.status !== 'draft' && release.submittedAt !== null;
 }
 
-/**
- * What the distribution board is for: releases still on their way, plus the ones
- * that stopped and need somebody. A release every store has taken is finished —
- * it graduates to the catalogue, and its delivery timestamps stay on its own
- * detail screen. A pipeline that never empties is not a pipeline.
- */
+/** Still on its way, or stopped and needing somebody. A pipeline that never empties
+    is not a pipeline: once every store has it, the catalogue owns it. */
 export function isOnTheBoard(release: {
   status: ReleaseStatus;
   submittedAt: string | null;

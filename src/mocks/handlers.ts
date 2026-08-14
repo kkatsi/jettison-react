@@ -60,10 +60,7 @@ export const handlers = [
     return detail(release);
   }),
 
-  // The wizard opens on a real release: the catalogue number is the label's to
-  // allocate, so the console asks for one rather than inventing it. Asking twice
-  // without touching the first answer returns it — 200, not 201, because nothing
-  // was created.
+  // Asking twice without touching the first answer returns it — 200, not 201.
   http.post(url('/releases'), async () => {
     await delay(NETWORK_MS);
     const { release, isNew } = openDraft();

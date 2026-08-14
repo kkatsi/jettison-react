@@ -1,6 +1,5 @@
-// The module's own slice (Ch. 2 §8): what the user has typed but the server has
-// not acknowledged yet. It is not a copy of the release — the query cache owns
-// that — which is why it holds a patch and not a record.
+// The module's own slice (Ch. 2 §8): what was typed but not yet acknowledged. A
+// patch, not a record — the query cache owns the release.
 
 import { createSelector, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 

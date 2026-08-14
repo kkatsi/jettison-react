@@ -38,10 +38,7 @@ export function railSteps(current: StepSlug): RailStep[] {
   });
 }
 
-/**
- * Every step stays reachable: a draft is edited in whatever order its problems
- * surface, and the review step's fix buttons jump forwards as often as back.
- */
+/** Every step stays reachable: the review step's fix buttons jump forwards too. */
 export function adjacentSteps(current: StepSlug): {
   previous: StepSlug | null;
   next: StepSlug | null;

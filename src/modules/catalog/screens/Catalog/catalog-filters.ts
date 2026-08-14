@@ -51,11 +51,7 @@ export function isFiltered(filters: CatalogFilters): boolean {
   );
 }
 
-/**
- * Newest first by the date the table shows, so the order is readable off the
- * column. Same-day releases fall back to the catalogue number, which puts the
- * most recently started one on top.
- */
+/** Newest first by the date the column shows; the catalogue number breaks a tie. */
 export function sortCatalogue(releases: readonly Release[]): Release[] {
   return releases.toSorted(
     (a, b) =>
