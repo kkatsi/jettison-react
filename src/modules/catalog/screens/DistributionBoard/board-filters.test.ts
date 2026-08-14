@@ -57,6 +57,32 @@ describe('sortByNewestSubmission', () => {
     expect(rows.map((row) => row.id)).toEqual(['lor-0042']);
   });
 
+  it('lets a release graduate once every store has taken it', () => {
+    const rows = sortByNewestSubmission([
+      release(),
+      release({
+        id: 'live',
+        status: 'live',
+        deliveries: [
+          { storeId: 'soundry', status: 'delivered', deliveredAt: '2026-05-09T14:02:00.000Z' },
+        ],
+      }),
+    ]);
+
+    expect(rows.map((row) => row.id)).toEqual(['lor-0042']);
+  });
+
+  it('keeps a blocked release, because a stopped delivery is what a board is for', () => {
+    const rows = sortByNewestSubmission([
+      release({
+        id: 'blocked',
+        deliveries: [{ storeId: 'soundry', status: 'rejected', deliveredAt: null }],
+      }),
+    ]);
+
+    expect(rows.map((row) => row.id)).toEqual(['blocked']);
+  });
+
   it('does not mutate what it was given', () => {
     const input = [
       release({ id: 'a', submittedAt: '2026-08-01T00:00:00.000Z' }),

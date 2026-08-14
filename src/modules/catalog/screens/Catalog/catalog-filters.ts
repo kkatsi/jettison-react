@@ -51,18 +51,12 @@ export function isFiltered(filters: CatalogFilters): boolean {
   );
 }
 
-/** Back catalogue newest-first, then what is coming — date alone opens on next year's drafts. */
-export function sortCatalogue(releases: readonly Release[], now: number): Release[] {
-  const isReleased = (release: Release) =>
-    Date.parse(`${release.releaseDate}T00:00:00.000Z`) <= now;
-
-  return releases.toSorted((a, b) => {
-    if (isReleased(a) !== isReleased(b)) return isReleased(a) ? -1 : 1;
-
-    return isReleased(a)
-      ? b.releaseDate.localeCompare(a.releaseDate)
-      : a.releaseDate.localeCompare(b.releaseDate);
-  });
+/** Newest first by the date the column shows; the catalogue number breaks a tie. */
+export function sortCatalogue(releases: readonly Release[]): Release[] {
+  return releases.toSorted(
+    (a, b) =>
+      b.releaseDate.localeCompare(a.releaseDate) || b.catalogNumber.localeCompare(a.catalogNumber),
+  );
 }
 
 export function filterReleases(releases: readonly Release[], filters: CatalogFilters): Release[] {

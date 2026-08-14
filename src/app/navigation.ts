@@ -18,10 +18,19 @@ export const NAV: readonly NavItem[] = [
 ];
 // jettison:nav:end
 
+const firstSegment = (path: string) => path.split('/')[1] ?? '';
+
 /** Topbar title for a path; longest matching section wins. */
 export function navTitleFor(pathname: string): string {
   const match = [...NAV]
-    .filter((item) => pathname === item.to || pathname.startsWith(`${item.to}/`))
+    .filter(
+      (item) =>
+        pathname === item.to ||
+        pathname.startsWith(`${item.to}/`) ||
+        // A screen deeper in a section's own URL space still belongs to it —
+        // /releases/lor-0074/edit is the New Release section, not a lost page.
+        firstSegment(pathname) === firstSegment(item.to),
+    )
     .sort((a, b) => b.to.length - a.to.length)[0];
 
   return match?.label ?? 'Console';

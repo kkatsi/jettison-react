@@ -17,6 +17,10 @@ describe('navTitleFor', () => {
     expect(navTitleFor('/releases/new')).toBe('New Release');
   });
 
+  it('keeps naming the section from inside its own URL space', () => {
+    expect(navTitleFor('/releases/lor-0074/edit/tracks')).toBe('New Release');
+  });
+
   it('falls back rather than rendering an empty topbar', () => {
     expect(navTitleFor('/')).toBe('Console');
     expect(navTitleFor('/somewhere-else')).toBe('Console');

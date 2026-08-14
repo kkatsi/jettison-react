@@ -11,7 +11,7 @@ import {
 } from '../../api/endpoints';
 import { toStoreDeliveries } from '../../api/transformations';
 import type { ActivityEntry, ReleaseDetail, StoreDelivery, Track } from '../../api/types';
-import { AUDIO, DELIVERY, STAGE } from '../../constants';
+import { AUDIO, DELIVERY, EDIT, STAGE } from '../../constants';
 import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
 import { deliveryProgress, pipelineStage } from '../../services/release-status';
 
@@ -40,6 +40,8 @@ export type ReleaseDetailModel = {
     button: { label: string } | null;
     request: () => void;
   };
+  /** Only a draft is still the label's to change; everything else is with the stores. */
+  edit: { label: string; onSelect: () => void } | null;
   onBack: () => void;
 };
 
@@ -89,6 +91,10 @@ export function useReleaseDetail(): ReleaseDetailModel {
         if (release) withdraw.request({ id: release.id, title: release.title, stage });
       },
     },
+    edit:
+      release && stage === 'draft'
+        ? { label: EDIT.action, onSelect: () => void navigate(EDIT.pathFor(release.id)) }
+        : null,
     onBack: () => void navigate('/catalog'),
   };
 }

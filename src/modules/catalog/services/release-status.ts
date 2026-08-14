@@ -52,6 +52,19 @@ export function isInPipeline(release: {
   return release.status !== 'draft' && release.submittedAt !== null;
 }
 
+/** Still on its way, or stopped and needing somebody. A pipeline that never empties
+    is not a pipeline: once every store has it, the catalogue owns it. */
+export function isOnTheBoard(release: {
+  status: ReleaseStatus;
+  submittedAt: string | null;
+  deliveries: readonly DeliveryDto[];
+}): boolean {
+  if (!isInPipeline(release)) return false;
+
+  const stage = pipelineStage(release);
+  return isInFlight(stage) || stage === 'blocked';
+}
+
 /** Same call either way, not the same act: nothing was delivered for a `cancel`. */
 export function withdrawalAction(stage: PipelineStage): 'withdraw' | 'cancel' | null {
   if (stage === 'draft') return null;

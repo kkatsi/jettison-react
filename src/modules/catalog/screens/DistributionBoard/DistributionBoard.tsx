@@ -100,9 +100,6 @@ export function DistributionBoard() {
           <span>
             <span className="text-danger">●</span> {counts.blocked} blocked
           </span>
-          <span>
-            <span className="text-live">●</span> {counts.live} live
-          </span>
         </div>
       </div>
 

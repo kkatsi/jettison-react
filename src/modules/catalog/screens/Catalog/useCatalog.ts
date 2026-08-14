@@ -9,7 +9,7 @@ import type { FilterOption, Tone } from '@shared/ui';
 import { useReleasesQuery } from '../../api/endpoints';
 import type { Release } from '../../api/types';
 import type { RowAction } from '../../components/RowActions';
-import { STAGE } from '../../constants';
+import { EDIT, STAGE } from '../../constants';
 import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
 import { pipelineStage } from '../../services/release-status';
 import {
@@ -97,7 +97,7 @@ export function useCatalog(): CatalogModel {
 
   const releases = data ?? [];
   const clock = catalogClock(releases);
-  const matching = filterReleases(sortCatalogue(releases, clock), filters);
+  const matching = filterReleases(sortCatalogue(releases), filters);
   const page = paginate(matching, filters.page);
   const summary = summarise(releases, clock);
 
@@ -113,7 +113,11 @@ export function useCatalog(): CatalogModel {
     tiles: tilesFor(summary),
     rows: page.items.map((release) => {
       const stage = pipelineStage(release);
-      const open = () => void navigate(`/catalog/${release.id}`);
+      // A draft has nothing to show and everything left to do, so opening one
+      // means picking the wizard back up where it was left.
+      const isDraft = stage === 'draft';
+      const open = () =>
+        void navigate(isDraft ? EDIT.pathFor(release.id) : `/catalog/${release.id}`);
       const takeBack = withdraw.actionFor({ id: release.id, title: release.title, stage });
 
       return {
@@ -122,7 +126,15 @@ export function useCatalog(): CatalogModel {
         trendLabel: TREND_LABEL[trendDirection(release.streamsTrend)],
         onOpen: open,
         actions: [
-          { label: 'Open release', onSelect: open },
+          { label: isDraft ? EDIT.action : 'Open release', onSelect: open },
+          ...(isDraft
+            ? [
+                {
+                  label: 'View release',
+                  onSelect: () => void navigate(`/catalog/${release.id}`),
+                },
+              ]
+            : []),
           ...(takeBack
             ? [
                 {

@@ -2,15 +2,14 @@
 // job (ADR-004). No React, no store, no fetching (R5).
 
 import type { Release } from '../../api/types';
-import { isInPipeline, pipelineStage, type PipelineStage } from '../../services/release-status';
+import { isOnTheBoard, pipelineStage, type PipelineStage } from '../../services/release-status';
 
-/** Draft is missing on purpose: a draft is not in the pipeline by definition. */
+/** No draft and no live: one has not been submitted, the other has arrived. */
 export const BOARD_STAGE_VALUES = [
   'all',
   'submitted',
   'in-review',
   'delivering',
-  'live',
   'blocked',
 ] as const satisfies readonly ('all' | PipelineStage)[];
 
@@ -29,7 +28,7 @@ export function isBoardFiltered(filters: BoardFilters): boolean {
 /** Newest submission first. A withdrawal clears the timestamp, so the row leaves at once. */
 export function sortByNewestSubmission(releases: readonly Release[]): Release[] {
   return releases
-    .filter(isInPipeline)
+    .filter(isOnTheBoard)
     .toSorted((a, b) => (b.submittedAt ?? '').localeCompare(a.submittedAt ?? ''));
 }
 

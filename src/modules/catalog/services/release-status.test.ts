@@ -5,6 +5,7 @@ import {
   deliveryProgress,
   isInFlight,
   isInPipeline,
+  isOnTheBoard,
   pipelineStage,
   withdrawalAction,
 } from './release-status';
@@ -75,6 +76,28 @@ describe('the predicates the board filters on', () => {
     expect(isInPipeline({ status: 'draft', submittedAt: null })).toBe(false);
     // Mid-withdrawal the patch clears one before the other; neither alone belongs on the board.
     expect(isInPipeline({ status: 'draft', submittedAt: '2026-04-11T09:12:33.000Z' })).toBe(false);
+  });
+
+  it('keeps on the board only what the label is still waiting on', () => {
+    const delivered = { storeId: 'soundry', status: 'delivered' as const, deliveredAt: null };
+    const pending = { storeId: 'vela-music', status: 'pending' as const, deliveredAt: null };
+    const rejected = { storeId: 'pulsar', status: 'rejected' as const, deliveredAt: null };
+    const submittedAt = '2026-08-11T09:12:33.000Z';
+
+    // Some stores have it, some don't: still moving.
+    expect(
+      isOnTheBoard({ status: 'delivering', submittedAt, deliveries: [delivered, pending] }),
+    ).toBe(true);
+    expect(isOnTheBoard({ status: 'in-review', submittedAt, deliveries: [pending] })).toBe(true);
+
+    // Every store has it. The delivery is over; the catalogue owns it now.
+    expect(isOnTheBoard({ status: 'live', submittedAt, deliveries: [delivered] })).toBe(false);
+
+    // Stopped, and nobody is coming to fix it on their own.
+    expect(isOnTheBoard({ status: 'delivering', submittedAt, deliveries: [rejected] })).toBe(true);
+
+    // Never submitted at all.
+    expect(isOnTheBoard({ status: 'draft', submittedAt: null, deliveries: [pending] })).toBe(false);
   });
 
   it('calls it a withdrawal only when stores actually have the record', () => {
