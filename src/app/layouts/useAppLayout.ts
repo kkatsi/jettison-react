@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { useLocation, useMatches, useNavigate } from 'react-router';
 
-import { config, urlForCacheMode, type CacheMode } from '@core/config/config';
+import { config, urlForCacheMode } from '@core/config/config';
 
 import { NAV, navTitleFor } from '../navigation';
 import type { NaiveBannerProps } from './NaiveBanner';
 import type { BackendIndicator } from './Topbar';
 
-/** Copy keyed by cache mode; the view never maps a code to a string. */
-const MODES: { value: CacheMode; label: string; sublabel: string }[] = [
-  { value: 'events', label: 'events', sublabel: 'patch, then verify' },
-  { value: 'naive', label: 'naive', sublabel: 'invalidate and hope' },
-];
+/** Copy for the topbar; the view never maps a code to a string. */
+const BACKEND = {
+  label: 'simulated backend',
+  /** Named for what turning it on does, not for the strategy it selects. */
+  demo: 'naive cache demo',
+};
 
 const NAIVE_BANNER = {
   label: 'NAIVE CACHE',
@@ -45,16 +46,16 @@ export function useAppLayout(): {
   return {
     title: navTitleFor(pathname),
     backend: {
-      sublabel: MODES.find((mode) => mode.value === config.cacheMode)?.sublabel ?? '',
+      label: BACKEND.label,
       degraded: isNaive,
-      modes: MODES.map((mode) => ({
-        value: mode.value,
-        label: mode.label,
-        isCurrent: mode.value === config.cacheMode,
+      demo: {
+        label: BACKEND.demo,
+        isOn: isNaive,
         // A reload, not a re-render: config is frozen and read once, and the
         // demo is worth more from an empty cache.
-        onSelect: () => window.location.assign(urlForCacheMode(mode.value)),
-      })),
+        onToggle: (isOn: boolean) =>
+          window.location.assign(urlForCacheMode(isOn ? 'naive' : 'events')),
+      },
     },
     // The screen's own route, not the URL: a screen with child routes of its own
     // would otherwise be torn down and rebuilt every time one of them changed.

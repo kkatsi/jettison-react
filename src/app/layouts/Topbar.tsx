@@ -1,17 +1,11 @@
+import { Switch } from '@shared/ui';
 import { cn } from '@shared/utils/cn';
 
-export type CacheModeOption = {
-  value: string;
-  label: string;
-  isCurrent: boolean;
-  onSelect: () => void;
-};
-
 export type BackendIndicator = {
-  sublabel: string;
+  label: string;
   /** `true` when the console is deliberately running the broken cache demo. */
   degraded: boolean;
-  modes: CacheModeOption[];
+  demo: { label: string; isOn: boolean; onToggle: (isOn: boolean) => void };
 };
 
 export type TopbarProps = {
@@ -27,7 +21,7 @@ export function Topbar({ title, backend }: TopbarProps) {
     <header className="flex h-14 flex-none items-center gap-4 border-b border-line px-6">
       <h1 className="text-lg font-semibold">{title}</h1>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-3">
         {/* Signal strength: how the mock backend is behaving today. */}
         <div className="flex h-3 items-end gap-0.5" aria-hidden>
           {bars.map((height, index) => (
@@ -42,32 +36,23 @@ export function Topbar({ title, backend }: TopbarProps) {
             />
           ))}
         </div>
+        <span className="font-mono text-xs text-idle">{backend.label}</span>
 
-        <div className="flex flex-col items-end gap-1">
-          <div
-            role="group"
-            aria-label="Cache mode"
-            className="flex gap-0.5 rounded-lg border border-line bg-panel p-0.5"
+        <span className="h-5 w-px bg-line" />
+
+        <label className="flex items-center gap-2">
+          <span
+            className={cn('font-mono text-xs', backend.degraded ? 'text-warning' : 'text-idle')}
           >
-            {backend.modes.map((mode) => (
-              <button
-                key={mode.value}
-                type="button"
-                onClick={mode.onSelect}
-                aria-pressed={mode.isCurrent}
-                className={cn(
-                  'h-5 rounded-md px-2 font-mono text-xs',
-                  mode.isCurrent && !backend.degraded && 'bg-live/12 text-live',
-                  mode.isCurrent && backend.degraded && 'bg-warning/12 text-warning',
-                  !mode.isCurrent && 'text-idle hover:text-subtle',
-                )}
-              >
-                {mode.label}
-              </button>
-            ))}
-          </div>
-          <div className="font-mono text-3xs text-faint">{backend.sublabel}</div>
-        </div>
+            {backend.demo.label}
+          </span>
+          <Switch
+            size="sm"
+            checked={backend.demo.isOn}
+            onCheckedChange={backend.demo.onToggle}
+            className="data-checked:bg-warning"
+          />
+        </label>
       </div>
     </header>
   );
