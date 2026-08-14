@@ -4,6 +4,7 @@
 import { createBrowserRouter } from 'react-router';
 
 import { activityRoutes } from '@modules/activity';
+import { analyticsRoutes } from '@modules/analytics';
 import { catalogRoutes } from '@modules/catalog';
 import { releaseEditorRoutes } from '@modules/release-editor';
 import { ScreenErrorBoundary } from '@shared/ui';
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
     children: [
       // jettison:routes:start — one spread per module
       ...activityRoutes,
+      ...analyticsRoutes,
       ...catalogRoutes,
       ...releaseEditorRoutes,
       // jettison:routes:end

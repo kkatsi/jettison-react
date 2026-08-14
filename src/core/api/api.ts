@@ -36,6 +36,9 @@ export const api = createApi({
 
     // release-editor
     'Artists',
+
+    // analytics
+    'Analytics',
   ],
 
   endpoints: () => ({}),
