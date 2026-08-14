@@ -6,11 +6,11 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-import type { Tone } from '@shared/ui';
+import { toast, type Tone } from '@shared/ui';
 
 import { useDiscardDraftMutation, useDraftQuery } from '../../api/endpoints';
 import type { ReleaseDraft } from '../../api/types';
-import { CONTINUE, DISCARD, SAVE, UNAVAILABLE, type StepSlug } from '../../constants';
+import { CONTINUE, DISCARD, SAVE, TOAST, UNAVAILABLE, type StepSlug } from '../../constants';
 import { useDraftSave } from '../../hooks/useDraftSave';
 import { useSubmitRelease, type SubmitModel } from '../../hooks/useSubmitRelease';
 import {
@@ -132,6 +132,11 @@ export function useReleaseWizard(): WizardModel {
         setIsDiscarding(false);
         dispatch(draftClosed());
         void discardDraft(id);
+
+        // A row missing from a table of thirty is not something anyone can see.
+        const copy = TOAST.discarded(draft?.catalogNumber ?? '');
+        toast.success(copy.title, { description: copy.description });
+
         void navigate('/catalog');
       },
     },

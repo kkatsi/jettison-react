@@ -29,6 +29,21 @@ export const AUDIO: Record<AudioStatus, { label: string; tone: Tone }> = {
   ready: { label: 'Ready', tone: 'live' },
 };
 
+/**
+ * Withdrawing is triggered from three screens, and on two of them it changes a
+ * chip in a row that may be scrolled out of sight — so the console says so.
+ */
+export const TOAST = {
+  withdrawn: (title: string) => ({
+    title: `${title} withdrawn from distribution`,
+    description: 'Every store has been asked to take it down. It is a draft again.',
+  }),
+  cancelled: (title: string) => ({
+    title: `Submission cancelled for ${title}`,
+    description: 'No store had it yet, so nothing needs taking down.',
+  }),
+};
+
 /** The two ways a release comes back out of distribution, in words. */
 export const WITHDRAWAL: Record<
   'withdraw' | 'cancel',
@@ -40,6 +55,8 @@ export const WITHDRAWAL: Record<
     title: string;
     description: string;
     confirm: string;
+    /** The dialog has already closed by then, so there is nowhere else to say it. */
+    failed: string;
   }
 > = {
   withdraw: {
@@ -50,6 +67,7 @@ export const WITHDRAWAL: Record<
     description:
       'Every store is asked to take it down, and the release returns to draft. You can submit it again afterwards — the stores will treat it as a new delivery.',
     confirm: 'Withdraw from all stores',
+    failed: 'The stores could not be reached. The release is still out there — try again.',
   },
   cancel: {
     action: 'Cancel submission',
@@ -59,6 +77,7 @@ export const WITHDRAWAL: Record<
     description:
       'No store has this release yet, so nothing needs taking down. It returns to draft with its tracks and artwork intact.',
     confirm: 'Cancel submission',
+    failed: 'The stores could not be reached. The submission still stands — try again.',
   },
 };
 

@@ -3,8 +3,10 @@
 
 import { useState } from 'react';
 
+import { toast } from '@shared/ui';
+
 import { useWithdrawReleaseMutation } from '../api/endpoints';
-import { WITHDRAWAL } from '../constants';
+import { TOAST, WITHDRAWAL } from '../constants';
 import { withdrawalAction, type PipelineStage } from '../services/release-status';
 
 /** The least a caller has to know about the release it is taking back. */
@@ -63,7 +65,14 @@ export function useWithdrawRelease(): WithdrawModel {
         if (!target) return;
         // The mutation owns everything that follows — its own cache patches, the
         // domain event, the delayed reconcile (Ch. 4 §4). Nothing to remember here.
-        void withdrawRelease(target.id);
+        void withdrawRelease(target.id)
+          .unwrap()
+          .then(() => {
+            const copy = TOAST[kind === 'cancel' ? 'cancelled' : 'withdrawn'](target.title);
+            toast.success(copy.title, { description: copy.description });
+          })
+          .catch(() => toast.error(WITHDRAWAL[kind ?? 'withdraw'].failed));
+
         setTarget(null);
       },
     },

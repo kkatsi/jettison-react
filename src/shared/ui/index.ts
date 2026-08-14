@@ -47,6 +47,10 @@ export { FilterSelect, type FilterOption } from './filter-select';
 export { Input } from './input';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 export { Skeleton } from './skeleton';
+// `toast` is re-exported so nothing outside the kit imports the library directly,
+// the same rule that keeps @base-ui/react in here.
+export { Toaster } from './sonner';
+export { toast } from 'sonner';
 export {
   Table,
   TableBody,

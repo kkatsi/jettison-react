@@ -6,10 +6,10 @@ import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router';
 
-import type { Tone } from '@shared/ui';
+import { toast, type Tone } from '@shared/ui';
 
 import { useDraftQuery, useSubmitReleaseMutation } from '../api/endpoints';
-import { ISSUE, REVIEW, type StepSlug } from '../constants';
+import { ISSUE, REVIEW, TOAST, type StepSlug } from '../constants';
 import { releaseIssues, type IssueCode } from '../services/release-eligibility';
 import { draftClosed, mergeEdits, selectPendingEdits, type WithDraft } from '../state/draft-slice';
 
@@ -97,9 +97,13 @@ export function useSubmitRelease(): SubmitModel {
 
         void submitRelease(draft)
           .unwrap()
-          .then(() => {
+          .then((submitted) => {
             // The draft is the stores' problem now; nothing local outlives it.
             dispatch(draftClosed());
+            // The board is a table of twenty rows, and in naive mode the new one
+            // is briefly not among them — so the confirmation travels with us.
+            const copy = TOAST.submitted(submitted.title, submitted.storeIds.length);
+            toast.success(copy.title, { description: copy.description });
             // Journey A ends where the release now lives (PLAN §8.1).
             return navigate('/distribution');
           })

@@ -165,6 +165,23 @@ export const ISSUE: Record<
   },
 };
 
+/**
+ * Only for what happens somewhere the user cannot see it: the board they land on
+ * after submitting, the catalogue row that is gone after discarding. A state the
+ * screen already shows — an autosave failure, a refused submission — belongs on
+ * that screen, not in a message that slides away.
+ */
+export const TOAST = {
+  submitted: (title: string, stores: number) => ({
+    title: `${title} submitted for distribution`,
+    description: `Delivery to ${stores} stores has begun.`,
+  }),
+  discarded: (catalogNumber: string) => ({
+    title: `Draft ${catalogNumber} discarded`,
+    description: 'Its tracks and uploads went with it.',
+  }),
+};
+
 export const REVIEW = {
   lede: (stores: number) =>
     `Once submitted, delivery to ${stores} stores begins and metadata locks for 24 hours.`,
