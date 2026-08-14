@@ -25,3 +25,14 @@ export const config = Object.freeze({
   /** How long a reaction waits before reconciling. Must outlast the lag above. */
   reconcileDelayMs: readModelLagMs + 1000,
 });
+
+/** Switching modes reloads: `config` is read once and frozen, and a caching demo
+    is worth more from an empty cache. */
+export function urlForCacheMode(mode: CacheMode, href = window.location.href): string {
+  const url = new URL(href);
+
+  if (mode === 'naive') url.searchParams.set('cache', 'naive');
+  else url.searchParams.delete('cache');
+
+  return url.toString();
+}
