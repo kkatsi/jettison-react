@@ -60,7 +60,8 @@ export type DistributionBoardModel = {
   countLabel: string;
   footerLabel: string;
   schedule: { axis: ScheduleAxis; pins: SchedulePin[] };
-  counts: { inFlight: number; blocked: number; live: number };
+  /** No `live` tally: a release the stores have all taken has left the board. */
+  counts: { inFlight: number; blocked: number };
   withdraw: WithdrawModel;
   filters: {
     artist: string;
@@ -141,7 +142,6 @@ export function useDistributionBoard(): DistributionBoardModel {
     counts: {
       inFlight: stages.filter(isInFlight).length,
       blocked: stages.filter((stage) => stage === 'blocked').length,
-      live: stages.filter((stage) => stage === 'live').length,
     },
     filters: {
       artist: filters.artist,
