@@ -51,10 +51,12 @@ export function ScopePicker({ groups, selected, onSelect }: ScopePickerProps) {
       </ComboboxTrigger>
 
       <ComboboxContent anchor={anchor} align="start" className="w-80">
-        <ComboboxInput placeholder="Search releases and artists" />
+        {/* No trigger button in here: a second Combobox.Trigger toggles the popup
+            shut on pointer release, so the thing opened and closed on one click. */}
+        <ComboboxInput showTrigger={false} placeholder="Search releases and artists" />
         <ComboboxEmpty>Nothing under that name</ComboboxEmpty>
 
-        <ComboboxList>
+        <ComboboxList className="max-h-74">
           <ComboboxCollection>
             {(group: ScopeGroup) => (
               <ComboboxGroup key={group.value} items={group.items}>
