@@ -14,19 +14,50 @@ const MODES: { value: CacheMode; label: string; sublabel: string }[] = [
 ];
 
 const NAIVE_BANNER = {
-  title: 'Naive cache mode — a release you submit will vanish for about 2.5 seconds.',
+  label: 'NAIVE CACHE',
+  sublabel: 'demo mode',
   description:
-    'The mutation succeeds and invalidates the Releases tag, so every list refetches. But the backend has only written to its command store; the read model the list endpoint serves has not been projected yet. The refetch wins the race, returns a list without the release you just created, and the query library replaces the cache with it.',
-  sequence: [
-    'submit ok',
-    'invalidateTags([Releases])',
-    'refetch beats the projection',
-    'stale list overwrites the cache',
-  ],
+    'Submitting invalidates the Releases tag, so every list refetches. The backend has the write, but the read model those lists are served from has not been projected yet — the refetch returns a catalogue without the new release, and replaces the cache with it.',
   remedy:
-    'Patch-then-verify writes the new row into the cache first and invalidates only once the read model has caught up, so the refetch confirms the row instead of deleting it (Ch. 4 §5).',
+    'Patch-then-verify writes the row into the cache first and invalidates only once the read model has caught up, so the refetch confirms the row instead of deleting it (Ch. 4 §5).',
   action: 'Start a release',
 };
+
+/** Margins so the first and last marker sit on the axis rather than over its ends. */
+const AXIS_INSET = 8;
+
+const asDuration = (ms: number) =>
+  ms < 1000 ? `${Math.round(ms)}ms` : `${(ms / 1000).toFixed(2)}s`;
+
+/** The race, drawn from the timings this console is actually running. */
+function raceFromConfig() {
+  const at = (ms: number) => AXIS_INSET + (ms / config.readModelLagMs) * (100 - 2 * AXIS_INSET);
+  const refetch = at(config.networkMs);
+  const projected = at(config.readModelLagMs);
+
+  return {
+    marks: [
+      {
+        left: refetch,
+        time: asDuration(config.networkMs),
+        label: 'refetch lands',
+        tone: 'warning' as const,
+      },
+      {
+        left: projected,
+        time: asDuration(config.readModelLagMs),
+        label: 'read model ready',
+        tone: 'live' as const,
+      },
+    ],
+    window: {
+      left: refetch,
+      // Turn the lag down far enough and there is no race left to draw.
+      width: Math.max(0, projected - refetch),
+      label: `cached list is missing it for ${asDuration(config.readModelLagMs - config.networkMs)}`,
+    },
+  };
+}
 
 /** The demo's own path, and the module that owns it. */
 const DEMO_MODULE = 'release-editor';
@@ -71,6 +102,7 @@ export function useAppLayout(): {
       isNaive && !isDismissed
         ? {
             ...NAIVE_BANNER,
+            race: raceFromConfig(),
             action: demo
               ? { label: NAIVE_BANNER.action, onSelect: () => void navigate(demo.to) }
               : null,
