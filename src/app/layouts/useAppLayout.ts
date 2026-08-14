@@ -17,47 +17,9 @@ const NAIVE_BANNER = {
   label: 'NAIVE CACHE',
   sublabel: 'demo mode',
   description:
-    'Submitting invalidates the Releases tag, so every list refetches. The backend has the write, but the read model those lists are served from has not been projected yet — the refetch returns a catalogue without the new release, and replaces the cache with it.',
-  remedy:
-    'Patch-then-verify writes the row into the cache first and invalidates only once the read model has caught up, so the refetch confirms the row instead of deleting it (Ch. 4 §5).',
+    'A write invalidates the cache and refetches straight away. The backend projects its read model a couple of seconds later, so the list comes back without the release you just submitted and overwrites the cache with it. In events mode the new row is written into the cache first, then confirmed once the read model has caught up.',
   action: 'Start a release',
 };
-
-/** Margins so the first and last marker sit on the axis rather than over its ends. */
-const AXIS_INSET = 8;
-
-const asDuration = (ms: number) =>
-  ms < 1000 ? `${Math.round(ms)}ms` : `${(ms / 1000).toFixed(2)}s`;
-
-/** The race, drawn from the timings this console is actually running. */
-function raceFromConfig() {
-  const at = (ms: number) => AXIS_INSET + (ms / config.readModelLagMs) * (100 - 2 * AXIS_INSET);
-  const refetch = at(config.networkMs);
-  const projected = at(config.readModelLagMs);
-
-  return {
-    marks: [
-      {
-        left: refetch,
-        time: asDuration(config.networkMs),
-        label: 'refetch lands',
-        tone: 'warning' as const,
-      },
-      {
-        left: projected,
-        time: asDuration(config.readModelLagMs),
-        label: 'read model ready',
-        tone: 'live' as const,
-      },
-    ],
-    window: {
-      left: refetch,
-      // Turn the lag down far enough and there is no race left to draw.
-      width: Math.max(0, projected - refetch),
-      label: `cached list is missing it for ${asDuration(config.readModelLagMs - config.networkMs)}`,
-    },
-  };
-}
 
 /** The demo's own path, and the module that owns it. */
 const DEMO_MODULE = 'release-editor';
@@ -102,7 +64,6 @@ export function useAppLayout(): {
       isNaive && !isDismissed
         ? {
             ...NAIVE_BANNER,
-            race: raceFromConfig(),
             action: demo
               ? { label: NAIVE_BANNER.action, onSelect: () => void navigate(demo.to) }
               : null,
