@@ -47,7 +47,6 @@ export function useAppLayout(): {
     title: navTitleFor(pathname),
     backend: {
       label: BACKEND.label,
-      degraded: isNaive,
       demo: {
         label: BACKEND.demo,
         isOn: isNaive,
