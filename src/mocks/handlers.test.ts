@@ -4,7 +4,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import { audioStatusAt, db, nextCatalogNumber, PROCESSING_MS, UPLOAD_MS } from './db';
 import { handlers } from './handlers';
 import { activityFeedModel, releaseListModel, scheduleProjections } from './projection';
-import type { ActivityEvent, Release, ReleaseDetail } from './schemas';
+import type { ActivityEvent, AnalyticsReport, Release, ReleaseDetail } from './schemas';
 
 // Shorter than the app's 2.5s, but longer than the handlers' network delay, or the
 // projection lands while the response is still in flight.
@@ -295,6 +295,18 @@ describe('the wizard write paths', () => {
   it('serves the roster the artist picker reads from', async () => {
     const artists = (await (await fetch(`${api}/artists`)).json()) as { id: string }[];
     expect(artists).toHaveLength(9);
+  });
+
+  it('serves an analytics window, and refuses a range it does not keep', async () => {
+    const report = (await (
+      await fetch(`${api}/analytics?scope=release:lor-0042&days=30`)
+    ).json()) as AnalyticsReport;
+
+    expect(report.series).toHaveLength(30);
+    expect(report.scope).toBe('release:lor-0042');
+
+    expect((await fetch(`${api}/analytics?scope=all&days=45`)).status).toBe(400);
+    expect((await fetch(`${api}/analytics?scope=label:lor-0042&days=30`)).status).toBe(400);
   });
 });
 
