@@ -77,6 +77,19 @@ function series(rows: readonly DailyStat[], window: Window, days: number) {
   });
 }
 
+// A record does better in some shops than others, and that mix moves month to
+// month. ponytail: the split is derived rather than reported, so the drift is a
+// slow wobble per pair; the upgrade is per-store and per-track rows in the seed.
+function affinity(releaseId: string, id: string, window: Window): number {
+  const hash = [...`${releaseId}:${id}`].reduce(
+    (total, character) => (total * 31 + character.charCodeAt(0)) % 9973,
+    7,
+  );
+
+  const phase = Date.parse(window.to) / (DAY_MS * 30);
+  return 0.6 + 0.8 * (0.5 + 0.5 * Math.sin(hash + phase));
+}
+
 /** A store only reports what it holds — the weights are renormalised over the stores that took it. */
 function byStore(releases: readonly Release[], window: Window): Map<string, number> {
   const totals = new Map(db.stores.map((store) => [store.id, 0]));
@@ -87,7 +100,9 @@ function byStore(releases: readonly Release[], window: Window): Map<string, numb
 
     const weights = db.stores.map((store, index) => {
       const delivery = release.deliveries.find((candidate) => candidate.storeId === store.id);
-      return delivery?.status === 'delivered' ? (STORE_WEIGHTS[index] ?? 0) : 0;
+      if (delivery?.status !== 'delivered') return 0;
+
+      return (STORE_WEIGHTS[index] ?? 0) * affinity(release.id, store.id, window);
     });
 
     const spread = weights.reduce((sum, weight) => sum + weight, 0);
@@ -102,7 +117,8 @@ function byStore(releases: readonly Release[], window: Window): Map<string, numb
   return totals;
 }
 
-/** The pipeline does report per track; the mock splits a release's streams by position. */
+/** The pipeline does report per track; the mock splits a release's streams by
+    position, with the same per-track lean every time. */
 function byTrack(releases: readonly Release[], window: Window): Map<string, number> {
   const totals = new Map<string, number>();
 
@@ -111,7 +127,9 @@ function byTrack(releases: readonly Release[], window: Window): Map<string, numb
     const tracks = tracksFor(release.id);
     if (streams === 0 || tracks.length === 0) continue;
 
-    const weights = tracks.map((_, index) => 1 / (index + 2));
+    const weights = tracks.map(
+      (track, index) => (1 / (index + 2)) * affinity(release.id, track.id, window),
+    );
     const spread = weights.reduce((sum, weight) => sum + weight, 0);
 
     tracks.forEach((track, index) => {

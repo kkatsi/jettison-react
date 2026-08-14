@@ -50,6 +50,18 @@ describe('the analytics rollup', () => {
     expect(report.stores.every((store) => store.streams > 0)).toBe(true);
   });
 
+  it('moves each store on its own — one split for every window reads as one number five times', () => {
+    for (const scope of [{ kind: 'all' } as const, { kind: 'release', id: 'lor-0042' } as const]) {
+      const { stores, tracks } = analyticsReport(scope, 30);
+
+      const storeTrends = stores.map((store) => (store.streams / store.previousStreams).toFixed(3));
+      const trackTrends = tracks.map((track) => (track.streams / track.previousStreams).toFixed(3));
+
+      expect(new Set(storeTrends).size).toBeGreaterThan(1);
+      expect(new Set(trackTrends).size).toBeGreaterThan(1);
+    }
+  });
+
   it('gives a track fewer streams the further down the tracklist it sits', () => {
     const report = analyticsReport({ kind: 'release', id: 'lor-0042' }, 30);
     const ordered = report.tracks.filter((track) => track.releaseId === 'lor-0042');
