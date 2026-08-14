@@ -136,6 +136,12 @@ describe('the wizard write paths', () => {
     // Five stores, none of them told anything yet.
     expect(draft.deliveries).toHaveLength(5);
 
+    // A draft starts on a date the stores would accept, and near enough that the
+    // board's four-week strip has somewhere to put it.
+    const lead = (Date.parse(`${draft.releaseDate}T00:00:00Z`) - Date.now()) / 86_400_000;
+    expect(lead).toBeGreaterThanOrEqual(7);
+    expect(lead).toBeLessThan(28);
+
     forget(draft.id);
   });
 

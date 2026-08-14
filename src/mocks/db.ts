@@ -111,8 +111,9 @@ export function nextCatalogNumber(existing: readonly string[]): string {
 
 const DAY_MS = 86400000;
 
-/** Far enough out that the lead-time rule starts satisfied. */
-const DEFAULT_LEAD_DAYS = 28;
+/** Clear of the lead-time minimum, and inside the board's four-week strip rather
+    than on its last pixel. */
+const DEFAULT_LEAD_DAYS = 21;
 
 /** Started, then abandoned before a single field was filled in. */
 function isUntouched(release: Release): boolean {
