@@ -100,46 +100,31 @@ describe('filterReleases', () => {
 });
 
 describe('sortCatalogue', () => {
-  const NOW = Date.parse('2026-08-12T09:14:00.000Z');
-
-  it('opens on the back catalogue, newest first, with what is coming after it', () => {
-    const sorted = sortCatalogue(
-      [
-        release({ id: 'draft-far', releaseDate: '2027-01-15' }),
-        release({ id: 'released-old', releaseDate: '2025-09-19' }),
-        release({ id: 'draft-soon', releaseDate: '2026-09-04' }),
-        release({ id: 'released-recent', releaseDate: '2026-07-17' }),
-      ],
-      NOW,
-    );
-
-    // Released first (newest → oldest), then upcoming (soonest → furthest).
-    expect(sorted.map((entry) => entry.id)).toEqual([
-      'released-recent',
-      'released-old',
-      'draft-soon',
-      'draft-far',
+  it('reads down the release-date column, newest first', () => {
+    const sorted = sortCatalogue([
+      release({ id: 'old', releaseDate: '2025-09-19' }),
+      release({ id: 'newest', releaseDate: '2027-01-15' }),
+      release({ id: 'recent', releaseDate: '2026-07-17' }),
     ]);
+
+    expect(sorted.map((entry) => entry.id)).toEqual(['newest', 'recent', 'old']);
   });
 
-  it('keeps next year drafts off the first page — they are the rows with no numbers', () => {
-    const sorted = sortCatalogue(
-      [
-        release({ id: 'draft', releaseDate: '2027-01-15', streamsTrend: [] }),
-        release({ id: 'live', releaseDate: '2026-05-08', streamsTrend: [1, 2, 3] }),
-      ],
-      NOW,
-    );
+  it('puts the most recently started release on top of a shared date', () => {
+    const sorted = sortCatalogue([
+      release({ id: 'older', catalogNumber: 'LOR-0042', releaseDate: '2026-09-04' }),
+      release({ id: 'newer', catalogNumber: 'LOR-0074', releaseDate: '2026-09-04' }),
+    ]);
 
-    expect(sorted[0]?.id).toBe('live');
+    expect(sorted[0]?.id).toBe('newer');
   });
 
   it('does not mutate what it was given', () => {
     const input = [
-      release({ id: 'a', releaseDate: '2027-01-15' }),
-      release({ id: 'b', releaseDate: '2026-05-08' }),
+      release({ id: 'a', releaseDate: '2026-05-08' }),
+      release({ id: 'b', releaseDate: '2027-01-15' }),
     ];
-    sortCatalogue(input, NOW);
+    sortCatalogue(input);
     expect(input.map((entry) => entry.id)).toEqual(['a', 'b']);
   });
 });

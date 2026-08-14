@@ -24,6 +24,7 @@ export function ReleaseDetail() {
     storeSummary,
     activity,
     withdraw,
+    edit,
     onBack,
   } = useReleaseDetail();
 
@@ -81,6 +82,12 @@ export function ReleaseDetail() {
               ))}
             </dl>
           </div>
+
+          {edit ? (
+            <Button size="sm" className="flex-none" onClick={edit.onSelect}>
+              {edit.label}
+            </Button>
+          ) : null}
 
           {withdraw.button ? (
             <Button
