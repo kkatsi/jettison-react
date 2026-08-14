@@ -9,9 +9,9 @@ import type { BackendIndicator } from './Topbar';
 
 /** Copy for the topbar; the view never maps a code to a string. */
 const BACKEND = {
-  label: 'simulated backend',
+  label: 'Simulated Backend',
   /** Named for what turning it on does, not for the strategy it selects. */
-  demo: 'naive cache demo',
+  demo: 'Naive cache demo',
 };
 
 const NAIVE_BANNER = {

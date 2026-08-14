@@ -13,7 +13,7 @@ export type NaiveBannerProps = {
 // running the broken path.
 export function NaiveBanner({ label, sublabel, description, action, onDismiss }: NaiveBannerProps) {
   return (
-    <div className="flex flex-none items-baseline gap-3 border-b border-line bg-panel px-6 py-3">
+    <div className="flex flex-none items-baseline gap-3 border-b border-line bg-card px-6 py-3">
       <div className="flex flex-col gap-0.5 mr-2">
         <span className="font-mono text-2xs tracking-[0.14em] whitespace-nowrap text-warning">
           {label}

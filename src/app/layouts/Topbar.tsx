@@ -20,20 +20,15 @@ export function Topbar({ title, backend }: TopbarProps) {
       <h1 className="text-lg font-semibold">{title}</h1>
 
       {/* A control, boxed as one. */}
-      <label
-        className={cn(
-          'ml-auto flex h-7.5 items-center gap-2.5 rounded-lg border px-2.5',
-          backend.demo.isOn ? 'border-warning/40 bg-warning/6' : 'border-line bg-panel',
-        )}
-      >
-        <span className={cn('font-mono text-xs', backend.demo.isOn ? 'text-warning' : 'text-idle')}>
+      <label className="ml-auto flex h-7.5 items-center gap-2.5 rounded-lg border px-2.5 border-line bg-panel">
+        <span className={cn('text-xs', backend.demo.isOn ? 'text-foreground' : 'text-idle')}>
           {backend.demo.label}
         </span>
         <Switch
           size="sm"
           checked={backend.demo.isOn}
           onCheckedChange={backend.demo.onToggle}
-          className="data-checked:bg-warning"
+          className="data-checked:bg-liveww"
         />
       </label>
 
