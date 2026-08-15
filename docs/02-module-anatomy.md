@@ -41,6 +41,8 @@ Two structural facts carry most of the weight:
 
 ## 3. Screens
 
+The pain this section answers: **the whole console is a blank white page because a tooltip threw.** One boundary at the app root is how that happens, and it is the default.
+
 A **screen** is a routed page. Its job is composition: arrange features and components, read route params, call at most one orchestrating hook. A screen contains no business logic, no fetch calls, no data transformation — if a screen is longer than a page, it's doing someone else's job.
 
 Screens are the natural code-splitting boundary: every screen is lazy-loaded from the module's `routes.tsx` (`React.lazy` + `Suspense`). Splitting below the screen level is done only for a specific, profiled reason — over-splitting multiplies requests and usually degrades what it claims to improve.
@@ -87,6 +89,8 @@ If a function mentions a domain word — release, track, royalty, invoice — it
 Why so strict: `utils.ts` is where business logic goes to hide. It starts with one innocent mapper, and two years later it is an 800-line file that is really the domain model of the application, untested and unnamed. Naming the topic forces the file to *have* a topic — which is what makes it findable, testable, and ownable.
 
 ## 8. Module state
+
+The pain: **you fill in three steps of a wizard, click back to check something, and it is all gone.** State that must outlive a screen has to live somewhere that outlives it — and "somewhere" is the decision this section makes, because the default answer is a global store folder that ends up holding everybody's.
 
 If a module needs client state that must survive navigation between its screens (a draft, a selection, a multi-step flow), it owns a slice in `state/`, registered in `app/store.ts` inside the reducers marker region — one of the registration lines the jettison test strips (Chapter 1 §3). Everything with a shorter lifetime stays lower: component state in the component, subtree state in a context at the feature root. The full state placement doctrine is Chapter 4's table; the anatomical point here is only *where the slice lives*: inside the module, never in a global `store/` folder that accumulates everyone's state.
 

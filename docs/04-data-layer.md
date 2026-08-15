@@ -30,6 +30,8 @@ Four words, four meanings, never mixed:
 
 ## 2. The state placement table
 
+The pain: **the same value is in a slice, a query, a prop and a `useState` — four copies that immediately disagree**, and the bug only reproduces on one screen because that screen reads a different copy. Nobody set out to build that. It is what happens when each new piece of state is placed by whoever added it, on the day they added it.
+
 Every piece of state has exactly one correct home. The table is the whole doctrine:
 
 | Kind of state | Home | Examples |
@@ -112,6 +114,8 @@ Two conventions contain the indirection cost: all events live in `shared/events/
 ---
 
 ## Appendix — Porting this chapter to TanStack Query
+
+Unlike every other section in these chapters, this one answers an objection rather than a pain — *"this is RTK-specific, so it isn't for us."* It earns its place because the chapters claim to be library-agnostic, and a claim like that is worth exactly as much as the mapping that makes it checkable.
 
 The doctrine above names no library, and every mechanism has a TanStack Query equivalent. If your team is on TanStack Query, the mapping is:
 
