@@ -18,7 +18,7 @@ const NAIVE_BANNER = {
   label: 'NAIVE CACHE',
   sublabel: 'demo mode',
   description:
-    'A write invalidates the cache and refetches straight away. The backend projects its read model a couple of seconds later, so the list comes back without the release you just submitted and overwrites the cache with it. In events mode the new row is written into the cache first, then confirmed once the read model has caught up.',
+    'A write invalidates the cache and refetches straight away. The backend projects its read model a couple of seconds later, so the list comes back without the release you just submitted and overwrites the cache with it. Submit one and watch: you land on the distribution board and it is not there. In events mode the new row is written into the cache first, then confirmed once the read model has caught up — and it is waiting for you.',
   action: 'Start a release',
 };
 

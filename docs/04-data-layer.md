@@ -56,7 +56,9 @@ The scenario: the **release-editor** module submits a release for distribution. 
 
 The textbook answer assumes the backend is **read-your-writes consistent**. Real enterprise backends often aren't: writes land in a command store, read models are projected asynchronously, and for a second or three the list endpoint *does not yet contain what you just wrote*. Under eventual consistency, invalidation isn't just insufficient — it is **destructive**: the refetch races the projection, returns the stale list, and the query library dutifully replaces the cache with it. If you had optimistically patched the cache, the refetch *clobbers your correct patch with stale server data*. The user watches their freshly submitted release appear and then vanish.
 
-The reference app's mock backend simulates this lag on purpose (see ADR-002), so the failure is reproducible on screen — flip the demo to naive invalidation and watch the row disappear.
+The reference app's mock backend simulates this lag on purpose (see ADR-002), so the failure is reproducible on screen. Flip the demo to `?cache=naive`, submit a release, and it is simply not on the distribution board when you arrive — and it stays missing until something else refetches, which is how this bug reaches the backlog as "works after a refresh."
+
+Note what you do *not* see: the row appearing and then vanishing. The patch is made and destroyed in about 140ms, while the route transition to the board takes closer to 250 — so the race is over before the screen that would show it exists. The demo proves the outcome, not the flicker. That is the ordinary case: most users never witness the race, they just report the result.
 
 So every cache effect is first **classified**:
 
