@@ -79,8 +79,12 @@ export function Analytics() {
             note={<span className="font-mono text-2xs text-dim">net of distribution fees</span>}
           />
 
-          <StoresPanel stores={report.stores} />
-          <TopTracksPanel tracks={report.tracks} rangeLabel={report.rangeLabel} />
+          <StoresPanel stores={report.stores} comparisonLabel={report.comparisonLabel} />
+          <TopTracksPanel
+            tracks={report.tracks}
+            rangeLabel={report.rangeLabel}
+            comparisonLabel={report.comparisonLabel}
+          />
         </div>
       ) : null}
     </div>

@@ -4,7 +4,7 @@
 
 import type { TimeSeriesBand, TimeSeriesPoint } from '@shared/ui';
 
-import { DAY_NOTE, KPI_LABEL, MAJOR_STORES, SPIKE_NOTE, TOP_TRACKS } from '../constants';
+import { DAY_NOTE, KPI_LABEL, SPIKE_NOTE, TOP_TRACKS } from '../constants';
 import type { PlaylistSpike } from '../services/playlist-spike';
 import type {
   AnalyticsReport,
@@ -29,6 +29,7 @@ export function toAnalyticsReport(
 
   return {
     rangeLabel: `last ${dto.days} days`,
+    comparisonLabel: `vs prev ${dto.days}d`,
 
     kpis: [
       {
@@ -103,23 +104,21 @@ function toBand(spike: PlaylistSpike | null): TimeSeriesBand | null {
 function toStores(rollups: readonly StoreRollupDto[]): AnalyticsReport['stores'] {
   const ordered = [...rollups].sort((a, b) => b.streams - a.streams);
   const total = ordered.reduce((sum, store) => sum + store.streams, 0);
-  const top = ordered[0]?.streams ?? 0;
 
-  const bars: StoreBar[] = ordered.map((store, index) => ({
-    id: store.storeId,
-    name: store.storeName,
-    streamsLabel: store.streams > 0 ? formatCount(store.streams) : NONE,
-    // Against the leading store, not the total: five shares of one release would
-    // each be a sliver of the track otherwise.
-    widthPct: top > 0 ? Math.round((store.streams / top) * 100) : 0,
-    major: index < MAJOR_STORES && store.streams > 0,
-    delta: toDelta(store.streams, store.previousStreams),
-  }));
+  const bars: StoreBar[] = ordered.map((store) => {
+    const share = total > 0 ? store.streams / total : 0;
 
-  return {
-    topShareLabel: total > 0 ? `top store ${Math.round((top / total) * 100)}%` : NONE,
-    bars,
-  };
+    return {
+      id: store.storeId,
+      name: store.storeName,
+      streamsLabel: store.streams > 0 ? formatCount(store.streams) : NONE,
+      shareLabel: store.streams > 0 ? `${Math.round(share * 100)}%` : NONE,
+      widthPct: Math.round(share * 100),
+      delta: toDelta(store.streams, store.previousStreams),
+    };
+  });
+
+  return { totalLabel: total > 0 ? `${formatStreams(total)} streams` : NONE, bars };
 }
 
 function toTracks(rollups: readonly TrackRollupDto[]): TrackRow[] {

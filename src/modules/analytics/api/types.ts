@@ -57,10 +57,9 @@ export type StoreBar = {
   id: string;
   name: string;
   streamsLabel: string;
-  /** Width relative to the leading store, so the top bar always fills its track. */
+  shareLabel: string;
+  /** Share of the window's streams, so a bar's length is the number beside it. */
   widthPct: number;
-  /** One of the stores that carry the release, rather than its tail. */
-  major: boolean;
   delta: Delta;
 };
 
@@ -90,9 +89,11 @@ export type ChartPanel = {
 /** Everything the screen draws, one window of it. */
 export type AnalyticsReport = {
   rangeLabel: string;
+  /** What every delta on the screen is measured against. */
+  comparisonLabel: string;
   kpis: Kpi[];
   streams: ChartPanel & { band: TimeSeriesBand | null; spikeLabel: string | null };
   revenue: ChartPanel;
-  stores: { topShareLabel: string; bars: StoreBar[] };
+  stores: { totalLabel: string; bars: StoreBar[] };
   tracks: TrackRow[];
 };

@@ -44,7 +44,7 @@ export function ScopePicker({ groups, selected, onSelect }: ScopePickerProps) {
         className="flex h-8.5 min-w-59 items-center gap-2.5 rounded-lg border border-line bg-panel px-3 text-left hover:border-line-strong"
       >
         <ScopeArt option={selected} className="size-5.5" />
-        <span className="flex flex-col leading-tight">
+        <span className="flex flex-col leading-tight flex-1">
           <span className="text-sm font-medium">{selected?.label ?? 'All releases'}</span>
           <span className="font-mono text-3xs text-faint">{selected?.meta ?? ''}</span>
         </span>

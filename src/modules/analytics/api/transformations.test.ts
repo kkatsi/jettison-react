@@ -129,8 +129,8 @@ describe('the analytics report', () => {
     expect(revenue.points[0]?.tip.value).toBe('£3');
   });
 
-  it('ranks the stores, sizes the bars against the leader, and names the tail', () => {
-    const { bars, topShareLabel } = report().stores;
+  it('ranks the stores and makes a bar as long as the share beside it', () => {
+    const { bars, totalLabel } = report().stores;
 
     expect(bars.map((bar) => bar.name)).toEqual([
       'Soundry',
@@ -139,22 +139,25 @@ describe('the analytics report', () => {
       'EchoPort',
       'Tidewave',
     ]);
-    expect(topShareLabel).toBe('top store 47%');
-    expect(bars[0]).toMatchObject({ widthPct: 100, major: true, streamsLabel: '4,700' });
-    expect(bars[1]?.widthPct).toBe(55);
-    expect(bars[3]?.major).toBe(false);
+    expect(totalLabel).toBe('10K streams');
+    expect(bars[0]).toMatchObject({ widthPct: 47, shareLabel: '47%', streamsLabel: '4,700' });
+    expect(bars[1]).toMatchObject({ widthPct: 26, shareLabel: '26%' });
     // Nothing to compare a store's first streams against.
     expect(bars[4]?.delta).toBeNull();
     expect(bars[1]?.delta).toEqual({ label: '−3.7%', up: false });
   });
 
+  it('names what the deltas are measured against', () => {
+    expect(report().comparisonLabel).toBe('vs prev 5d');
+  });
+
   it('reports no share at all when nothing streamed', () => {
-    const { bars, topShareLabel } = report({
+    const { bars, totalLabel } = report({
       stores: [{ storeId: 'soundry', storeName: 'Soundry', streams: 0, previousStreams: 0 }],
     }).stores;
 
-    expect(topShareLabel).toBe('—');
-    expect(bars[0]).toMatchObject({ widthPct: 0, major: false, streamsLabel: '—' });
+    expect(totalLabel).toBe('—');
+    expect(bars[0]).toMatchObject({ widthPct: 0, shareLabel: '—', streamsLabel: '—' });
   });
 
   it('takes the top tracks in order, however the backend sent them', () => {

@@ -14,7 +14,4 @@ export const KPI_LABEL = {
 export const SPIKE_NOTE = 'Inside the playlist spike';
 export const DAY_NOTE = 'Streams on this day';
 
-/** The top three stores carry the release; the tail is drawn quietly. */
-export const MAJOR_STORES = 3;
-
 export const TOP_TRACKS = 6;

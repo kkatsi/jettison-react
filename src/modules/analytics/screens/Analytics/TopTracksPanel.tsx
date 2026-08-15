@@ -6,7 +6,15 @@ import { DeltaLabel } from '../../components/DeltaLabel';
 // Widths for <colgroup>, so the header lines up with the body it describes.
 const COLUMNS = ['w-8', 'w-auto', 'w-26', 'w-19'];
 
-export function TopTracksPanel({ tracks, rangeLabel }: { tracks: TrackRow[]; rangeLabel: string }) {
+export function TopTracksPanel({
+  tracks,
+  rangeLabel,
+  comparisonLabel,
+}: {
+  tracks: TrackRow[];
+  rangeLabel: string;
+  comparisonLabel: string;
+}) {
   return (
     <Card className="gap-0 overflow-hidden py-0">
       <div className="flex h-12 flex-none items-center border-b border-line px-4">
@@ -26,7 +34,9 @@ export function TopTracksPanel({ tracks, rangeLabel }: { tracks: TrackRow[]; ran
             <TableHead className="pl-4 text-xs font-medium text-idle">#</TableHead>
             <TableHead className="text-xs font-medium text-idle">Track</TableHead>
             <TableHead className="text-right text-xs font-medium text-idle">Streams</TableHead>
-            <TableHead className="pr-4 text-right text-xs font-medium text-idle">Trend</TableHead>
+            <TableHead className="pr-4 text-right text-xs font-medium text-idle">
+              {comparisonLabel}
+            </TableHead>
           </TableRow>
         </TableHeader>
 
