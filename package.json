@@ -38,6 +38,7 @@
     "@reduxjs/toolkit": "^2.12.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "echarts": "^6.1.0",
     "lucide-react": "^1.31.0",
     "nuqs": "^2.9.5",
     "react": "^19.2.8",

@@ -138,6 +138,43 @@ export const dailyStatSchema = z.object({
   revenue: z.number().nonnegative(),
 });
 
+/** One scope, one window, and the window before it — what the analytics screen reads. */
+export const analyticsReportSchema = z.object({
+  scope: z.string(),
+  days: z.number().int().positive(),
+  from: z.iso.date(),
+  to: z.iso.date(),
+  series: z.array(
+    z.object({
+      date: z.iso.date(),
+      streams: z.number().int().nonnegative(),
+      revenue: z.number().nonnegative(),
+    }),
+  ),
+  /** Null when the data does not reach back a second window. */
+  previous: z
+    .object({ streams: z.number().int().nonnegative(), revenue: z.number().nonnegative() })
+    .nullable(),
+  stores: z.array(
+    z.object({
+      storeId: z.string(),
+      storeName: z.string(),
+      streams: z.number().int().nonnegative(),
+      previousStreams: z.number().int().nonnegative(),
+    }),
+  ),
+  tracks: z.array(
+    z.object({
+      trackId: z.string(),
+      title: z.string(),
+      releaseId: z.string(),
+      releaseTitle: z.string(),
+      streams: z.number().int().nonnegative(),
+      previousStreams: z.number().int().nonnegative(),
+    }),
+  ),
+});
+
 /** Detail carries its tracks; the list doesn't. */
 export const releaseDetailSchema = releaseSchema.extend({
   tracks: z.array(trackSchema),
@@ -157,3 +194,4 @@ export type Release = z.infer<typeof releaseSchema>;
 export type ReleaseDetail = z.infer<typeof releaseDetailSchema>;
 export type ActivityEvent = z.infer<typeof activityEventSchema>;
 export type DailyStat = z.infer<typeof dailyStatSchema>;
+export type AnalyticsReport = z.infer<typeof analyticsReportSchema>;

@@ -164,6 +164,13 @@ const day = (date: Date): string => iso(date).slice(0, 10);
 /** Fixed "now", so the label never drifts against its own dates. */
 const NOW = new Date('2026-08-12T09:14:00.000Z');
 
+/** Around $0.003 a stream — the industry's famously grim rate, and it differs by
+    release, because the store mix behind it does. */
+function payoutRate(catalogNumber: string): number {
+  const sequence = Number(catalogNumber.slice(4)) || 0;
+  return 0.0026 + (((sequence * 7) % 13) / 13) * 0.0012;
+}
+
 /** Real ISRC format, fictional codes. */
 const isrc = (index: number): string => `GBLOR26${String(index + 1).padStart(5, '0')}`;
 
@@ -211,6 +218,9 @@ export function buildSeed(seed = 20140611): Seed {
     if (status === 'live') {
       const daily = streams30d / 30;
       const spikeStart = between(random, 20, 60);
+      // Taken off the catalogue number rather than the generator, so adding it
+      // leaves every other seeded value where it was.
+      const rate = payoutRate(catalogNumber);
       for (let back = 89; back >= 0; back -= 1) {
         const date = new Date(NOW.getTime() - back * DAY_MS);
         const inSpike = back <= spikeStart && back > spikeStart - 6;
@@ -220,8 +230,7 @@ export function buildSeed(seed = 20140611): Seed {
           releaseId: id,
           date: day(date),
           streams,
-          // ~$0.0032 a stream, the industry's famously grim rate.
-          revenue: Math.round(streams * 0.0032 * 100) / 100,
+          revenue: Math.round(streams * rate * 100) / 100,
         });
       }
     }

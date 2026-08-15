@@ -5,6 +5,7 @@ import { delay, http, HttpResponse } from 'msw';
 
 import { config } from '@core/config/config';
 
+import { analyticsReport, ANALYTICS_RANGES, parseScope } from './analytics';
 import {
   addTrack,
   db,
@@ -19,6 +20,7 @@ import {
 import { activityFeedModel, releaseListModel, scheduleProjections } from './projection';
 import {
   activityEventSchema,
+  analyticsReportSchema,
   audioUploadSchema,
   draftPatchSchema,
   releaseDetailSchema,
@@ -162,6 +164,21 @@ export const handlers = [
         .array()
         .parse(releaseId ? feed.filter((event) => event.release.id === releaseId) : feed),
     );
+  }),
+
+  // Aggregates, so an unknown scope or range is a bad request rather than an
+  // empty chart the reader would blame on the label.
+  http.get(url('/analytics'), async ({ request }) => {
+    await delay(NETWORK_MS);
+    const params = new URL(request.url).searchParams;
+
+    const scope = parseScope(params.get('scope'));
+    const days = Number(params.get('days'));
+    if (!scope || !ANALYTICS_RANGES.some((range) => range === days)) {
+      return new HttpResponse(null, { status: 400 });
+    }
+
+    return HttpResponse.json(analyticsReportSchema.parse(analyticsReport(scope, days)));
   }),
 
   http.get(url('/stores'), async () => {
