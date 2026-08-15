@@ -5,10 +5,8 @@ import {
   DEFAULT_FILTERS,
   feedClock,
   filterEvents,
-  filterParams,
   groupEventsByDay,
   isFiltered,
-  readFilters,
 } from './event-feed';
 
 const NOW = Date.parse('2026-08-12T12:00:00.000Z');
@@ -33,36 +31,16 @@ const event = (
   ...extra,
 });
 
-describe('readFilters', () => {
-  it('defaults an empty URL', () => {
-    expect(readFilters(new URLSearchParams())).toEqual(DEFAULT_FILTERS);
-  });
-
-  it('reads what the screen wrote', () => {
-    const params = new URLSearchParams({ q: 'halogen', type: 'tracks', range: '90d' });
-    expect(readFilters(params)).toEqual({ query: 'halogen', type: 'tracks', range: '90d' });
-  });
-
-  it('falls back on a hand-edited URL instead of blanking the feed', () => {
-    const params = new URLSearchParams({ type: 'royalties', range: 'forever' });
-    expect(readFilters(params)).toEqual(DEFAULT_FILTERS);
-  });
-});
-
-describe('filterParams', () => {
-  it('keeps a default view out of the URL', () => {
-    expect(filterParams(DEFAULT_FILTERS)).toEqual({});
+describe('isFiltered', () => {
+  it('is false for the default view and true for anything narrower', () => {
     expect(isFiltered(DEFAULT_FILTERS)).toBe(false);
-  });
-
-  it('writes only what differs', () => {
-    const filters = { ...DEFAULT_FILTERS, range: '7d' } as const;
-    expect(filterParams(filters)).toEqual({ range: '7d' });
-    expect(isFiltered(filters)).toBe(true);
+    expect(isFiltered({ ...DEFAULT_FILTERS, range: '7d' })).toBe(true);
+    expect(isFiltered({ ...DEFAULT_FILTERS, type: 'tracks' })).toBe(true);
+    expect(isFiltered({ ...DEFAULT_FILTERS, query: 'halogen' })).toBe(true);
   });
 
   it('treats a whitespace-only search as no search', () => {
-    expect(filterParams({ ...DEFAULT_FILTERS, query: '   ' })).toEqual({});
+    expect(isFiltered({ ...DEFAULT_FILTERS, query: '   ' })).toBe(false);
   });
 });
 

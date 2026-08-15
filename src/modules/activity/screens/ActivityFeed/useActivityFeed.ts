@@ -1,18 +1,18 @@
 // The screen's one hook (R2). Query in, filters from the URL, one view-model out
 // (R3) — the view below it decides nothing.
 
-import { useSearchParams } from 'react-router';
+import { parseAsString, parseAsStringLiteral, useQueryStates } from 'nuqs';
 
 import { useActivityFeedQuery } from '../../api';
 import type { FeedDay, FeedFilters } from '../../types';
 import {
   DEFAULT_FILTERS,
+  RANGE_VALUES,
+  TYPE_VALUES,
   feedClock,
   filterEvents,
-  filterParams,
   groupEventsByDay,
   isFiltered,
-  readFilters,
 } from './event-feed';
 
 export type ActivityFeedModel = {
@@ -33,22 +33,20 @@ export type ActivityFeedModel = {
   };
 };
 
+/** The screen's URL contract: defaults stay out of the query string, junk falls back (ADR-004). */
+const FILTER_PARSERS = {
+  query: parseAsString.withDefault(DEFAULT_FILTERS.query),
+  type: parseAsStringLiteral(TYPE_VALUES).withDefault(DEFAULT_FILTERS.type),
+  range: parseAsStringLiteral(RANGE_VALUES).withDefault(DEFAULT_FILTERS.range),
+};
+
 export function useActivityFeed(): ActivityFeedModel {
   const { data, isLoading, isError, refetch } = useActivityFeedQuery();
-  // Filters belong in the URL: a label manager sends colleagues a filtered feed,
-  // and a reload has to survive it (Chapter 4 §2).
-  const [params, setParams] = useSearchParams();
+  const [filters, setFilters] = useQueryStates(FILTER_PARSERS, { urlKeys: { query: 'q' } });
 
-  const filters = readFilters(params);
   const events = data ?? [];
   const now = feedClock(events);
   const visible = filterEvents(events, filters, now);
-
-  // The URL is the source of truth, and readFilters validates it on the way back
-  // in — so an unknown value written here corrects itself on the next render.
-  const update = (patch: Partial<Record<keyof FeedFilters, string>>) => {
-    setParams(filterParams({ ...filters, ...patch } as FeedFilters), { replace: true });
-  };
 
   return {
     isLoading,
@@ -59,10 +57,11 @@ export function useActivityFeed(): ActivityFeedModel {
     filters: {
       ...filters,
       isActive: isFiltered(filters),
-      onQuery: (query) => update({ query }),
-      onType: (type) => update({ type }),
-      onRange: (range) => update({ range }),
-      onReset: () => setParams(filterParams(DEFAULT_FILTERS), { replace: true }),
+      onQuery: (query) => void setFilters({ query }),
+      onType: (type) => void setFilters({ type: type as FeedFilters['type'] }),
+      onRange: (range) => void setFilters({ range: range as FeedFilters['range'] }),
+      // null clears every key this hook owns — the whole filter set, in one call.
+      onReset: () => void setFilters(null),
     },
   };
 }
