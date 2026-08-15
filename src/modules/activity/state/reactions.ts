@@ -34,13 +34,6 @@ function record(
   actor: string,
   detail?: string,
 ): void {
-  // The demo's broken path: refetch immediately and the feed comes back without
-  // the event, because the read model has not been projected yet (ADR-002).
-  if (config.cacheMode === 'naive') {
-    dispatch(activityApi.util.invalidateTags(['ActivityFeed']));
-    return;
-  }
-
   const entry: ActivityEvent = {
     id: `live-${release.id}-${type}-${Date.now()}`,
     type,
@@ -55,6 +48,13 @@ function record(
       upsertListItem(feed, entry);
     }),
   );
+
+  // The demo's broken path — the same patch, thrown away by a refetch that lands
+  // before the feed has been projected (ADR-002).
+  if (config.cacheMode === 'naive') {
+    dispatch(activityApi.util.invalidateTags(['ActivityFeed']));
+    return;
+  }
 
   // Verify: by the time this fires the backend has recorded the same fact, so the
   // refetch confirms the row instead of deleting it.
