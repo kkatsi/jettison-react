@@ -10,7 +10,7 @@ Two forces pull in opposite directions. Auth, retries, token refresh, and error 
 
 The doctrine resolves the tension — and it is library-agnostic; any query library with a central client and programmatic cache access can implement it (the reference implementation uses RTK Query — [ADR-001](adr/001-why-rtk-query-in-2026.md); the TanStack Query mapping is in the [appendix](#appendix--porting-this-chapter-to-tanstack-query)):
 
-- **`core/api/`** owns the single client: base query, auth header injection, token refresh (behind a mutex, so concurrent 401s trigger one refresh), retry policy, and the central cache-tag registry (one commented block per module).
+- **`core/api/`** owns the single client: base query, auth header injection, token refresh (behind a mutex, so concurrent 401s trigger one refresh), retry policy, and the central cache-tag registry (one commented block per module). *The reference app's [`core/api/api.ts`](../src/core/api/api.ts) has the header, the retry policy and the registry; it has no refresh, because the mock backend has no refresh flow to build one against. The file says so where the mutex would go — a doctrine this repo cannot demonstrate is named rather than implied.*
 - **Each module** defines its endpoints in `modules/<name>/api/endpoints.ts` by *registering them with* the core client (RTK Query: `api.injectEndpoints(...)`) and exports the generated hooks from there. Consumers import hooks from the owning module's `api/`, never from `core`.
 
 When two modules need the same resource, each defines its own endpoint for it. Duplicating a five-line endpoint definition is cheaper than a shared data module coupling them — and identical tags keep the underlying cache entries consistent regardless of who defined the endpoint.
@@ -38,9 +38,11 @@ Every piece of state has exactly one correct home. The table is the whole doctri
 | Local UI state | `useState` in the component | modal open, hovered row, active tab |
 | Form state | React Hook Form | every form |
 | URL-worthy state | the router (query params) | filters, pagination, selected tab that should survive reload |
-| Feature/subtree state | context or `useReducer` at the feature root | wizard current step, editor selection |
+| Feature/subtree state | context or `useReducer` at the feature root | a canvas tool's selection, an inline editor's mode |
 | Module state that survives navigation | module slice in `modules/*/state`, registered in `app/store.ts` | drafts, long-lived selections |
 | App-global state | a global slice — **requires an ADR** | session, tokens, active tenant |
+
+The reference app never reaches that row — it has no React context at all. Its one multi-step flow keeps the current step in the URL, because a wizard step is linkable and must survive a reload, which makes it the row above. Take that as the table working: escalate only when the level below demonstrably fails, and most flows never need the escalation.
 
 Resolution order when unsure: **props → context → store.** Escalate only when the current level demonstrably fails, and never let context cross a module boundary — inside a module it is a dependency-injection tool; across modules it would be a hidden bus.
 
@@ -77,7 +79,7 @@ The shape is classic Redux, in modern spelling:
 - **`shared/events/`** holds the domain events — typed `createAction` definitions, zero logic. This is the "action constants file": a complete, readable catalogue of every fact that may cross a module boundary. `domain/releases/submitted`, `domain/releases/withdrawn`.
 - **The mutating module announces.** After `queryFulfilled`, the endpoint dispatches `releaseSubmitted({ release })` alongside its own Class-A patches.
 - **Each interested module reacts** in `state/reactions.ts` — its "reducer switch": one `on(event, handler)` per case. The handler upserts into *its own* cached queries immediately (the patch), and schedules a delayed tag invalidation as reconciliation (the verify) — by the time it fires, the read model has caught up, and the refetch confirms rather than clobbers.
-- **One core file** (`core/redux/reactions.ts`, ~30 lines, written once) wraps the store's listener mechanism (RTK: `createListenerMiddleware`) into a `createReactions((on) => …)` helper. No module ever touches middleware; `app/store.ts` registers each module's reactions in one line — the same line the jettison test strips.
+- **One core file** ([`core/redux/reactions.ts`](../src/core/redux/reactions.ts), under fifty lines, written once) wraps the store's listener mechanism (RTK: `createListenerMiddleware`) into a `createReactions((on) => …)` helper. No module ever touches middleware; `app/store.ts` registers each module's reactions inside the reactions marker region — one of the registration lines the jettison test strips (Chapter 1 §3).
 
 ```
 editor endpoint                          shared/events                 catalog/state/reactions.ts

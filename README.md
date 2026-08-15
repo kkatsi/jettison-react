@@ -5,7 +5,7 @@
 
 > **jettison** (v.) — to throw cargo overboard, deliberately, to keep the ship flying.
 
-**Jettison is an enforced architecture for enterprise React applications.** Its boldest claim is its name: any module in a Jettison codebase can be thrown overboard — delete its folder plus its two registration lines — and the application still compiles and runs. That claim is not a diagram in a wiki; it is a CI job (**the jettison test**) that runs on every push.
+**Jettison is an enforced architecture for enterprise React applications.** Its boldest claim is its name: any module in a Jettison codebase can be thrown overboard — delete its folder, then strip its registration lines from the app shell — and the application still compiles and runs. Stripping them is mechanical, which is the real claim: a module that needs judgement to remove was never jettisonable. That is not a diagram in a wiki; it is a CI job (**the jettison test**) that runs on every push.
 
 Not a folder structure, not a style guide — a system of rules with teeth: every boundary is a lint error, every claim of modularity is machine-verified, and every decision is recorded with its costs stated honestly.
 
@@ -63,12 +63,12 @@ Teams building React applications that must survive years of feature work, team 
 
 ## Status
 
-- [x] Chapters 1–4 (drafts)
+- [x] Chapters 1–4
 - [x] ADR template + founding decisions
 - [x] `eslint.config.js` + violation fixtures
 - [x] App shell: core + shared + app layers
 - [x] Jettison-test CI
-- [ ] Modules: ~~activity~~, catalog, release-editor, analytics
+- [x] Modules: activity, catalog, release-editor, analytics
 - [ ] Deployed demo (Cloudflare Workers)
 
 ---

@@ -11,7 +11,7 @@ Chapter 1 made modules *isolated*. This chapter makes them *predictable*. The go
 ## 2. The template
 
 ```
-modules/catalog/
+modules/<name>/
 ├── index.ts              # PUBLIC API — exports routes (and nothing else unless deliberate)
 ├── routes.tsx            # The module's route tree (lazy-loaded screens)
 ├── api/                  # Query endpoints THIS module owns (→ Chapter 4)
@@ -53,6 +53,8 @@ A component becomes a **feature** when it owns a meaningful chunk of *behavior* 
 
 A feature is a mini-module: its own `components/`, `hooks/`, `services/`, governed by the same rules. What it does *not* get: its own routes (the module's `routes.tsx` owns routing) or its own public API ceremony (inside a module, direct imports between a feature and the module's shared folders are fine — the formality lives at module boundaries, not inside them).
 
+**The reference app has no `features/` folder, and that is the honest outcome, not an omission.** The plan expected the release wizard to become one; it didn't. Its four steps are routed, so they are screens by §3's definition, and what they share climbed to the module's own `hooks/` and `services/` instead — which §6's ladder is exactly what you get when a "feature" turns out to be a route group. The section stands as doctrine for the case that does arrive: a self-contained chunk of behaviour that is *not* a route. Per §5, we did not build one to have an example of one.
+
 ## 5. No folder before need
 
 The template above is the *maximum* shape, not the mandatory one. A module with 12 files needs no `features/` directory, possibly no `state/`, maybe just `api/index.ts` instead of three api files. Empty scaffolding is worse than absence — it implies structure that doesn't exist and trains readers to ignore folder names.
@@ -86,7 +88,7 @@ Why so strict: `utils.ts` is where business logic goes to hide. It starts with o
 
 ## 8. Module state
 
-If a module needs client state that must survive navigation between its screens (a draft, a selection, a multi-step flow), it owns a slice in `state/`, registered in `app/store.ts` with one line — the same one line the jettison test removes. Everything with a shorter lifetime stays lower: component state in the component, subtree state in a context at the feature root. The full state placement doctrine is Chapter 4's table; the anatomical point here is only *where the slice lives*: inside the module, never in a global `store/` folder that accumulates everyone's state.
+If a module needs client state that must survive navigation between its screens (a draft, a selection, a multi-step flow), it owns a slice in `state/`, registered in `app/store.ts` inside the reducers marker region — one of the registration lines the jettison test strips (Chapter 1 §3). Everything with a shorter lifetime stays lower: component state in the component, subtree state in a context at the feature root. The full state placement doctrine is Chapter 4's table; the anatomical point here is only *where the slice lives*: inside the module, never in a global `store/` folder that accumulates everyone's state.
 
 ---
 

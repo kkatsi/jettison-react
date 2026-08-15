@@ -9,13 +9,15 @@
 Every rich component in a Jettison codebase follows a single pattern:
 
 ```
-SubmitReleaseSection/
-├── SubmitReleaseSection.tsx       # VIEW — JSX + rendering logic only (styling via the shared/ui kit + utility classes)
-├── useSubmitRelease.ts            # VIEW LOGIC — orchestration; returns ONE view-model object
-├── release-eligibility.ts         # BUSINESS LOGIC — pure functions (promoted per the ladder, Ch. 2 §6)
+ReviewStep/
+├── ReviewStep.tsx                 # VIEW — JSX + rendering logic only (styling via the shared/ui kit + utility classes)
+├── useReviewStep.ts               # VIEW LOGIC — orchestration; returns ONE view-model object
+├── release-eligibility.ts         # BUSINESS LOGIC — pure functions
 ├── release-eligibility.test.ts    # tests for the business logic
 └── constants.ts                   # UI copy, keyed by domain codes
 ```
+
+That is the shape at birth. In the reference app the last three files have already climbed the ladder (Ch. 2 §6), because a second caller appeared: the wizard's rail flags issues from every step, not only the one that lists them. So the real layout is `screens/ReviewStep/ReviewStep.tsx` + `useReviewStep.ts` beside it, with `hooks/useSubmitRelease.ts`, `services/release-eligibility.ts` and `constants.ts` at module level. The pattern is unchanged by the move — which is the point of §7.
 
 (When a component defines its own visual variants, a colocated `SubmitReleaseSection.variants.ts` holds the cva definitions — styling files exist on demand, not by template.)
 
@@ -43,7 +45,7 @@ Its three structural costs:
 2. **Its rules cannot be reused.** The next screen that needs "can this be submitted?" re-implements it, and the copies drift.
 3. **Every change is a full-file review.** Rendering tweaks and business-rule changes land in the same diff, so reviewers stop distinguishing them.
 
-The pattern dissolves all three by giving each kind of code exactly one home. In the reference app, `SubmitReleaseSection` is the worked example: eligibility rules (artwork missing, audio still processing, release date too soon) live in `release-eligibility.ts` as pure functions with unit tests; the hook wires queries and store reads into those functions and returns one view-model; the view renders it. A subtle class of bug — a second code path that calls the mutation directly and skips the follow-up logic — becomes structurally impossible, because there is exactly one orchestrated path.
+The pattern dissolves all three by giving each kind of code exactly one home. In the reference app, the wizard's review step is the worked example: eligibility rules (artwork missing, audio still processing, release date too soon) live in [`release-eligibility.ts`](../src/modules/release-editor/services/release-eligibility.ts) as pure functions with [unit tests](../src/modules/release-editor/services/release-eligibility.test.ts); [`useSubmitRelease.ts`](../src/modules/release-editor/hooks/useSubmitRelease.ts) wires queries and store reads into those functions, maps each returned code to copy and to the action that fixes it, and returns one view-model; [`ReviewStep.tsx`](../src/modules/release-editor/screens/ReviewStep/ReviewStep.tsx) renders it. A subtle class of bug — a second code path that calls the mutation directly and skips the follow-up logic — becomes structurally impossible, because there is exactly one orchestrated path.
 
 ## 3. The rules
 

@@ -54,7 +54,9 @@ Three corollaries do most of the work:
 
 The acceptance criterion for the entire layer system — the test this architecture is named after:
 
-> **Deleting `modules/X/`, plus its one line in the router and its one line in the store, must leave a compiling, working application.** Any module can be jettisoned; the ship keeps flying.
+> **Deleting `modules/X/`, plus its registration lines in the app shell, must leave a compiling, working application.** Any module can be jettisoned; the ship keeps flying.
+
+Registration is deliberately mechanical, not minimal. A module registers where the shell composes: its route spread in `router.tsx`, its slice or reactions in `store.ts`, its nav entries in `navigation.ts` — each inside a `// jettison:…` marker region, alongside the import that feeds it. The count varies by module (the reference app's `analytics` touches two files, `catalog` three), and that is fine. What must hold is that a script can strip them without reading the code: **any line importing `@modules/<name>`, plus any line naming the module inside a marker region.** A module that needs judgement to unregister was never jettisonable.
 
 This is what "loosely coupled" means when you refuse to let it be a vibe. The jettison test is falsifiable — it either passes or it doesn't — which makes it the perfect CI job:
 
@@ -65,7 +67,7 @@ strategy:
     module: [release-editor, catalog, analytics, activity]
 steps:
   - run: rm -rf src/modules/${{ matrix.module }}
-  - run: node scripts/unregister-module.mjs ${{ matrix.module }}  # strips the 2 registration lines
+  - run: node scripts/unregister-module.mjs ${{ matrix.module }}  # strips the registration lines
   - run: npm run type-check && npm run build
 ```
 
