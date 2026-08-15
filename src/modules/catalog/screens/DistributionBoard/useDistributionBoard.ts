@@ -10,8 +10,8 @@ import { useReleasesQuery } from '../../api/endpoints';
 import type { Release } from '../../api/types';
 import { STAGE } from '../../constants';
 import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
+import { artistOptions } from '../../services/artist-options';
 import { deliveryProgress, isInFlight, pipelineStage } from '../../services/release-status';
-import { artistOptions } from '../Catalog/catalog-filters';
 import {
   BOARD_STAGE_VALUES,
   DEFAULT_BOARD_FILTERS,

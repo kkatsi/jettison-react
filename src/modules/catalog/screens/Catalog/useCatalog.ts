@@ -11,12 +11,12 @@ import type { Release } from '../../api/types';
 import type { RowAction } from '../../components/RowActions';
 import { EDIT, STAGE } from '../../constants';
 import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
+import { artistOptions } from '../../services/artist-options';
 import { pipelineStage } from '../../services/release-status';
 import {
   DEFAULT_FILTERS,
   STAGE_VALUES,
   TYPE_VALUES,
-  artistOptions,
   filterReleases,
   isFiltered,
   pageWindow,

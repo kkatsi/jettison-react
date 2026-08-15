@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import type { Release } from '../../api/types';
 import {
   DEFAULT_FILTERS,
-  artistOptions,
   filterReleases,
   isFiltered,
   pageWindow,
@@ -163,20 +162,5 @@ describe('pageWindow', () => {
     expect(pageWindow(1, 3)).toEqual([1, 2, 3]);
     expect(pageWindow(5, 9)).toEqual([1, 'gap', 4, 5, 6, 'gap', 9]);
     expect(pageWindow(1, 1)).toEqual([1]);
-  });
-});
-
-describe('artistOptions', () => {
-  it('offers each artist once, alphabetically, from the catalogue itself', () => {
-    const options = artistOptions([
-      release({ artistId: 'kessa-nu', artistName: 'Kessa Nu' }),
-      release(),
-      release({ artistId: 'kessa-nu', artistName: 'Kessa Nu' }),
-    ]);
-
-    expect(options).toEqual([
-      { value: 'kessa-nu', label: 'Kessa Nu' },
-      { value: 'vaeda-grey', label: 'Vaeda Grey' },
-    ]);
   });
 });
