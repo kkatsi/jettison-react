@@ -93,7 +93,7 @@ export function Analytics() {
 
 function Figure({ kpi }: { kpi: Kpi }) {
   return (
-    <div className="flex flex-col items-end gap-0.75">
+    <div className="flex flex-col items-start gap-0.75">
       <span className="text-xs text-faint">{kpi.label}</span>
       <div className="flex items-baseline gap-2">
         <span className="font-mono text-xl">{kpi.value}</span>
