@@ -4,20 +4,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm, type UseFormReturn } from 'react-hook-form';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
 import { z } from 'zod';
 
 import type { Tone } from '@shared/ui';
 
-import { useDraftQuery } from '../../api/endpoints';
 import type { Artwork, ArtworkFile, Credits } from '../../api/types';
 import { ARTWORK, CREDIT_FIELDS, EMPTY_CREDITS } from '../../constants';
+import { useDraft } from '../../hooks/useDraft';
 import { useDraftAutosave } from '../../hooks/useDraftAutosave';
 import { useDraftSave } from '../../hooks/useDraftSave';
 import { artworkFromSample } from '../../services/artwork';
 import { meetsArtworkRequirements } from '../../services/release-eligibility';
-import { mergeEdits, selectPendingEdits, type WithDraft } from '../../state/draft-slice';
 
 const line = z.string().max(200);
 
@@ -51,12 +48,9 @@ export type ArtworkModel = {
 };
 
 export function useArtworkStep(): ArtworkModel {
-  const { id = '' } = useParams();
-  const { data: release } = useDraftQuery(id);
-  const edits = useSelector((state: WithDraft) => selectPendingEdits(state, id));
+  const { id, draft } = useDraft();
   const { save } = useDraftSave(id);
 
-  const draft = release ? mergeEdits(release, edits) : null;
   const credits = draft?.credits ?? EMPTY_CREDITS;
   const artworkFile = draft?.artworkFile ?? null;
 

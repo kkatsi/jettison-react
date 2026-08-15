@@ -3,23 +3,17 @@
 
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 
 import { toast, type Tone } from '@shared/ui';
 
-import { useDiscardDraftMutation, useDraftQuery } from '../../api/endpoints';
+import { useDiscardDraftMutation } from '../../api/endpoints';
 import type { ReleaseDraft } from '../../api/types';
 import { CONTINUE, DISCARD, SAVE, TOAST, UNAVAILABLE, type StepSlug } from '../../constants';
+import { useDraft } from '../../hooks/useDraft';
 import { useDraftSave } from '../../hooks/useDraftSave';
 import { useSubmitRelease, type SubmitModel } from '../../hooks/useSubmitRelease';
-import {
-  draftClosed,
-  draftOpened,
-  mergeEdits,
-  selectPendingEdits,
-  selectSaveStatus,
-  type WithDraft,
-} from '../../state/draft-slice';
+import { draftClosed, draftOpened, selectSaveStatus } from '../../state/draft-slice';
 import { adjacentSteps, isStepSlug, railSteps, stepCounter, type StepStatus } from './wizard-steps';
 
 export type RailEntry = {
@@ -67,13 +61,11 @@ export type WizardModel = {
 };
 
 export function useReleaseWizard(): WizardModel {
-  const { id = '' } = useParams();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { data: release, isLoading, isError } = useDraftQuery(id);
-  const edits = useSelector((state: WithDraft) => selectPendingEdits(state, id));
+  const { id, draft, isLoading, isError } = useDraft();
   const saved = useSelector(selectSaveStatus);
   const { retry } = useDraftSave(id);
   // The rail flags problems from every step, not only the one that lists them.
@@ -88,12 +80,12 @@ export function useReleaseWizard(): WizardModel {
   }, [dispatch, id]);
 
   const current = currentStep(pathname);
-  const draft = release ? mergeEdits(release, edits) : null;
   const { previous, next } = adjacentSteps(current);
   const indicator = SAVE[saved.state];
 
   const goTo = (slug: StepSlug) => () => void navigate(`/releases/${id}/edit/${slug}`);
-  const isDraft = release === undefined || release.status === 'draft';
+  // `status` is never in a patch, so the merged draft answers this as the server would.
+  const isDraft = draft === null || draft.status === 'draft';
 
   return {
     isLoading,

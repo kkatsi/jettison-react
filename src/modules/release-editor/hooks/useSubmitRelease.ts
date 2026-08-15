@@ -2,15 +2,16 @@
 // and to the action that fixes each one.
 
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router';
 
 import { toast, type Tone } from '@shared/ui';
 
-import { useDraftQuery, useSubmitReleaseMutation } from '../api/endpoints';
+import { useSubmitReleaseMutation } from '../api/endpoints';
 import { ISSUE, REVIEW, TOAST, type StepSlug } from '../constants';
 import { releaseIssues, type IssueCode } from '../services/release-eligibility';
-import { draftClosed, mergeEdits, selectPendingEdits, type WithDraft } from '../state/draft-slice';
+import { draftClosed } from '../state/draft-slice';
+import { useDraft } from './useDraft';
 
 export type IssueRow = {
   code: IssueCode;
@@ -38,16 +39,13 @@ export type SubmitModel = {
 };
 
 export function useSubmitRelease(): SubmitModel {
-  const { id = '' } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { data: release } = useDraftQuery(id);
-  const edits = useSelector((state: WithDraft) => selectPendingEdits(state, id));
+  const { id, draft } = useDraft();
   const [submitRelease, { isLoading }] = useSubmitReleaseMutation();
   const [hasFailed, setHasFailed] = useState(false);
 
-  const draft = release ? mergeEdits(release, edits) : null;
   const today = new Date().toISOString().slice(0, 10);
   const issues = draft ? releaseIssues(draft, today) : [];
   const allClear = draft !== null && issues.length === 0;
