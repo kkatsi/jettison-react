@@ -41,18 +41,32 @@ export function removeListItem<T extends Identified>(list: T[], id: string): voi
   if (index !== -1) list.splice(index, 1);
 }
 
+/** One pending reconcile per tag set. Keyed by the tags themselves — a different
+    order is a different key, which only costs a redundant refetch. */
+const pending = new Map<string, ReturnType<typeof setTimeout>>();
+
 /**
  * The verify half of patch-then-verify: invalidate once the read model has caught
- * up, so the refetch confirms the patch instead of clobbering it. Returns a cancel
- * so a second patch on the same tags can drop the older timer.
+ * up, so the refetch confirms the patch instead of clobbering it.
+ *
+ * A second patch on the same tags supersedes the first. Without that, two writes
+ * a moment apart schedule two reconciles, and the earlier one lands before the
+ * later write has projected — refetching a list that is missing it, which is the
+ * exact clobber this function exists to prevent (Ch. 4 §5).
  */
 export function invalidateTagsAfterDelay(
   dispatch: Dispatch,
   tags: InvalidatableTags,
   delayMs: number = config.reconcileDelayMs,
-): () => void {
-  const timer = setTimeout(() => {
-    dispatch(api.util.invalidateTags(tags));
-  }, delayMs);
-  return () => clearTimeout(timer);
+): void {
+  const key = JSON.stringify(tags);
+  clearTimeout(pending.get(key));
+
+  pending.set(
+    key,
+    setTimeout(() => {
+      pending.delete(key);
+      dispatch(api.util.invalidateTags(tags));
+    }, delayMs),
+  );
 }
