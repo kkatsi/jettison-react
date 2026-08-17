@@ -115,8 +115,10 @@ export function useTracksStep(): TracksModel {
   };
 }
 
-/** The backend telling us something nobody asked for, and this screen is the only
-    one watching — so it announces it (Ch. 4 §5). */
+/** The backend telling us something nobody asked for: no mutation to hang the
+    announcement on, so this screen diffs its own poll and dispatches. The second
+    entry point Ch. 4 §5 owns up to — leave this step and the fact goes unannounced,
+    because a real backend would have published it and ours cannot. */
 function useIngestionAnnouncements(release: ReleaseDraft | null): void {
   const dispatch = useDispatch();
   const before = useRef<ReadonlyMap<string, AudioStatus>>(new Map());

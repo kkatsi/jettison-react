@@ -101,6 +101,14 @@ Why this preserves the architecture:
 - **Debugging is a timeline, not a hunt.** DevTools shows the event action followed by the exact patches it caused.
 - **It cannot regrow into a cache-update monolith,** because the mechanics are contained: generic list surgery (`upsertListItem`, `patchListItem`, `removeListItem`, `invalidateTagsAfterDelay`) lives once in `core/api/cache-utils.ts`; reactions files split per entity past ~100 lines; and a handler is a routing table — one lookup, one cache-util call, one delayed invalidation. A handler past ~10 lines is smuggling logic that belongs in a transformation or util.
 
+### The one honest exception: facts nobody asked for
+
+The rule above assumes a mutation. Some facts have no mutation behind them — the backend finished something on its own. In the reference app, audio ingestion is the case: a track becomes playable because a pipeline finished, not because anyone clicked. There is no `onQueryStarted` to hang the announcement on, so [`useTracksStep`](../src/modules/release-editor/screens/TracksStep/useTracksStep.ts) polls its own query, diffs the statuses it saw last render, and dispatches `trackProcessed` for each newly-ready track.
+
+That is a second entry point, and the cost is real and worth stating: **the fact is only announced while that screen is open.** Navigate away mid-ingestion and no event fires — activity logs nothing, and the catalogue's detail cache learns about it on its next refetch rather than immediately. A single announcement path is what makes an event log trustworthy, and this one has two.
+
+The right home for this is the backend: a real one publishes `track.processed` and every client hears it, whoever is looking. A polling subscriber is the honest client-side approximation when the transport doesn't exist, and it belongs in the module that owns the resource — never in a shared "watcher" that would have to know about every entity. If you take one thing from this section, take the diff-and-announce shape, not the location.
+
 Two conventions contain the indirection cost: all events live in `shared/events/` with the `domain/` prefix — one place to read the app's entire cross-module vocabulary — and reactions exist *only* in `state/reactions.ts`, nowhere else.
 
 ## 6. Consequences, stated honestly
