@@ -12,8 +12,11 @@ export function Providers() {
     <Provider store={store}>
       <RouterProvider router={router} />
       {/* Outside the router: a toast usually outlives the screen that raised it —
-          submitting a release announces itself from the board it lands on. */}
-      <Toaster position="bottom-right" />
+          submitting a release announces itself from the board it lands on.
+          Top, not bottom-right: this console keeps its primary actions bottom-right
+          (the wizard's Submit, a table's row actions) and a toast there eats the
+          click — submit two releases in a row and the second one does nothing. */}
+      <Toaster position="top-center" />
     </Provider>
   );
 }
