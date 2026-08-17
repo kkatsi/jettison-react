@@ -67,7 +67,9 @@ Repo law — enforced by lint where possible, by review where not.
 
 **R8 — Cache logic lives on endpoints; state derivation lives in selectors.** Cache effects are declared on the endpoint that causes them (Chapter 4); derived store state is a memoized selector beside its slice. Hooks consume both and inline neither.
 
-**R9 — Size triggers.** A view past ~150 lines splits into child components; a hook past ~150 lines extracts sub-hooks or pushes logic into services; a service file past ~200 lines splits by topic. Review triggers, not hard gates.
+**R9 — Size triggers, measured per declaration.** A view component past ~150 lines splits into child components; a hook function past ~150 lines extracts sub-hooks or pushes logic into services; a service file past ~200 lines splits by topic. Review triggers, not hard gates.
+
+Count the declaration, not the file. A file holding a screen and its two row components is not a 240-line view, and imports and the exported view-model type are not the kind of length this rule is about — R3 asks you to declare that type, so counting it here would penalise following R3. The trigger is asking one question: *is any single component or hook doing too much to read in one sitting?*
 
 **R10 — Tests follow the layers.** Services: **mandatory** colocated unit tests — this is where the bugs live. Selectors and transformations: the same. Hooks: `renderHook` tests when the orchestration itself is non-trivial. Views: no tests — a view that needs a test is hiding logic that belongs one layer down.
 
