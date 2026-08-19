@@ -1,6 +1,6 @@
 # Chapter 3 — The Component Pattern
 
-> The whole chapter in one line: **views render, hooks orchestrate, services decide — and fourteen rules make it law.**
+> The whole chapter in one line: **views render, hooks orchestrate, services decide, and fourteen rules make it law.**
 
 ---
 
@@ -19,7 +19,7 @@ ReviewStep/
 
 That is the shape at birth. In the reference app the last three files have already climbed the ladder (Ch. 2 §6), because a second caller appeared: the wizard's rail flags issues from every step, not only the one that lists them. So the real layout is `screens/ReviewStep/ReviewStep.tsx` + `useReviewStep.ts` beside it, with `hooks/useSubmitRelease.ts`, `services/release-eligibility.ts` and `constants.ts` at module level. The pattern is unchanged by the move — which is the point of §7.
 
-(When a component defines its own visual variants, a colocated `SubmitReleaseSection.variants.ts` holds the cva definitions — styling files exist on demand, not by template.)
+(When a component defines its own visual variants, a colocated `SubmitReleaseSection.variants.ts` holds the cva definitions: styling files exist on demand, not by template.)
 
 ```
  View (.tsx)         ──calls──▶  Hook (useX.ts)      ──calls──▶  Services (pure .ts)
@@ -33,7 +33,7 @@ That is the shape at birth. In the reference app the last three files have alrea
 
 Data flows right to left (services → hook → view); calls flow left to right. Each layer talks only to its neighbor.
 
-This is **not** the old container/presentational component pair — there is no second component. The logic layer is a _hook_, colocated with the one view that consumes it, and the business layer is _plain TypeScript_, which is the part that makes the whole arrangement testable.
+This is **not** the old container/presentational component pair: there is no second component. The logic layer is a _hook_, colocated with the one view that consumes it, and the business layer is _plain TypeScript_, which is the part that makes the whole arrangement testable.
 
 ## 2. Why — the failure mode this prevents
 
@@ -53,33 +53,33 @@ Repo law — enforced by lint where possible, by review where not.
 
 **R1 — Forbidden imports in `.tsx`.** A view may import React, styling, design-system components, child components, its own colocated hook, and types. It may never import query/mutation hooks, store hooks (`useSelector`/`useDispatch`), API modules, HTTP clients, or `useNavigate`. Navigation is a handler; handlers come from the hook. _(Enforced: `no-restricted-imports` override for `**/*.tsx`.)_
 
-**R2 — One colocated hook per rich component.** If a component needs anything from R1's forbidden list, it gets exactly one `use<ComponentName>.ts` beside it, and calls only that. Purely presentational components — props in, JSX out — need no hook, and most components should be presentational.
+**R2 — One colocated hook per rich component.** If a component needs anything from R1's forbidden list, it gets exactly one `use<ComponentName>.ts` beside it, and calls only that. Purely presentational components — props in, JSX out — need no hook, and most components should be presentational. _(Review-enforced: a second hook beside a view is visible in any diff.)_
 
-**R3 — The hook returns ONE view-model object.** Render-ready data, boolean flags, handlers — nothing the view must recompute or decide on. If the `.tsx` contains a `useMemo` or a business `if`, the view-model is incomplete. Group related members: `confirmDialog: { isOpen, close, confirm }`.
+**R3 — The hook returns ONE view-model object.** Render-ready data, boolean flags, handlers: nothing the view must recompute or decide on. If the `.tsx` contains a `useMemo` or a business `if`, the view-model is incomplete. Group related members: `confirmDialog: { isOpen, close, confirm }`. _(Review-enforced: the giveaway is a `useMemo` or a `?:` in the `.tsx`.)_
 
-**R4 — Hooks orchestrate, services decide.** Any pure computation with business meaning — a threshold, an eligibility check, a total, a validation, a mapping — is a named function in a service file, even at three lines. Heuristic: **if you can describe the logic without saying "React," it is a service.**
+**R4 — Hooks orchestrate, services decide.** Any pure computation with business meaning — a threshold, an eligibility check, a total, a validation, a mapping — is a named function in a service file, even at three lines. Heuristic: **if you can describe the logic without saying "React," it is a service.** _(Review-enforced: R5 keeps services clean, nothing stops a hook from deciding.)_
 
 **R5 — Services are React-free and store-free.** No imports from `react`, `react-*`, the store, the router, or any hook. Plain functions, deterministic wherever possible. _(Enforced: `no-restricted-imports` override for service files.)_
 
-**R6 — Services return domain facts, not presentation.** Codes, booleans, numbers, domain objects — never UI copy, never JSX, never navigation, never toasts. Copy lives in `constants.ts`, keyed by the codes; the hook maps code → message → action.
+**R6 — Services return domain facts, not presentation.** Codes, booleans, numbers, domain objects. Never UI copy, never JSX, never navigation, never toasts. Copy lives in `constants.ts`, keyed by the codes; the hook maps code → message → action. _(Review-enforced, and not negotiable per §6: lint cannot see this one at all.)_
 
-**R7 — Placement follows reuse.** Logic is born colocated and climbs the promotion ladder (Chapter 2 §6) only when a real second caller appears.
+**R7 — Placement follows reuse.** Logic is born colocated and climbs the promotion ladder (Chapter 2 §6) only when a real second caller appears. _(Review-enforced: promotion is a judgement about a second caller.)_
 
-**R8 — Cache logic lives on endpoints; state derivation lives in selectors.** Cache effects are declared on the endpoint that causes them (Chapter 4); derived store state is a memoized selector beside the state it reads. Hooks consume both and inline neither.
+**R8 — Cache logic lives on endpoints; state derivation lives in selectors.** Cache effects are declared on the endpoint that causes them (Chapter 4); derived store state is a memoized selector beside the state it reads. Hooks consume both and inline neither. _(Review-enforced: no rule can tell a cache effect from any other dispatch.)_
 
-**R9 — Size triggers, measured per declaration.** A view component past ~150 lines splits into child components; a hook function past ~150 lines extracts sub-hooks or pushes logic into services; a service file past ~200 lines splits by topic. Review triggers, not hard gates.
+**R9 — Size triggers, measured per declaration.** A view component past ~150 lines splits into child components; a hook function past ~150 lines extracts sub-hooks or pushes logic into services; a service file past ~200 lines splits by topic. Review triggers, not hard gates. _(Review-enforced: a line count is a trigger to look, not a limit to fail on.)_
 
-Count the declaration, not the file. A file holding a screen and its two row components is not a 240-line view, and imports and the exported view-model type are not the kind of length this rule is about — R3 asks you to declare that type, so counting it here would penalise following R3. The trigger is asking one question: _is any single component or hook doing too much to read in one sitting?_
+Count the declaration, not the file. A file holding a screen and its two row components is not a 240-line view, and imports and the exported view-model type are not the kind of length this rule is about: R3 asks you to declare that type, so counting it here would penalise following R3. The trigger is asking one question: _is any single component or hook doing too much to read in one sitting?_
 
-**R10 — Tests follow the layers.** Services: **mandatory** colocated unit tests — this is where the bugs live. Selectors and transformations: the same. Hooks: `renderHook` tests when the orchestration itself is non-trivial. Views: no tests — a view that needs a test is hiding logic that belongs one layer down. What only a hand can find — an overlay on a primary action, a popup that shuts on release — belongs in the browser suite instead, one spec per claim (§5).
+**R10 — Tests follow the layers.** Services: **mandatory** colocated unit tests, because this is where the bugs live. Selectors and transformations: the same. Hooks: `renderHook` tests when the orchestration itself is non-trivial. Views: no tests. A view that needs a test is hiding logic that belongs one layer down. What only a hand can find — an overlay on a primary action, a popup that shuts on release — belongs in the browser suite instead, one spec per claim (§5). _(Review-enforced. Not negotiable per §6: a service arriving without its test is the thing to reject.)_
 
-**R11 — Mutations own their side effects.** No exported "remember to call this after the mutation" functions; cache effects are declared on the endpoint, cross-module effects travel as domain events (Chapter 4 §5). A hook cannot forget what it never sees.
+**R11 — Mutations own their side effects.** No exported "remember to call this after the mutation" functions; cache effects are declared on the endpoint, cross-module effects travel as domain events (Chapter 4 §5). A hook cannot forget what it never sees. _(Review-enforced: an exported "call this after" function is the smell to catch.)_
 
 **R12 — "Service" is a role, not a folder — and `utils` may not speak the domain.** Any pure business-logic file is a service, wherever it sits, and it is named for its topic (Chapter 2 §7). Domain vocabulary in a file named `utils` fails review.
 
 **R13 — Types keep the evidence they were handed.** A boundary parses; everything inside it works with what parsing produced. So: no `unknown` parameter standing in for a value the caller knows the shape of, no `as` without a `SAFETY:` line naming the invariant that makes it true, no lookup table annotated `Record<Union, X>` when `satisfies` would keep the keys, and no `typeof` check doing the job a parse should have done at the edge. The failure this prevents is quiet: a function that accepts `unknown` and casts its way back to a type compiles forever and is wrong the first time the payload changes. Enforced by fifteen lint rules (section 5 of the config, [ADR-006](adr/006-evidence-preserving-types.md)); the exemption is the simulated backend, which fabricates its own data and would only be parsing its own seeds.
 
-**R14 — A control the keyboard cannot reach is not shipped.** Every interactive element is focusable, named, and shows where focus is. A file input hidden with `display: none` is not a styling choice, it is a control that no longer exists for half the people using it — and the console had exactly that until the rules were turned on. Enforced by thirty-six lint rules (section 6 of the config, [ADR-007](adr/007-accessibility-as-enforcement.md)), which read markup and nothing else: focus order, contrast and reachability are asserted in `e2e/` or by tabbing through the screen, and green lint is not the same as accessible.
+**R14 — A control the keyboard cannot reach is not shipped.** Every interactive element is focusable, named, and shows where focus is. A file input hidden with `display: none` is not a styling choice, it is a control that no longer exists for half the people using it, and the console had exactly that until the rules were turned on. Enforced by thirty-six lint rules (section 6 of the config, [ADR-007](adr/007-accessibility-as-enforcement.md)), which read markup and nothing else: focus order, contrast and reachability are asserted in `e2e/` or by tabbing through the screen, and green lint is not the same as accessible.
 
 ```
 Where does this code go?
@@ -108,9 +108,9 @@ Where does this code go?
 
 Jettison tests **business logic only**: services, transformations, selectors, and non-trivial hooks. Views get no tests, and this is a position, not an omission.
 
-The reasoning: in the layered pattern, a view contains nothing but rendering — every value pre-computed, every decision pre-made. Testing it re-tests the framework. Meanwhile every function that can be _wrong in a way that costs money_ is a pure function with trivial test setup: input object in, codes out, no mocks, no DOM. The pattern doesn't just permit this testing strategy — it _produces_ it. Test coverage grows exactly where refactoring happens, because extracting a service without its test fails review (R10).
+The reasoning: in the layered pattern, a view contains nothing but rendering: every value pre-computed, every decision pre-made. Testing it re-tests the framework. Meanwhile every function that can be _wrong in a way that costs money_ is a pure function with trivial test setup: input object in, codes out, no mocks, no DOM. The pattern doesn't just permit this testing strategy; it _produces_ it. Test coverage grows exactly where refactoring happens, because extracting a service without its test fails review (R10).
 
-What a unit test cannot reach, a browser does. [`e2e/`](../e2e) drives four claims that exist nowhere else: a submitted release that survives its own reconciling refetch, the same journey in `?cache=naive` landing on a board without it, a withdrawal crossing from one module into another, and a popup that stays open under a real press-and-hold rather than an instant click. One spec per claim, not per screen — and each was verified to go red when the behaviour it names is removed, because a browser test that cannot fail is the same lie as a lint rule that matches nothing.
+What a unit test cannot reach, a browser does. [`e2e/`](../e2e) drives four claims that exist nowhere else: a submitted release that survives its own reconciling refetch, the same journey in `?cache=naive` landing on a board without it, a withdrawal crossing from one module into another, and a popup that stays open under a real press-and-hold rather than an instant click. One spec per claim, not per screen, and each was verified to go red when the behaviour it names is removed, because a browser test that cannot fail is the same lie as a lint rule that matches nothing.
 
 What the doctrine still gives up: pixel-level regression safety, and coverage of screens that make no architectural claim. Teams that need those add them per screen with intent — as a decision, not a default.
 
@@ -118,7 +118,7 @@ What the doctrine still gives up: pixel-level regression safety, and coverage of
 
 **You gain:** unit-testable business rules, views readable as UI descriptions, diffs that separate rendering changes from rule changes, and a single orchestrated path for every flow.
 
-**You pay with:** more files per component (four instead of one), a view-model discipline that feels ceremonial for the first week, and judgment calls at the margins (is this `useMemo` rendering logic or a business decision? — the flowchart answers most, not all).
+**You pay with:** more files per component (four instead of one), a view-model discipline that feels ceremonial for the first week, and judgment calls at the margins (is this `useMemo` rendering logic or a business decision? The flowchart answers most, not all).
 
 **Not negotiable:** R1, R5, R6, R10. Those four carry the pattern; the rest tune it.
 
