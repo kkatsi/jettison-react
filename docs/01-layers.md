@@ -120,7 +120,7 @@ The discipline that follows: **keep a deliberately violating file in the test su
 
 **You gain:** predictable blast radius, parallel-team safety, jettisonability, and a codebase where any developer can guess where code lives before opening the editor.
 
-**You pay with:** occasional duplication (embraced deliberately), friction when two modules genuinely need the same domain logic (the answer — move it down, duplicate it, or rethink — is sometimes annoying), and an up-front investment in lint config — here a hundred-line plugin you own outright — that must itself be tested.
+**You pay with:** occasional duplication (embraced deliberately), friction when two modules genuinely need the same domain logic (the answer — move it down, duplicate it, or rethink — is sometimes annoying), and an up-front investment in lint config — here a 125-line plugin you own outright — that must itself be tested.
 
 **Not negotiable:** the direction of flow, module privacy behind `index.ts`, and enforcement as `error`. If those bend, the rest of this document is decoration.
 
