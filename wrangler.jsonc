@@ -3,11 +3,12 @@
   // worker in the visitor's browser (ADR-002), so there is no server code to deploy
   // and no `main` entry point — Cloudflare serves dist/ and gets out of the way.
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "jettison-react",
+  "name": "jettison",
   "compatibility_date": "2026-08-19",
 
   // `true` is the default; stated because the demo's whole address depends on it —
-  // https://jettison-react.<your-subdomain>.workers.dev, no custom domain (PLAN §10).
+  // https://jettison.<your-subdomain>.workers.dev, no custom domain (PLAN §10). The
+  // name sets the address, so renaming later abandons a link that is already public.
   "workers_dev": true,
 
   "assets": {
