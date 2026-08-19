@@ -23,7 +23,7 @@ export function shade(channels: readonly number[], factor: number): number[] {
 
 /** Two pixels — top half, bottom half, RGBA each — as the gradient every screen draws. */
 export function artworkFromSample(sample: ArrayLike<number>): Artwork {
-  const pixels = [...Array.from(sample)];
+  const pixels = Array.from(sample);
 
   return {
     from: toHex(pixels.slice(0, 3)),

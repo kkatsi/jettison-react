@@ -33,19 +33,19 @@ export const GENRES = [
 
 export const TYPES: readonly ReleaseType[] = ['Single', 'EP', 'Album'];
 
-export const TYPE_HINT: Record<ReleaseType, string> = {
+export const TYPE_HINT = {
   Single: '1–3 tracks, under 30 minutes.',
   EP: '4–6 tracks, or under 30 minutes.',
   Album: '7 or more tracks.',
-};
+} satisfies Record<ReleaseType, string>;
 
 /** The header's one line about the server. `retry` appears only when it failed. */
-export const SAVE: Record<SaveState, { label: string; tone: Tone; retry: boolean }> = {
+export const SAVE = {
   idle: { label: 'Draft saved', tone: 'idle', retry: false },
   saving: { label: 'Saving…', tone: 'idle', retry: false },
   saved: { label: 'Draft saved', tone: 'live', retry: false },
   failed: { label: "Couldn't save — changes kept locally", tone: 'danger', retry: true },
-};
+} satisfies Record<SaveState, { label: string; tone: Tone; retry: boolean }>;
 
 export const DISCARD = {
   title: 'Discard {title}?',
@@ -56,11 +56,11 @@ export const DISCARD = {
 
 /** Ingestion, in the words the wizard uses for it. Catalog names the same states
     from its own side — three lines at a module boundary, duplicated on purpose. */
-export const AUDIO: Record<AudioStatus, { label: string; tone: Tone }> = {
+export const AUDIO = {
   uploading: { label: 'Uploading', tone: 'brand' },
   processing: { label: 'Processing audio', tone: 'warning' },
   ready: { label: 'Ready', tone: 'live' },
-};
+} satisfies Record<AudioStatus, { label: string; tone: Tone }>;
 
 export type StepSlug = 'details' | 'tracks' | 'artwork' | 'review';
 
@@ -83,12 +83,12 @@ export const ARTWORK = {
 };
 
 /** What the footer button says about where it goes, keyed by the step it goes to. */
-export const CONTINUE: Record<StepSlug, string> = {
+export const CONTINUE = {
   details: '',
   tracks: 'Continue to tracks',
   artwork: 'Continue to artwork',
   review: 'Continue to review',
-};
+} satisfies Record<StepSlug, string>;
 
 /** What the date field says about itself, once the service has counted the days. */
 export const LEAD_HINT = {
@@ -104,16 +104,16 @@ export const UNAVAILABLE = {
   action: 'Back to catalog',
 };
 
+/** The copy one blocking issue needs, and the step that can clear it. */
+type IssueCopy = {
+  title: (issue: ReleaseIssue) => string;
+  detail: (issue: ReleaseIssue) => string;
+  action: string;
+  step: StepSlug;
+};
+
 /** One entry per code (R6). No severity: they all block submission equally. */
-export const ISSUE: Record<
-  IssueCode,
-  {
-    title: (issue: ReleaseIssue) => string;
-    detail: (issue: ReleaseIssue) => string;
-    action: string;
-    step: StepSlug;
-  }
-> = {
+export const ISSUE = {
   'details-incomplete': {
     title: () => 'The release has no title or no artist',
     detail: () => 'Every store indexes a release by those two fields before anything else.',
@@ -159,7 +159,7 @@ export const ISSUE: Record<
     action: 'Pick a later date',
     step: 'details',
   },
-};
+} satisfies Record<IssueCode, IssueCopy>;
 
 /** Only for what lands somewhere the user cannot see. A state the screen already
     shows stays on that screen. */

@@ -11,12 +11,13 @@ import type { Release } from '../../api/types';
 import type { RowAction } from '../../components/RowActions';
 import { EDIT, STAGE } from '../../constants';
 import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
+import { artistOptions } from '../../services/artist-options';
 import { pipelineStage } from '../../services/release-status';
 import {
   DEFAULT_FILTERS,
   STAGE_VALUES,
   TYPE_VALUES,
-  artistOptions,
+  type CatalogFilters,
   filterReleases,
   isFiltered,
   pageWindow,
@@ -57,16 +58,16 @@ export type CatalogModel = {
   filters: {
     query: string;
     artist: string;
-    type: string;
-    stage: string;
+    type: CatalogFilters['type'];
+    stage: CatalogFilters['stage'];
     artists: FilterOption[];
-    types: FilterOption[];
-    stages: FilterOption[];
+    types: FilterOption<CatalogFilters['type']>[];
+    stages: FilterOption<CatalogFilters['stage']>[];
     isActive: boolean;
     onQuery: (query: string) => void;
     onArtist: (artist: string) => void;
-    onType: (type: string) => void;
-    onStage: (stage: string) => void;
+    onType: (type: CatalogFilters['type']) => void;
+    onStage: (stage: CatalogFilters['stage']) => void;
     onReset: () => void;
   };
   pagination: {
@@ -78,7 +79,7 @@ export type CatalogModel = {
   };
 };
 
-const ALL: FilterOption = { value: 'all', label: 'all' };
+const ALL: FilterOption<'all'> = { value: 'all', label: 'all' };
 
 /** The screen's URL contract: defaults stay out of the query string, junk falls back (ADR-004). */
 const FILTER_PARSERS = {
@@ -159,15 +160,19 @@ export function useCatalog(): CatalogModel {
       type: filters.type,
       stage: filters.stage,
       artists: [ALL, ...artistOptions(releases)],
-      types: TYPE_VALUES.map((type) => (type === 'all' ? ALL : { value: type, label: type })),
-      stages: STAGE_VALUES.map((stage) =>
-        stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
+      types: TYPE_VALUES.map(
+        (type): FilterOption<CatalogFilters['type']> =>
+          type === 'all' ? ALL : { value: type, label: type },
+      ),
+      stages: STAGE_VALUES.map(
+        (stage): FilterOption<CatalogFilters['stage']> =>
+          stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
       ),
       isActive: isFiltered(filters),
       onQuery: (query) => update({ query }),
       onArtist: (artist) => update({ artist }),
-      onType: (type) => update({ type: type as (typeof TYPE_VALUES)[number] }),
-      onStage: (stage) => update({ stage: stage as (typeof STAGE_VALUES)[number] }),
+      onType: (type) => update({ type }),
+      onStage: (stage) => update({ stage }),
       // null clears every key this hook owns — the whole filter set, in one call.
       onReset: () => void setFilters(null),
     },

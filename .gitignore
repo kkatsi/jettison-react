@@ -17,8 +17,16 @@ coverage/
 .vscode/
 *.log
 
+# Agent tooling — local to whoever is working here, not part of the architecture
+.claude/
+.cursor/
+.windsurf/
+
 # Vite
 .vite/
+
+# Wrangler's local state (build cache, dev sessions)
+.wrangler/
 
 # Local-only working material (design mockups, notes)
 designs/

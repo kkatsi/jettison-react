@@ -196,8 +196,8 @@ function StoreLine({ store }: { store: StoreRow }) {
   );
 }
 
-const KIND_DOT: Record<'submitted' | 'withdrawn' | 'processed', string> = {
+const KIND_DOT = {
   submitted: 'bg-brand',
   withdrawn: 'bg-danger',
   processed: 'bg-live',
-};
+} satisfies Record<'submitted' | 'withdrawn' | 'processed', string>;

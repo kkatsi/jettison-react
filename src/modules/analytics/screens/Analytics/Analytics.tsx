@@ -11,7 +11,7 @@ import { useAnalytics } from './useAnalytics';
 
 // What the label earned, by scope and by window.
 export function Analytics() {
-  const { isLoading, failure, report, scope, range } = useAnalytics();
+  const { isLoading, failure, report, scope, range, axis } = useAnalytics();
 
   if (isLoading) return <ScreenFallback />;
 
@@ -61,6 +61,7 @@ export function Analytics() {
           <ChartCard
             title="Daily streams"
             panel={report.streams}
+            formatAxis={axis.streams}
             band={report.streams.band}
             note={
               report.streams.spikeLabel ? (
@@ -75,6 +76,7 @@ export function Analytics() {
           <ChartCard
             title="Revenue"
             panel={report.revenue}
+            formatAxis={axis.revenue}
             area
             note={<span className="font-mono text-2xs text-dim">net of distribution fees</span>}
           />

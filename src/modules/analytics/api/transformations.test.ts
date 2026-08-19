@@ -125,7 +125,6 @@ describe('the analytics report', () => {
     const revenue = report().revenue;
 
     expect(revenue.totalLabel).toBe('£32 total');
-    expect(revenue.formatAxis(4200)).toBe('£4.2K');
     expect(revenue.points[0]?.tip.value).toBe('£3');
   });
 

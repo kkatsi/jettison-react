@@ -1,0 +1,21 @@
+{
+  // The demo is static assets and nothing else: this console's API is a service
+  // worker in the visitor's browser (ADR-002), so there is no server code to deploy
+  // and no `main` entry point — Cloudflare serves dist/ and gets out of the way.
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "jettison",
+  "compatibility_date": "2026-08-19",
+
+  // `true` is the default; stated because the demo's whole address depends on it —
+  // https://jettison.<your-subdomain>.workers.dev, no custom domain (PLAN §10). The
+  // name sets the address, so renaming later abandons a link that is already public.
+  "workers_dev": true,
+
+  "assets": {
+    "directory": "./dist/",
+    // Every route in this app is client-side (react-router), so an unmatched path is
+    // not a 404 — it is index.html with a 200 and the router deciding what it means.
+    // Without this, a shared link to /distribution would break on reload.
+    "not_found_handling": "single-page-application",
+  },
+}

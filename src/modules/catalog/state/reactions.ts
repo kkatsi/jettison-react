@@ -13,18 +13,19 @@ export const registerCatalogReactions = createReactions((on) => {
   // The list endpoint won't have it for another couple of seconds (ADR-002), so
   // the announcement is what puts it on screen.
   on(releaseSubmitted, ({ release }, { dispatch }) => {
-    if (config.cacheMode === 'naive') {
-      // The demo's broken path: refetch immediately, get the list from before the
-      // submission, and watch the row the user just created disappear.
-      dispatch(catalogApi.util.invalidateTags(['Releases']));
-      return;
-    }
-
     dispatch(
       catalogApi.util.updateQueryData('releases', undefined, (releases) => {
         upsertListItem(releases, toRowFromSubmission(release));
       }),
     );
+
+    if (config.cacheMode === 'naive') {
+      // The demo's broken path — the patch above is correct, and this throws it
+      // away: the refetch races the projection and wins with a list that predates
+      // the write, so the row the user just created disappears (ADR-002).
+      dispatch(catalogApi.util.invalidateTags(['Releases']));
+      return;
+    }
 
     invalidateTagsAfterDelay(dispatch, ['Releases']);
   });

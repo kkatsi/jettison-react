@@ -41,7 +41,7 @@ Three corollaries do most of the work:
 
 1. **Modules never import other modules.** If two modules need the same thing, it moves *down* — to `shared` (UI, utils, types) or `core` (infrastructure). And sometimes the right answer is duplication: a five-line helper copied into two modules is cheaper than a coupling between them.
 2. **Modules are consumed only through their public API** — a single `index.ts` that exports the module's routes and, deliberately and rarely, anything else. Deep imports (`modules/billing/features/...` from outside `modules/billing`) are lint errors. The public API is the module's contract; everything behind it is private and refactorable without repository-wide impact.
-3. **Only `app` composes.** The router knows which modules exist. The store knows which slices exist. No module knows any of that.
+3. **Only `app` composes.** The router knows which modules exist. The store knows whose state it holds. No module knows any of that.
 
 ### What goes where — the litmus tests
 
@@ -54,7 +54,9 @@ Three corollaries do most of the work:
 
 The acceptance criterion for the entire layer system — the test this architecture is named after:
 
-> **Deleting `modules/X/`, plus its one line in the router and its one line in the store, must leave a compiling, working application.** Any module can be jettisoned; the ship keeps flying.
+> **Deleting `modules/X/`, plus its registration lines in the app shell, must leave a compiling, working application.** Any module can be jettisoned; the ship keeps flying.
+
+Registration is deliberately mechanical, not minimal. A module registers where the shell composes: its route spread in `router.tsx`, its store or reactions in `store.ts`, its nav entries in `navigation.ts` — each inside a `// jettison:…` marker region, alongside the import that feeds it. The count varies by module (the reference app's `analytics` touches two files, `catalog` three), and that is fine. What must hold is that a script can strip them without reading the code: **any line importing `@modules/<name>`, plus any line naming the module inside a marker region.** A module that needs judgement to unregister was never jettisonable.
 
 This is what "loosely coupled" means when you refuse to let it be a vibe. The jettison test is falsifiable — it either passes or it doesn't — which makes it the perfect CI job:
 
@@ -65,7 +67,7 @@ strategy:
     module: [release-editor, catalog, analytics, activity]
 steps:
   - run: rm -rf src/modules/${{ matrix.module }}
-  - run: node scripts/unregister-module.mjs ${{ matrix.module }}  # strips the 2 registration lines
+  - run: node scripts/unregister-module.mjs ${{ matrix.module }}  # strips the registration lines
   - run: npm run type-check && npm run build
 ```
 
@@ -75,15 +77,17 @@ The jettison test also forces honest answers to design questions. "Can the catal
 
 ## 4. Enforcement
 
-Rules that live in a doc are suggestions. These live in ESLint and fail in the editor, at the moment the bad import is being typed.
+Rules that live in a doc are suggestions. These live in oxlint and fail in the editor, at the moment the bad import is being typed.
 
 ### Path aliases first
 
 Every layer gets an alias — `@app/*`, `@modules/*`, `@shared/*`, `@core/*` — declared in `tsconfig.json` and resolved by Vite. This is not cosmetic: aliases make every cross-layer import *syntactically recognizable*, so lint rules can target them, and a relative-path disguise (`../../core/api`) can be banned outright.
 
-### eslint-plugin-boundaries
+### The layer matrix, as a lint rule
 
-The layer matrix becomes configuration:
+Every linter ships the *shape* of this — restricted imports, forbidden paths — and none of them ship the matrix itself. So it is a local plugin, [`tools/oxlint/jettison/`](../tools/oxlint/jettison/index.ts), and it is short: a layer is a path prefix, an alias is a path prefix, so classifying both ends of an import is string work and no module resolution is involved at all.
+
+The rules it registers:
 
 ```jsonc
 // element types: app | modules | shared | core  (matched by folder)
@@ -95,27 +99,28 @@ The layer matrix becomes configuration:
 // plus: external access to a module only via modules/<name>/index.ts
 ```
 
-The full, working configuration is this repo's own [`eslint.config.js`](../eslint.config.js) — deliberately written as one annotated file you can read top-to-bottom and adapt to your own codebase.
+The full, working configuration is this repo's own [`oxlint.config.ts`](../oxlint.config.ts) — deliberately written as one annotated file you can read top-to-bottom and adapt to your own codebase. Adapting it to your own layout means editing one map of alias-to-folder pairs in the plugin.
 
 ### Rules ship as `error` from day one
 
-In a greenfield project there is nothing to grandfather. In a migration, `boundaries` with `default: allow` constrains only the folders that have adopted the layout — so legacy code is untouched until it moves, and every migrated folder becomes a ratchet that cannot roll back. Never ship boundary rules as `warn`: warnings are wallpaper within a week.
+In a greenfield project there is nothing to grandfather. In a migration, only the folders that have adopted the layout are classified at all — so legacy code is untouched until it moves, and every migrated folder becomes a ratchet that cannot roll back. Never ship boundary rules as `warn`: warnings are wallpaper within a week.
 
 ### Hard-won gotchas (verify your config actually fires)
 
 These are the failure modes that make boundary configs *silently useless* — each one produces a green build with zero enforcement:
 
-- `eslint-plugin-boundaries` resolves imports through `import/resolver`. Without `eslint-import-resolver-typescript`, alias imports are classified as `external` and **every rule silently passes**.
-- A `references` array in `tsconfig.json` can make the resolver treat it as a solution-style config and ignore `compilerOptions.paths` entirely.
-- Element patterns match **folders** — files sitting directly in `src/` are unclassified and unconstrained.
+- The rules classify by path prefix, so the alias map in the plugin is load-bearing. Rename an alias in `tsconfig.json` without renaming it there and every import through it is unclassified — **every rule silently passes.**
+- Only the four layer folders are classified. Files sitting directly in `src/` (`main.tsx`) are unconstrained by design; anything else you add beside them is too.
+- An import a linter cannot see is an import it cannot police. Dynamic `import()` is how every screen here is lazy-loaded, so the rules read it as well as static imports — a plugin that visited only `ImportDeclaration` would miss the entire routing layer.
+- Loading a TypeScript plugin at all needs Node 22.18 or newer. Below that oxlint refuses to start, which is the safe direction to fail — but it prints that refusal on stdout, so a script that only checks stderr will read a broken toolchain as a clean run.
 
-The discipline that follows: **keep a deliberately violating file in the test suite.** A boundaries config that matches nothing is indistinguishable from one that is satisfied. This repo keeps violation fixtures in `fixtures/` and a Vitest suite asserts each rule fires, in CI.
+The discipline that follows: **keep a deliberately violating file in the test suite.** A boundary config that matches nothing is indistinguishable from one that is satisfied, and that goes double when the rules are yours. This repo keeps violation fixtures in `fixtures/` and a Vitest suite runs the real config against them and asserts each rule fires, in CI.
 
 ## 5. Consequences, stated honestly
 
 **You gain:** predictable blast radius, parallel-team safety, jettisonability, and a codebase where any developer can guess where code lives before opening the editor.
 
-**You pay with:** occasional duplication (embraced deliberately), friction when two modules genuinely need the same domain logic (the answer — move it down, duplicate it, or rethink — is sometimes annoying), and an up-front investment in lint config that must itself be tested.
+**You pay with:** occasional duplication (embraced deliberately), friction when two modules genuinely need the same domain logic (the answer — move it down, duplicate it, or rethink — is sometimes annoying), and an up-front investment in lint config — here a hundred-line plugin you own outright — that must itself be tested.
 
 **Not negotiable:** the direction of flow, module privacy behind `index.ts`, and enforcement as `error`. If those bend, the rest of this document is decoration.
 

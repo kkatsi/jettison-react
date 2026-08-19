@@ -17,5 +17,65 @@ jobs:
       - run: npm ci
       - run: npm run type-check
       - run: npm run lint
+      # The README's dependency matrix is generated from the real import graph —
+      # a stale one would be a diagram that drifted, which is the whole point.
+      - run: npm run graph:check
       - run: npm test
       - run: npm run build
+      # Validates wrangler.jsonc without credentials, so a broken deploy config
+      # fails on the PR that broke it rather than on the push to main.
+      - run: npm run deploy:check
+        env:
+          WRANGLER_SEND_METRICS: false
+
+  # The demo is published only from a green pipeline. Turn it on by setting the repo
+  # variable DEPLOY_TO_CLOUDFLARE to `true` once CLOUDFLARE_API_TOKEN and
+  # CLOUDFLARE_ACCOUNT_ID exist as secrets — until then this job is skipped, not red.
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_TO_CLOUDFLARE == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # `npx wrangler` rather than cloudflare/wrangler-action, so the version that
+      # deploys is the one in the lockfile and there is no third-party action in the
+      # path to a production push.
+      - name: Deploy
+        id: deploy
+        run: |
+          set -eo pipefail
+          npx wrangler deploy | tee deploy.log
+          echo "url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)" >> "$GITHUB_OUTPUT"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: false
+
+      # A deploy that returns 200 for the wrong thing is the failure this catches:
+      # the shell on a deep link (SPA routing), and the service worker that *is* the
+      # backend. Without the second one the demo loads and then explains it cannot.
+      - name: Smoke-test the published demo
+        run: |
+          set -eo pipefail
+          url='${{ steps.deploy.outputs.url }}'
+          if [ -z "$url" ]; then
+            echo "::error::could not read the deployed URL out of wrangler's output"
+            exit 1
+          fi
+          for path in / /distribution /mockServiceWorker.js; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' "$url$path")
+            echo "$path -> $code"
+            [ "$code" = 200 ] || { echo "::error::$path returned $code"; exit 1; }
+          done
+          curl -sS "$url/distribution" | grep -q '<div id="root">' \
+            || { echo "::error::a deep link did not return the app shell"; exit 1; }
+          curl -sS "$url/mockServiceWorker.js" | grep -qi 'mock service worker' \
+            || { echo "::error::the mock backend is not being served"; exit 1; }
+          echo "$url is live and serving the console"
+          echo "### Demo: $url" >> "$GITHUB_STEP_SUMMARY"

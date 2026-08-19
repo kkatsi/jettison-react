@@ -8,6 +8,7 @@ import {
   useScopeArtistsQuery,
   useScopeReleasesQuery,
 } from '../../api/endpoints';
+import { formatMoneyAxis, formatStreamsAxis } from '../../api/transformations';
 import type { AnalyticsReport, ScopeOption } from '../../api/types';
 import { DEFAULT_RANGE, RANGES, type Range } from '../../constants';
 import {
@@ -32,7 +33,11 @@ export type AnalyticsModel = {
     options: { value: Range; label: string }[];
     onSelect: (range: Range) => void;
   };
+  /** How each chart labels its y-axis — a stable reference, so the plot is not redrawn. */
+  axis: { streams: AxisFormat; revenue: AxisFormat };
 };
+
+type AxisFormat = (value: number) => string;
 
 /** Scope and range belong in the URL: a label manager sends the chart, not a description of it (ADR-004). */
 const PARSERS = {
@@ -72,5 +77,6 @@ export function useAnalytics(): AnalyticsModel {
       options: RANGES.map((value) => ({ value, label: `${value}d` })),
       onSelect: (value) => void setParams({ range: value }),
     },
+    axis: { streams: formatStreamsAxis, revenue: formatMoneyAxis },
   };
 }

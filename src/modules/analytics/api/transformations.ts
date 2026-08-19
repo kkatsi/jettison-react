@@ -52,12 +52,12 @@ export function toAnalyticsReport(
     ],
 
     streams: {
-      ...toChartPanel(dto.series, (day) => day.streams, formatCount, formatStreamsAxis, spike),
+      ...toChartPanel(dto.series, (day) => day.streams, formatCount, spike),
       band: toBand(spike),
       spikeLabel: spike ? `Playlist spike · ${spike.multiple.toFixed(1)}× baseline` : null,
     },
 
-    revenue: toChartPanel(dto.series, (day) => day.revenue, formatMoney, formatMoneyAxis, null),
+    revenue: toChartPanel(dto.series, (day) => day.revenue, formatMoney, null),
 
     stores: toStores(dto.stores),
     tracks: toTracks(dto.tracks),
@@ -68,18 +68,16 @@ function toChartPanel(
   series: readonly DailyPointDto[],
   valueOf: (day: DailyPointDto) => number,
   formatValue: (value: number) => string,
-  formatAxis: (value: number) => string,
   spike: PlaylistSpike | null,
 ): ChartPanel {
   const total = series.reduce((sum, day) => sum + valueOf(day), 0);
 
   return {
     totalLabel: `${formatValue(total)} total`,
-    formatAxis,
     points: series.map((day, index): TimeSeriesPoint => {
       const value = valueOf(day);
-      const previous = index > 0 ? valueOf(series[index - 1] as DailyPointDto) : undefined;
-      const change = toDelta(value, previous);
+      const previous = series[index - 1];
+      const change = toDelta(value, previous ? valueOf(previous) : undefined);
       const inSpike = !!spike && day.date >= spike.from && day.date <= spike.to;
 
       return {

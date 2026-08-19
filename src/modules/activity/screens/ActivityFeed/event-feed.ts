@@ -1,45 +1,33 @@
 // What the feed screen decides, as plain functions: which events the filters
-// admit, and which day each one belongs to. Born colocated — one screen calls it
-// (Chapter 2 §6). No React, no store, no fetching (R5).
+// admit, and which day each one belongs to. Reading and writing the URL is nuqs's
+// job (ADR-004). Born colocated — one screen calls it (Chapter 2 §6). No React,
+// no store, no fetching (R5).
 
 import type { ActivityEvent, FeedDay, FeedFilters, RangeFilter, TypeFilter } from '../../types';
 
-/** Filter semantics, and — being exhaustive — the URL parser's allowlist too. */
-const TYPE_PREFIX: Record<TypeFilter, string> = {
+/** `all` is a filter value, not the absence of one — it belongs in the allowlist. */
+export const TYPE_VALUES = ['all', 'releases', 'tracks'] as const satisfies readonly TypeFilter[];
+
+export const RANGE_VALUES = ['24h', '7d', '30d', '90d'] as const satisfies readonly RangeFilter[];
+
+const TYPE_PREFIX = {
   all: '',
   releases: 'domain/releases/',
   tracks: 'domain/tracks/',
-};
+} satisfies Record<TypeFilter, string>;
 
-const RANGE_DAYS: Record<RangeFilter, number> = { '24h': 1, '7d': 7, '30d': 30, '90d': 90 };
+const RANGE_DAYS = { '24h': 1, '7d': 7, '30d': 30, '90d': 90 } satisfies Record<RangeFilter, number>;
 
 const DAY_MS = 86_400_000;
 
 export const DEFAULT_FILTERS: FeedFilters = { query: '', type: 'all', range: '30d' };
 
-/** Anything unrecognised falls back — a hand-edited URL must not blank the feed. */
-export function readFilters(params: URLSearchParams): FeedFilters {
-  const type = params.get('type');
-  const range = params.get('range');
-
-  return {
-    query: params.get('q') ?? DEFAULT_FILTERS.query,
-    type: type && type in TYPE_PREFIX ? (type as TypeFilter) : DEFAULT_FILTERS.type,
-    range: range && range in RANGE_DAYS ? (range as RangeFilter) : DEFAULT_FILTERS.range,
-  };
-}
-
-/** Only what differs from the default reaches the URL, so a clean view has a clean link. */
-export function filterParams(filters: FeedFilters): Record<string, string> {
-  const params: Record<string, string> = {};
-  if (filters.query.trim()) params.q = filters.query;
-  if (filters.type !== DEFAULT_FILTERS.type) params.type = filters.type;
-  if (filters.range !== DEFAULT_FILTERS.range) params.range = filters.range;
-  return params;
-}
-
 export function isFiltered(filters: FeedFilters): boolean {
-  return Object.keys(filterParams(filters)).length > 0;
+  return (
+    filters.query.trim() !== '' ||
+    filters.type !== DEFAULT_FILTERS.type ||
+    filters.range !== DEFAULT_FILTERS.range
+  );
 }
 
 export function filterEvents(

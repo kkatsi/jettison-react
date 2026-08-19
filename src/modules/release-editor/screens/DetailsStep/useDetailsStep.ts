@@ -3,17 +3,15 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useWatch, type UseFormReturn } from 'react-hook-form';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
 import { z } from 'zod';
 
 import type { FilterOption, Tone } from '@shared/ui';
 
-import { useArtistsQuery, useDraftQuery } from '../../api/endpoints';
+import { useArtistsQuery } from '../../api/endpoints';
 import type { ReleaseType } from '../../api/types';
 import { EMPTY_CREDITS, GENRES, LEAD_HINT, TYPES, TYPE_HINT } from '../../constants';
+import { useDraft } from '../../hooks/useDraft';
 import { useDraftAutosave } from '../../hooks/useDraftAutosave';
-import { mergeEdits, selectPendingEdits, type WithDraft } from '../../state/draft-slice';
 import { leadDays, MIN_LEAD_DAYS } from '../../services/release-eligibility';
 
 /** A draft may be incomplete — that is what a draft is. It may not be malformed. */
@@ -39,12 +37,8 @@ export type DetailsModel = {
 };
 
 export function useDetailsStep(): DetailsModel {
-  const { id = '' } = useParams();
-  const { data: release } = useDraftQuery(id);
-  const edits = useSelector((state: WithDraft) => selectPendingEdits(state, id));
+  const { id, draft } = useDraft();
   const { data: artists } = useArtistsQuery();
-
-  const draft = release ? mergeEdits(release, edits) : null;
 
   const form = useForm<DetailsValues>({
     resolver: zodResolver(detailsSchema),

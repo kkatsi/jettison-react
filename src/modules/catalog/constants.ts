@@ -7,27 +7,27 @@ import type { AudioStatus, DeliveryStatus } from './api/types';
 import type { PipelineStage } from './services/release-status';
 
 /** `busy` pulses the chip's dot: the stores are still working on this one. */
-export const STAGE: Record<PipelineStage, { label: string; tone: Tone; busy: boolean }> = {
+export const STAGE = {
   draft: { label: 'Draft', tone: 'idle', busy: false },
   submitted: { label: 'Submitted', tone: 'idle', busy: false },
   'in-review': { label: 'In review', tone: 'warning', busy: true },
   delivering: { label: 'Delivering', tone: 'warning', busy: true },
   live: { label: 'Live', tone: 'live', busy: false },
   blocked: { label: 'Blocked', tone: 'danger', busy: false },
-};
+} satisfies Record<PipelineStage, { label: string; tone: Tone; busy: boolean }>;
 
-export const DELIVERY: Record<DeliveryStatus, { label: string; tone: Tone }> = {
+export const DELIVERY = {
   pending: { label: 'Pending', tone: 'idle' },
   'in-review': { label: 'In review', tone: 'warning' },
   delivered: { label: 'Delivered', tone: 'live' },
   rejected: { label: 'Rejected', tone: 'danger' },
-};
+} satisfies Record<DeliveryStatus, { label: string; tone: Tone }>;
 
-export const AUDIO: Record<AudioStatus, { label: string; tone: Tone }> = {
+export const AUDIO = {
   uploading: { label: 'Uploading', tone: 'idle' },
   processing: { label: 'Processing', tone: 'warning' },
   ready: { label: 'Ready', tone: 'live' },
-};
+} satisfies Record<AudioStatus, { label: string; tone: Tone }>;
 
 /** Fires from three screens, and on two the changed chip may be scrolled out of sight. */
 export const TOAST = {
@@ -41,21 +41,21 @@ export const TOAST = {
   }),
 };
 
+/** What an exit from distribution has to say, at every point the user meets it. */
+type WithdrawalCopy = {
+  action: string;
+  /** For a table cell, where the column header already supplies the context. */
+  short: string;
+  pending: string;
+  title: string;
+  description: string;
+  confirm: string;
+  /** The dialog has already closed by then, so there is nowhere else to say it. */
+  failed: string;
+};
+
 /** The two ways a release comes back out of distribution, in words. */
-export const WITHDRAWAL: Record<
-  'withdraw' | 'cancel',
-  {
-    action: string;
-    /** For a table cell, where the column header already supplies the context. */
-    short: string;
-    pending: string;
-    title: string;
-    description: string;
-    confirm: string;
-    /** The dialog has already closed by then, so there is nowhere else to say it. */
-    failed: string;
-  }
-> = {
+export const WITHDRAWAL = {
   withdraw: {
     action: 'Withdraw from distribution',
     short: 'Withdraw',
@@ -76,7 +76,7 @@ export const WITHDRAWAL: Record<
     confirm: 'Cancel submission',
     failed: 'The stores could not be reached. The submission still stands — try again.',
   },
-};
+} satisfies Record<'withdraw' | 'cancel', WithdrawalCopy>;
 
 /** Who the console acts as. A real app reads this off the session. */
 export const SESSION_ACTOR = 'Mara Kessler';

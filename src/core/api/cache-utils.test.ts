@@ -71,7 +71,7 @@ describe('invalidateTagsAfterDelay', () => {
 
   it('does not invalidate before the delay has elapsed', () => {
     const dispatch = vi.fn();
-    invalidateTagsAfterDelay(dispatch, [], 2500);
+    invalidateTagsAfterDelay(dispatch, ['Releases'], 2500);
 
     vi.advanceTimersByTime(2499);
     expect(dispatch).not.toHaveBeenCalled();
@@ -81,12 +81,28 @@ describe('invalidateTagsAfterDelay', () => {
     expect(dispatch.mock.calls[0]?.[0]).toMatchObject({ type: 'api/invalidateTags' });
   });
 
-  it('cancels, so a second patch does not leave a stampede behind', () => {
+  it('supersedes an earlier reconcile on the same tags instead of stacking one', () => {
     const dispatch = vi.fn();
-    const cancel = invalidateTagsAfterDelay(dispatch, [], 2500);
+    invalidateTagsAfterDelay(dispatch, ['Stores'], 2500);
 
-    cancel();
-    vi.advanceTimersByTime(5000);
+    // A second write 1s later: the first reconcile would land at 2500, before this
+    // write has projected, and refetch a list that is missing it.
+    vi.advanceTimersByTime(1000);
+    invalidateTagsAfterDelay(dispatch, ['Stores'], 2500);
+
+    vi.advanceTimersByTime(1500);
     expect(dispatch).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(1000);
+    expect(dispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps reconciles for different tags independent', () => {
+    const dispatch = vi.fn();
+    invalidateTagsAfterDelay(dispatch, ['ActivityFeed'], 2500);
+    invalidateTagsAfterDelay(dispatch, [{ type: 'ReleaseDetail', id: 'lor-0042' }], 2500);
+
+    vi.advanceTimersByTime(2500);
+    expect(dispatch).toHaveBeenCalledTimes(2);
   });
 });

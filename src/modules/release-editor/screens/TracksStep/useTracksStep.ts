@@ -3,7 +3,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useParams } from 'react-router';
 
 import { trackProcessed } from '@shared/events';
 import type { Tone } from '@shared/ui';
@@ -11,6 +10,7 @@ import type { Tone } from '@shared/ui';
 import { useAddTrackMutation, useDraftQuery, useSaveTracksMutation } from '../../api/endpoints';
 import type { AudioStatus, ReleaseDraft } from '../../api/types';
 import { AUDIO } from '../../constants';
+import { useDraft } from '../../hooks/useDraft';
 import {
   audioStatuses,
   isIngesting,
@@ -49,17 +49,16 @@ export type TracksModel = {
 };
 
 export function useTracksStep(): TracksModel {
-  const { id = '' } = useParams();
   const [addTrack, { isLoading: isUploading }] = useAddTrackMutation();
   const [saveTracks] = useSaveTracksMutation();
-  const { data: release } = useDraftQuery(id);
-  const tracks = release?.tracks ?? [];
+  const { id, draft } = useDraft();
+  const tracks = draft?.tracks ?? [];
 
   // A second subscription is how this screen asks for polling: RTK polls at the
   // shortest interval any subscriber wants.
   useDraftQuery(id, { pollingInterval: POLL_MS, skip: !isIngesting(tracks) });
 
-  useIngestionAnnouncements(release);
+  useIngestionAnnouncements(draft);
 
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
@@ -116,9 +115,11 @@ export function useTracksStep(): TracksModel {
   };
 }
 
-/** The backend telling us something nobody asked for, and this screen is the only
-    one watching — so it announces it (Ch. 4 §5). */
-function useIngestionAnnouncements(release: ReleaseDraft | undefined): void {
+/** The backend telling us something nobody asked for: no mutation to hang the
+    announcement on, so this screen diffs its own poll and dispatches. The second
+    entry point Ch. 4 §5 owns up to — leave this step and the fact goes unannounced,
+    because a real backend would have published it and ours cannot. */
+function useIngestionAnnouncements(release: ReleaseDraft | null): void {
   const dispatch = useDispatch();
   const before = useRef<ReadonlyMap<string, AudioStatus>>(new Map());
 

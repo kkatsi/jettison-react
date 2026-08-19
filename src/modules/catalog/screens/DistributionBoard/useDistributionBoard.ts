@@ -10,11 +10,12 @@ import { useReleasesQuery } from '../../api/endpoints';
 import type { Release } from '../../api/types';
 import { STAGE } from '../../constants';
 import { useWithdrawRelease, type WithdrawModel } from '../../hooks/useWithdrawRelease';
+import { artistOptions } from '../../services/artist-options';
 import { deliveryProgress, isInFlight, pipelineStage } from '../../services/release-status';
-import { artistOptions } from '../Catalog/catalog-filters';
 import {
   BOARD_STAGE_VALUES,
   DEFAULT_BOARD_FILTERS,
+  type BoardFilters,
   filterPipeline,
   isBoardFiltered,
   sortByNewestSubmission,
@@ -65,18 +66,18 @@ export type DistributionBoardModel = {
   withdraw: WithdrawModel;
   filters: {
     artist: string;
-    stage: string;
+    stage: BoardFilters['stage'];
     artists: FilterOption[];
-    stages: FilterOption[];
+    stages: FilterOption<BoardFilters['stage']>[];
     isActive: boolean;
     onArtist: (artist: string) => void;
-    onStage: (stage: string) => void;
+    onStage: (stage: BoardFilters['stage']) => void;
     onReset: () => void;
   };
   onNewRelease: () => void;
 };
 
-const ALL: FilterOption = { value: 'all', label: 'all' };
+const ALL: FilterOption<'all'> = { value: 'all', label: 'all' };
 
 /** The board's URL contract — the same two rules as the catalogue's (ADR-004). */
 const FILTER_PARSERS = {
@@ -147,12 +148,13 @@ export function useDistributionBoard(): DistributionBoardModel {
       artist: filters.artist,
       stage: filters.stage,
       artists: [ALL, ...artistOptions(pipeline)],
-      stages: BOARD_STAGE_VALUES.map((stage) =>
-        stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
+      stages: BOARD_STAGE_VALUES.map(
+        (stage): FilterOption<BoardFilters['stage']> =>
+          stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
       ),
       isActive: isBoardFiltered(filters),
       onArtist: (artist) => void setFilters({ artist }),
-      onStage: (stage) => void setFilters({ stage: stage as (typeof BOARD_STAGE_VALUES)[number] }),
+      onStage: (stage) => void setFilters({ stage }),
       onReset: () => void setFilters(null),
     },
     onNewRelease: () => void navigate('/releases/new'),

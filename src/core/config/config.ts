@@ -3,18 +3,19 @@
 /** `naive` swaps patch-then-verify for plain invalidation, to demo the bug. */
 export type CacheMode = 'events' | 'naive';
 
-// Guarded: unit tests import this and have no window.
-const search = typeof window === 'undefined' ? '' : window.location.search;
-const params = new URLSearchParams(search);
+// Optional, not guarded by an environment check: unit tests import this and have
+// no location at all.
+const params = new URLSearchParams(globalThis.location?.search ?? '');
+
+/** One read of the URL, one union — the object below only carries it. */
+const cacheMode: CacheMode = params.get('cache') === 'naive' ? 'naive' : 'events';
 
 const readModelLagMs = Number(import.meta.env.VITE_READ_MODEL_LAG_MS ?? 2500);
 
 export const config = Object.freeze({
   apiBaseUrl: '/api',
 
-  cacheMode: (params.get('cache') === 'naive'
-    ? 'naive'
-    : 'events') satisfies CacheMode as CacheMode,
+  cacheMode,
 
   /** How far the mock's read models trail its write model (ADR-002). */
   readModelLagMs,

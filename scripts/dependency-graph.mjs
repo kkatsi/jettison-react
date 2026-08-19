@@ -1,0 +1,221 @@
+// The layer table, measured instead of drawn. Every import in src/ is classified by
+// the same functions the lint rule uses (tools/oxlint/jettison), counted, and written
+// to docs/dependency-graph.svg as a matrix: importer down the side, imported across
+// the top.
+//
+// The picture's whole job is the two shaded regions — the imports the architecture
+// forbids. They are empty because lint fails when they are not, and if a number ever
+// lands there it shows up in the README before anyone reads the diff.
+//
+//   node scripts/dependency-graph.mjs           # write the SVG
+//   node scripts/dependency-graph.mjs --check   # fail if the committed SVG is stale
+import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { classify, resolveSpecifier } from '../tools/oxlint/jettison/index.ts';
+
+const root = fileURLToPath(new URL('..', import.meta.url));
+const output = path.join(root, 'docs/dependency-graph.svg');
+
+/** Tokens from the console's own theme, so the picture looks like the app it measures. */
+const COLOUR = {
+  page: '#0B0E14',
+  panel: '#12161F',
+  line: '#1E2530',
+  text: '#E6EAF2',
+  muted: '#64748B',
+  brand: '#8B5CF6',
+  danger: '#F87171',
+  forbidden: '#1A1020',
+};
+
+const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+const SANS = "system-ui, -apple-system, 'Segoe UI', sans-serif";
+
+/** Production source only: a test's imports say nothing about the architecture. */
+function sourceFiles(directory, found = []) {
+  for (const entry of readdirSync(directory)) {
+    const full = path.join(directory, entry);
+    if (statSync(full).isDirectory()) sourceFiles(full, found);
+    else if (/\.tsx?$/.test(entry) && !/\.test\.tsx?$/.test(entry)) {
+      found.push(path.relative(root, full).split(path.sep).join('/'));
+    }
+  }
+  return found;
+}
+
+const SPECIFIER = /(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g;
+
+const nodeId = (element) =>
+  element.layer === 'modules' ? `modules/${element.module}` : element.layer;
+
+function measure() {
+  const files = new Map();
+  const edges = new Map();
+  const modules = new Set();
+
+  for (const file of sourceFiles(path.join(root, 'src'))) {
+    const from = classify(file);
+    if (from === null) continue;
+    if (from.layer === 'modules') modules.add(from.module);
+
+    files.set(nodeId(from), (files.get(nodeId(from)) ?? 0) + 1);
+    const directory = path.posix.dirname(file);
+
+    for (const [, specifier] of readFileSync(path.join(root, file), 'utf8').matchAll(SPECIFIER)) {
+      const target = resolveSpecifier(specifier, directory);
+      const to = target === null ? null : classify(target);
+      if (to === null || nodeId(to) === nodeId(from)) continue;
+      const edge = `${nodeId(from)} ${nodeId(to)}`;
+      edges.set(edge, (edges.get(edge) ?? 0) + 1);
+    }
+  }
+
+  // Biggest module first: stable across runs, and it reads as a ranking.
+  const ordered = [...modules].sort(
+    (a, b) =>
+      (files.get(`modules/${b}`) ?? 0) - (files.get(`modules/${a}`) ?? 0) || a.localeCompare(b),
+  );
+
+  return { files, edges, nodes: ['app', ...ordered.map((m) => `modules/${m}`), 'shared', 'core'] };
+}
+
+/** Why a cell can never hold a number — the two rules, in the order they are read. */
+function verdict(from, to, nodes) {
+  const isModule = (id) => id.startsWith('modules/');
+  if (from === to) return 'self';
+  if (isModule(from) && isModule(to)) return 'jettison';
+  return nodes.indexOf(to) > nodes.indexOf(from) ? 'allowed' : 'layer';
+}
+
+const label = (id) => (id.startsWith('modules/') ? id.slice('modules/'.length) : id);
+
+const text = (x, y, content, { fill, font = MONO, size = 11, anchor = 'start', weight }) =>
+  `<text x="${x}" y="${y}" fill="${fill}" font-family="${font}" font-size="${size}"` +
+  `${anchor === 'start' ? '' : ` text-anchor="${anchor}"`}` +
+  `${weight === undefined ? '' : ` font-weight="${weight}"`}>${content}</text>`;
+
+function svg({ files, edges, nodes }) {
+  const left = 176;
+  const top = 132;
+  // Wide enough for the longest module name as a column header, unrotated.
+  const cell = 104;
+  const row = 44;
+  const width = left + cell * nodes.length + 32;
+  const height = top + row * nodes.length + 96;
+
+  const parts = [
+    // Hatching, not just a darker fill: the two regions have to be unmistakable at
+    // README width, and colour alone was not enough.
+    `<defs><pattern id="forbidden" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">` +
+      `<rect width="7" height="7" fill="${COLOUR.forbidden}"/>` +
+      `<line x1="0" y1="0" x2="0" y2="7" stroke="${COLOUR.line}" stroke-width="1.4"/></pattern></defs>`,
+    `<rect width="${width}" height="${height}" fill="${COLOUR.page}"/>`,
+    text(32, 44, 'Every import in src/, counted', {
+      fill: COLOUR.text,
+      font: SANS,
+      size: 17,
+      weight: 600,
+    }),
+    text(
+      32,
+      66,
+      'Importer down the side, imported across the top. Generated by scripts/dependency-graph.mjs, checked in CI.',
+      { fill: COLOUR.muted, font: SANS, size: 12.5 },
+    ),
+  ];
+
+  nodes.forEach((id, column) => {
+    parts.push(
+      text(left + cell * column + cell / 2, top - 14, label(id), {
+        fill: COLOUR.muted,
+        anchor: 'middle',
+      }),
+    );
+  });
+
+  nodes.forEach((from, index) => {
+    const y = top + row * index;
+    parts.push(
+      text(left - 16, y + row / 2 + 4, label(from), {
+        fill: COLOUR.text,
+        size: 11.5,
+        anchor: 'end',
+      }),
+      text(left - 16, y + row / 2 + 18, `${files.get(from) ?? 0} files`, {
+        fill: COLOUR.muted,
+        size: 9,
+        anchor: 'end',
+      }),
+    );
+
+    nodes.forEach((to, column) => {
+      const x = left + cell * column;
+      const state = verdict(from, to, nodes);
+      const count = edges.get(`${from} ${to}`) ?? 0;
+      const fill =
+        state === 'allowed' ? COLOUR.panel : state === 'self' ? COLOUR.page : 'url(#forbidden)';
+
+      parts.push(
+        `<rect x="${x + 3}" y="${y + 3}" width="${cell - 6}" height="${row - 6}" fill="${fill}" stroke="${COLOUR.line}" rx="4"/>`,
+      );
+
+      if (count > 0) {
+        // A number in a forbidden cell is the point of the picture: make it loud.
+        parts.push(
+          text(x + cell / 2, y + row / 2 + 5, String(count), {
+            fill: state === 'allowed' ? COLOUR.brand : COLOUR.danger,
+            size: 14,
+            anchor: 'middle',
+          }),
+        );
+      } else if (state !== 'self') {
+        parts.push(
+          text(x + cell / 2, y + row / 2 + 4, '&#183;', {
+            fill: COLOUR.line,
+            anchor: 'middle',
+          }),
+        );
+      }
+    });
+  });
+
+  const legend = top + row * nodes.length + 34;
+  parts.push(
+    `<rect x="32" y="${legend - 10}" width="13" height="13" fill="url(#forbidden)" stroke="${COLOUR.line}" rx="3"/>`,
+    text(
+      53,
+      legend,
+      'Forbidden: a module reaching sideways, or any layer reaching up. Both regions are empty, measured.',
+      { fill: COLOUR.muted, font: SANS, size: 12 },
+    ),
+    `<rect x="32" y="${legend + 16}" width="13" height="13" fill="${COLOUR.panel}" stroke="${COLOUR.line}" rx="3"/>`,
+    text(
+      53,
+      legend + 26,
+      'Permitted. A dot is a pairing the architecture allows and this app has never needed.',
+      { fill: COLOUR.muted, font: SANS, size: 12 },
+    ),
+  );
+
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" ` +
+    `viewBox="0 0 ${width} ${height}" role="img" ` +
+    `aria-label="Dependency matrix of src/: every import counted, with the regions lint forbids left empty">\n` +
+    `${parts.join('\n')}\n</svg>\n`
+  );
+}
+
+const rendered = svg(measure());
+
+if (process.argv.includes('--check')) {
+  if (readFileSync(output, 'utf8') !== rendered) {
+    console.error('docs/dependency-graph.svg is stale: run `npm run graph` and commit the result.');
+    process.exit(1);
+  }
+  console.log('docs/dependency-graph.svg is current.');
+} else {
+  writeFileSync(output, rendered);
+  console.log(`Wrote ${path.relative(root, output)}`);
+}

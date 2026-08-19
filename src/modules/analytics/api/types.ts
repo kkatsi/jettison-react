@@ -82,8 +82,6 @@ export type ScopeOption = {
 export type ChartPanel = {
   totalLabel: string;
   points: TimeSeriesPoint[];
-  /** Kept on the report, not made in the hook: a new function each render would remount the chart. */
-  formatAxis: (value: number) => string;
 };
 
 /** Everything the screen draws, one window of it. */

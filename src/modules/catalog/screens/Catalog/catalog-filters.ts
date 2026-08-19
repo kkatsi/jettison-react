@@ -114,13 +114,3 @@ export function pageWindow(page: number, pageCount: number): (number | 'gap')[] 
 
   return window;
 }
-
-/** The artist filter's options, taken from the catalogue rather than a second endpoint. */
-export function artistOptions(releases: readonly Release[]): { value: string; label: string }[] {
-  const names = new Map<string, string>();
-  for (const release of releases) names.set(release.artistId, release.artistName);
-
-  return [...names]
-    .sort(([, a], [, b]) => a.localeCompare(b))
-    .map(([value, label]) => ({ value, label }));
-}

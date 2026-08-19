@@ -5,21 +5,21 @@ import { Badge } from './badge';
 /** Tones, not release statuses: shared may not speak the domain (Ch. 2 §7). */
 export type Tone = 'live' | 'warning' | 'danger' | 'idle' | 'brand';
 
-export const TONE_TEXT: Record<Tone, string> = {
+export const TONE_TEXT = {
   live: 'text-live',
   warning: 'text-warning',
   danger: 'text-danger',
   idle: 'text-idle',
   brand: 'text-brand-soft',
-};
+} satisfies Record<Tone, string>;
 
-const TONE_SURFACE: Record<Tone, string> = {
+const TONE_SURFACE = {
   live: 'bg-live/10',
   warning: 'bg-warning/10',
   danger: 'bg-danger/10',
   idle: 'bg-idle/12',
   brand: 'bg-brand/10',
-};
+} satisfies Record<Tone, string>;
 
 export type StatusBadgeProps = {
   tone: Tone;
