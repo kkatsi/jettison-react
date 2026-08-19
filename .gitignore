@@ -25,6 +25,12 @@ coverage/
 # Vite
 .vite/
 
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
 # Wrangler's local state (build cache, dev sessions)
 .wrangler/
 

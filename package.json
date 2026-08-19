@@ -18,10 +18,12 @@
     "deploy": "npm run build && wrangler deploy",
     "deploy:check": "wrangler deploy --dry-run",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "build": "vite build"
   },
   "devDependencies": {
     "@oxlint/plugins": "^1.78.0",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",

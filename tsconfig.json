@@ -27,5 +27,13 @@
     "noEmit": true
   },
   // `fixtures/` is checked by its own project (its aliases point at fixtures/src).
-  "include": ["src", "scripts", "vite.config.ts", "oxlint.config.ts", "tools/oxlint/jettison"]
+  "include": [
+    "src",
+    "scripts",
+    "e2e",
+    "vite.config.ts",
+    "playwright.config.ts",
+    "oxlint.config.ts",
+    "tools/oxlint/jettison"
+  ]
 }
