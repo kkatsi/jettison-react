@@ -25,6 +25,9 @@ coverage/
 # Vite
 .vite/
 
+# Wrangler's local state (build cache, dev sessions)
+.wrangler/
+
 # Local-only working material (design mockups, notes)
 designs/
 internal/

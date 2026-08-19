@@ -22,3 +22,32 @@ jobs:
       - run: npm run graph:check
       - run: npm test
       - run: npm run build
+      # Validates wrangler.jsonc without credentials, so a broken deploy config
+      # fails on the PR that broke it rather than on the push to main.
+      - run: npm run deploy:check
+        env:
+          WRANGLER_SEND_METRICS: false
+
+  # The demo is published only from a green pipeline. Turn it on by setting the repo
+  # variable DEPLOY_TO_CLOUDFLARE to `true` once CLOUDFLARE_API_TOKEN and
+  # CLOUDFLARE_ACCOUNT_ID exist as secrets — until then this job is skipped, not red.
+  deploy:
+    needs: verify
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_TO_CLOUDFLARE == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # `npx wrangler` rather than cloudflare/wrangler-action, so the version that
+      # deploys is the one in the lockfile and there is no third-party action in the
+      # path to a production push.
+      - run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_SEND_METRICS: false
