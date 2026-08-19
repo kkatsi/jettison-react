@@ -28,11 +28,33 @@ jobs:
         env:
           WRANGLER_SEND_METRICS: false
 
+  # The browser proof. Separate from `verify` because it needs a browser download and
+  # a built app, and because a failure here names a different kind of problem: not a
+  # rule broken, a behaviour that only a hand can see.
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # Builds and serves the app itself (see playwright.config.ts).
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
   # The demo is published only from a green pipeline. Turn it on by setting the repo
   # variable DEPLOY_TO_CLOUDFLARE to `true` once CLOUDFLARE_API_TOKEN and
   # CLOUDFLARE_ACCOUNT_ID exist as secrets — until then this job is skipped, not red.
   deploy:
-    needs: verify
+    needs: [verify, browser]
     if: github.ref == 'refs/heads/main' && vars.DEPLOY_TO_CLOUDFLARE == 'true'
     runs-on: ubuntu-latest
     steps:

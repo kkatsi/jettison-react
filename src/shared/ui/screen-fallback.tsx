@@ -4,7 +4,7 @@ import { Skeleton } from './skeleton';
 /** Shown while a screen's code, or its first data, is still on the way. */
 export function ScreenFallback() {
   return (
-    <div role="status" aria-label="Loading" className="flex min-h-0 flex-1 flex-col gap-4 p-6">
+    <output aria-label="Loading" className="flex min-h-0 flex-1 flex-col gap-4 p-6">
       <div className="flex flex-none items-center gap-2">
         <Skeleton className="h-7.5 w-65" />
         <Skeleton className="h-7.5 w-28" />
@@ -30,7 +30,7 @@ export function ScreenFallback() {
           </div>
         ))}
       </Card>
-    </div>
+    </output>
   );
 }
 

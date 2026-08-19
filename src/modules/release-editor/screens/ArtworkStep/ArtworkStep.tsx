@@ -29,7 +29,7 @@ export function ArtworkStep() {
                 onFile(event.dataTransfer.files[0]);
               }}
               onDragOver={(event) => event.preventDefault()}
-              className="flex h-47.5 w-75 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-line-strong bg-canvas hover:border-brand/40 hover:bg-panel"
+              className="flex h-47.5 w-75 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-line-strong bg-canvas hover:border-brand/40 hover:bg-panel has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/50"
             >
               <span className="flex size-8.5 items-center justify-center rounded-lg border border-line-strong text-faint">
                 <Upload className="size-4" />
@@ -69,7 +69,7 @@ export function ArtworkStep() {
               </div>
 
               <div className="flex items-center gap-3.5 text-sm">
-                <label className="text-brand">
+                <label className="rounded-sm text-brand has-[input:focus-visible]:ring-3 has-[input:focus-visible]:ring-ring/50">
                   Replace
                   <FilePicker onFile={onFile} />
                 </label>
@@ -108,7 +108,9 @@ function FilePicker({ onFile }: { onFile: (file: File | null | undefined) => voi
     <input
       type="file"
       accept="image/png,image/jpeg"
-      className="hidden"
+      // sr-only, not hidden: a `display: none` input is not in the tab order, and
+      // this one is the only way to give a release its cover.
+      className="sr-only"
       onChange={(event) => {
         onFile(event.target.files?.[0]);
         event.target.value = '';

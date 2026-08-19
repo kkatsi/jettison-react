@@ -153,11 +153,11 @@ export function ReleaseWizard() {
 
 function StepFallback() {
   return (
-    <div role="status" aria-label="Loading" className="flex max-w-160 flex-col gap-7">
+    <output aria-label="Loading" className="flex max-w-160 flex-col gap-7">
       <Skeleton className="h-5 w-48" />
       <Skeleton className="h-9.5 w-full" />
       <Skeleton className="h-9.5 w-full" />
       <Skeleton className="h-9.5 w-2/3" />
-    </div>
+    </output>
   );
 }
