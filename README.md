@@ -3,6 +3,8 @@
 [![CI](https://github.com/kkatsi/jettison-react/actions/workflows/ci.yml/badge.svg)](https://github.com/kkatsi/jettison-react/actions/workflows/ci.yml)
 [![Jettison test](https://github.com/kkatsi/jettison-react/actions/workflows/jettison-test.yml/badge.svg)](https://github.com/kkatsi/jettison-react/actions/workflows/jettison-test.yml)
 
+**[Live demo](https://jettison.kkatsi.workers.dev)** — the whole console runs in your browser: there is no server, the API is a service worker (ADR-002), and `?cache=naive` switches on the bug the architecture exists to prevent.
+
 > **jettison** (v.) — to throw cargo overboard, deliberately, to keep the ship flying.
 
 **Jettison is an enforced architecture for enterprise React applications.** Its boldest claim is its name: any module in a Jettison codebase can be thrown overboard — delete its folder, then strip its registration lines from the app shell — and the application still compiles and runs. Stripping them is mechanical, which is the real claim: a module that needs judgement to remove was never jettisonable. That is not a diagram in a wiki; it is a CI job (**the jettison test**) that runs on every push.

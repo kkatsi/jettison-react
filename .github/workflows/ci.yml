@@ -68,7 +68,23 @@ jobs:
             echo "::error::could not read the deployed URL out of wrangler's output"
             exit 1
           fi
-          for path in / /distribution /mockServiceWorker.js; do
+          echo "checking $url"
+
+          # A brand-new workers.dev hostname takes a moment to resolve. One that was
+          # renamed out from under wrangler never will — so retry, then say which.
+          code=000
+          for attempt in 1 2 3 4 5 6; do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 10 "$url/") || code=000
+            echo "attempt $attempt: / -> $code"
+            [ "$code" = 200 ] && break
+            [ "$attempt" = 6 ] || sleep 10
+          done
+          if [ "$code" != 200 ]; then
+            echo "::error::$url/ never answered 200 (last: $code). If the account's workers.dev subdomain was renamed, wrangler printed the hostname that existed at deploy time and this one is gone."
+            exit 1
+          fi
+
+          for path in /distribution /mockServiceWorker.js; do
             code=$(curl -sS -o /dev/null -w '%{http_code}' "$url$path")
             echo "$path -> $code"
             [ "$code" = 200 ] || { echo "::error::$path returned $code"; exit 1; }
