@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "type-check": "tsc --noEmit && tsc --noEmit -p fixtures/tsconfig.json",
     "lint": "oxlint --ignore-pattern 'fixtures/src/**'",
+    "graph": "node scripts/dependency-graph.mjs",
+    "graph:check": "node scripts/dependency-graph.mjs --check",
     "test": "vitest run",
     "build": "vite build"
   },

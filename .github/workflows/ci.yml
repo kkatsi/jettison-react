@@ -17,5 +17,8 @@ jobs:
       - run: npm ci
       - run: npm run type-check
       - run: npm run lint
+      # The README's dependency matrix is generated from the real import graph —
+      # a stale one would be a diagram that drifted, which is the whole point.
+      - run: npm run graph:check
       - run: npm test
       - run: npm run build

@@ -3,6 +3,10 @@
 //   layer-dependencies — imports flow one way: app → modules → shared → core
 //   module-privacy     — a module is reachable only through its index.ts
 //
+// `classify` and `resolveSpecifier` are exported for scripts/dependency-graph.mjs:
+// the README's picture and this rule must agree on what a layer is, so they share
+// the one definition rather than keeping two that drift.
+//
 // No module resolution is involved, and none is needed: a layer is a path prefix
 // and an alias is a path prefix, so classifying both sides is string work. That
 // also means an alias this file does not know about is simply not classified —
@@ -42,7 +46,7 @@ const FORBIDDEN: { from: Layer; to: Layer[]; message: (to: Layer) => string }[] 
   },
 ];
 
-function classify(relativePath: string): Element | null {
+export function classify(relativePath: string): Element | null {
   const parts = relativePath.split('/');
   if (parts[0] !== 'src') return null;
 
@@ -58,7 +62,7 @@ function classify(relativePath: string): Element | null {
 }
 
 /** The repo-relative path a specifier points at, or `null` for a package. */
-function resolveSpecifier(specifier: string, fromDirectory: string): string | null {
+export function resolveSpecifier(specifier: string, fromDirectory: string): string | null {
   if (specifier.startsWith('.'))
     return path.posix.normalize(path.posix.join(fromDirectory, specifier));
 
