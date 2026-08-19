@@ -82,6 +82,16 @@ The catalogue, filtered to live releases. The filter is in the URL, so that view
 | ![One release in full](docs/screens/release-detail.png) | |
 | **A release in full.** Tracklist with ISRCs, per-track audio state, and delivery to five fictional stores — one screen assembled from a module's own endpoints, with no cross-module reads. | |
 
+### The bug this architecture exists to prevent
+
+![Two browsers side by side after the same submit: in events mode the new release is the first row on the distribution board; in naive cache mode the same board has nine rows and no new release.](docs/screens/naive-vs-events.gif)
+
+Two sessions, the same draft, the same click on **Submit for distribution**. The only difference is `?cache=naive`, which swaps patch-then-verify for plain invalidation.
+
+Watch the row counts. On the left the release is the first row on the board you land on — the mutation wrote it into the cache, then confirmed it once the read model caught up. On the right the refetch went out immediately, the backend's read model was still seconds behind, and the response that came back — without the release — overwrote the cache. Ten in the pipeline against nine, from identical code paths and one different cache strategy ([Ch. 4 §5](docs/04-data-layer.md), [ADR-002](docs/adr/002-msw-simulated-eventual-consistency.md)).
+
+Nothing is staged: the recording drives the real app, and both sides are aligned on when things happened rather than on frame number.
+
 ## Try to break it
 
 Every rule in here is a lint error, not a paragraph. The fastest way to believe that is to violate one — each of these fails in about a second:
@@ -130,7 +140,7 @@ Teams building React applications that must survive years of feature work, team 
 - [x] Jettison-test CI
 - [x] Modules: activity, catalog, release-editor, analytics
 - [x] Deployed demo (Cloudflare Workers) — [jettison.kkatsi.workers.dev](https://jettison.kkatsi.workers.dev)
-- [ ] The naive-vs-events demo, as a GIF
+- [x] The naive-vs-events demo, as a GIF
 
 ---
 
