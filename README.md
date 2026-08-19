@@ -80,7 +80,7 @@ The chapters name no library. The concrete choices, and what each one costs, are
 
 ## How it is enforced
 
-[`oxlint.config.ts`](oxlint.config.ts) holds the whole boundary system as one annotated config: layers, module privacy, view and service restrictions, the type-evidence rules ([anti-slop](https://github.com/dmmulroy/anti-slop), vendored under MIT), and every accessibility rule the linter ships. The two rules no linter ships live in [`tools/oxlint/jettison/`](tools/oxlint/jettison/index.ts), about a hundred lines, because a layer is a path prefix and so is an alias.
+[`oxlint.config.ts`](oxlint.config.ts) holds the whole boundary system as one annotated config: layers, module privacy, view and service restrictions, the type-evidence rules ([anti-slop](https://github.com/dmmulroy/anti-slop), vendored under MIT), and every accessibility rule the linter ships. The two rules no linter ships live in [`tools/oxlint/jettison/`](tools/oxlint/jettison/index.ts), 125 lines of rule code and the reasoning around it, because a layer is a path prefix and so is an alias.
 
 [`fixtures/`](fixtures) keeps one deliberately violating file per rule, with a Vitest suite that fails if a rule stops firing. A boundary config that matches nothing looks exactly like one that is satisfied.
 
@@ -124,6 +124,10 @@ You do not need the rest of the stack — RTK Query, MSW, shadcn, nuqs, or oxlin
 [![The Low Orbit Records console: a catalogue of releases with stat tiles, filters and a dense table.](docs/screens/catalog.png)](https://jettison.kkatsi.workers.dev)
 
 The console of **Low Orbit Records**, a fictional indie label: a release wizard with drafts and asynchronous audio processing, catalogue and distribution management kept consistent across modules, streaming analytics. Its backend is a service worker that answers slower than it writes, because a demo that hides eventual consistency proves nothing. Add `?cache=naive` to the demo to watch Chapter 4's failure happen on purpose.
+
+![Two browsers side by side after the same submit. In events mode the release is the first row on the distribution board; in naive mode the same board has one row fewer and no release.](docs/screens/naive-vs-events.gif)
+
+Same journey, same click, two cache strategies: one board is missing the release that was just submitted, and stays missing until something else happens to refetch. [Chapter 4](docs/04-data-layer.md) is why.
 
 Scope, stated plainly: long-lived enterprise SPAs. No SSR, no RSC, by thesis. Authentication and permissions are out of scope too — the mock backend carries a simulated session and no roles, which is why the one place a real token would be refreshed says so in a comment instead of doing it.
 
