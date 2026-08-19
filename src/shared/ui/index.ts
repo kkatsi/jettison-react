@@ -1,6 +1,10 @@
 // The kit's only door: nothing outside this folder imports @base-ui/react.
 // Components come from shadcn and are ours once added — customise in a sibling
 // file, never inside a generated one, so `--overwrite` stays safe.
+//
+// Each block mirrors what its generated file exports, including the parts no screen
+// uses yet. Mirroring is mechanical; a hand-picked subset means editing this file
+// twice for every `shadcn add`, and an unused name costs one line and tree-shakes away.
 
 export { Badge, badgeVariants } from './badge';
 export { Button, buttonVariants } from './button';
