@@ -18,7 +18,7 @@ Accepted
 
 ## Context
 
-The architecture (Chapter 4) requires three properties from its data layer: auth/retry/refresh implemented exactly once; endpoint definitions ownable by modules without a central bottleneck; and programmatic cache access from *outside* React components — the domain-event reactions (Chapter 4 §5) patch cached queries from listener middleware, not from hooks.
+The architecture (Chapter 4) requires three properties from its data layer: auth/retry/refresh implemented exactly once; endpoint definitions ownable by modules without a central bottleneck; and programmatic cache access from _outside_ React components — the domain-event reactions (Chapter 4 §5) patch cached queries from listener middleware, not from hooks.
 
 The realistic candidates in 2026: TanStack Query, RTK Query, or a hand-rolled client with SWR-style caching.
 
@@ -26,7 +26,7 @@ The realistic candidates in 2026: TanStack Query, RTK Query, or a hand-rolled cl
 
 One `createApi` instance in `core/api/`, endpoints injected per module via `injectEndpoints`, all client state and server cache under one Redux store.
 
-The deciding property is the third one: **reactions need first-class cache access from plain TypeScript.** RTK Query's cache *is* Redux state — `api.util.updateQueryData` is dispatchable from any middleware, and DevTools shows every event followed by the exact cache patches it caused. TanStack Query can be scripted from outside React too (`queryClient` is an object), but pairing it with the event/reaction system would mean two state universes — the query cache and the store — with the event bus straddling them, and no single timeline of what happened.
+The deciding property is the third one: **reactions need first-class cache access from plain TypeScript.** RTK Query's cache _is_ Redux state — `api.util.updateQueryData` is dispatchable from any middleware, and DevTools shows every event followed by the exact cache patches it caused. TanStack Query can be scripted from outside React too (`queryClient` is an object), but pairing it with the event/reaction system would mean two state universes — the query cache and the store — with the event bus straddling them, and no single timeline of what happened.
 
 ## Costs & sharp edges (be honest)
 

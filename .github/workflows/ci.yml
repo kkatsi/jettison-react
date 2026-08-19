@@ -17,6 +17,9 @@ jobs:
       - run: npm ci
       - run: npm run type-check
       - run: npm run lint
+      # ADR-003 decided the formatter runs over the whole repo, vendored kit included.
+      # A decision nothing runs is the kind this repo exists to argue against.
+      - run: npm run format:check
       # The README's dependency matrix is generated from the real import graph —
       # a stale one would be a diagram that drifted, which is the whole point.
       - run: npm run graph:check

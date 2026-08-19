@@ -148,9 +148,8 @@ export function useDistributionBoard(): DistributionBoardModel {
       artist: filters.artist,
       stage: filters.stage,
       artists: [ALL, ...artistOptions(pipeline)],
-      stages: BOARD_STAGE_VALUES.map(
-        (stage): FilterOption<BoardFilters['stage']> =>
-          stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
+      stages: BOARD_STAGE_VALUES.map((stage): FilterOption<BoardFilters['stage']> =>
+        stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
       ),
       isActive: isBoardFiltered(filters),
       onArtist: (artist) => void setFilters({ artist }),

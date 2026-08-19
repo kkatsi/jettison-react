@@ -15,7 +15,7 @@ Most React architectures are described, agreed on, and then violated one conveni
 
 Two positions follow from that.
 
-**An architecture that is not enforced is a suggestion.** Every structural rule here exists twice: as a documented rationale, and as a lint error. A rule that cannot be enforced is demoted to advice and labelled as such.
+**An architecture that is not enforced is a suggestion.** Every rule a linter can check ships as an error, next to the rationale for it. The rest are labelled review-enforced where they are stated, because a rule whose status goes unwritten is the one that quietly becomes advice.
 
 **Modularity must be falsifiable.** "Loosely coupled" is not a property you assert, it is one you test. So CI deletes each module in turn and requires the rest of the app to build without it.
 
@@ -80,7 +80,7 @@ The chapters name no library. The concrete choices, and what each one costs, are
 
 ## How it is enforced
 
-[`oxlint.config.ts`](oxlint.config.ts) holds the whole boundary system as one annotated config: layers, module privacy, view and service restrictions, the type-evidence rules, and every accessibility rule the linter ships. The two rules no linter ships live in [`tools/oxlint/jettison/`](tools/oxlint/jettison/index.ts), about a hundred lines, because a layer is a path prefix and so is an alias.
+[`oxlint.config.ts`](oxlint.config.ts) holds the whole boundary system as one annotated config: layers, module privacy, view and service restrictions, the type-evidence rules ([anti-slop](https://github.com/dmmulroy/anti-slop), vendored under MIT), and every accessibility rule the linter ships. The two rules no linter ships live in [`tools/oxlint/jettison/`](tools/oxlint/jettison/index.ts), about a hundred lines, because a layer is a path prefix and so is an alias.
 
 [`fixtures/`](fixtures) keeps one deliberately violating file per rule, with a Vitest suite that fails if a rule stops firing. A boundary config that matches nothing looks exactly like one that is satisfied.
 

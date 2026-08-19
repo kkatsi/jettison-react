@@ -20,7 +20,9 @@ const SHELL_FILES = ['src/app/store.ts', 'src/app/routes.tsx', 'src/app/navigati
 const MARKER = /^\s*\/\/ jettison:(\w+):(start|end)\b/;
 
 const name = process.argv[2];
-if (!name) {
+// Kebab-case, because that is what a module folder is called — and because every
+// pattern below is built from this string, so anything else would be a regex.
+if (!name || !/^[a-z][a-z0-9-]*$/.test(name)) {
   console.error('usage: node scripts/unregister-module.mjs <module-name>');
   process.exit(1);
 }
@@ -28,8 +30,14 @@ if (!name) {
 const camel = name.replace(/-(\w)/g, (_, letter) => letter.toUpperCase());
 const pascal = camel[0].toUpperCase() + camel.slice(1);
 
-/** How the shell can spell this module: import path, route spread, reactions call, slice key. */
-const mentions = [`@modules/${name}`, camel, pascal, `'${name}'`];
+/** The import path, which is exact: `@modules/activity` must not match `@modules/activity-log`. */
+const importPath = new RegExp(`@modules/${name}(?![\\w-])`);
+
+/** How else the shell spells this module: route spread, reactions call, slice key. Substrings
+    on purpose — the shell says `activityRoutes` and `registerActivityReactions`, so a whole-word
+    match would strip neither. Loose is safe only because it applies inside a marker region: four
+    hand-written lines where a collision with another module's name is visible on sight. */
+const mentions = [camel, pascal, `'${name}'`];
 
 let removed = 0;
 
@@ -45,8 +53,7 @@ for (const file of SHELL_FILES) {
     }
 
     const registers =
-      line.includes(`@modules/${name}`) ||
-      (insideRegion && mentions.some((mention) => line.includes(mention)));
+      importPath.test(line) || (insideRegion && mentions.some((mention) => line.includes(mention)));
 
     if (registers) removed += 1;
     return !registers;

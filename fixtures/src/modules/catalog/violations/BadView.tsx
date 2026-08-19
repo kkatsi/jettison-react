@@ -9,7 +9,5 @@ export function BadView() {
   const releases = useSelector(() => []);
   const navigate = useNavigate();
 
-  return (
-    <button onClick={() => navigate(baseUrl)}>{releases.length}</button>
-  );
+  return <button onClick={() => navigate(baseUrl)}>{releases.length}</button>;
 }

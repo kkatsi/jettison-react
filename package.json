@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "type-check": "tsc --noEmit && tsc --noEmit -p fixtures/tsconfig.json",
     "lint": "oxlint --ignore-pattern 'fixtures/src/**'",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "graph": "node scripts/dependency-graph.mjs",
     "graph:check": "node scripts/dependency-graph.mjs --check",
     "deploy": "npm run build && wrangler deploy",

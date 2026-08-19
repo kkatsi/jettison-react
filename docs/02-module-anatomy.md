@@ -6,7 +6,7 @@
 
 ## 1. Why anatomy matters
 
-Chapter 1 made modules *isolated*. This chapter makes them *predictable*. The goal is stated as Jettison's first design goal: **any developer can guess where a piece of code lives before opening the editor.** That is only possible if every module answers the same questions the same way — where do screens go, where do business rules go, where does module state go — so that learning one module means learning all of them.
+Chapter 1 made modules _isolated_. This chapter makes them _predictable_. The goal is stated as Jettison's first design goal: **any developer can guess where a piece of code lives before opening the editor.** That is only possible if every module answers the same questions the same way — where do screens go, where do business rules go, where does module state go — so that learning one module means learning all of them.
 
 ## 2. The template
 
@@ -36,8 +36,8 @@ modules/<name>/
 
 Two structural facts carry most of the weight:
 
-1. **`index.ts` is the only door.** It exports the module's routes; everything else is private. If a module deliberately exports more (a rare, documented event), that export is a *contract* — reviewed like one, changed like one.
-2. **The hierarchy is `module → feature → component`,** and the same import rules apply at each level: features inside a module don't import from sibling features; if two features share something, it moves *up* to the module's own `components/`, `hooks/`, or `services/`. The layer discipline is fractal.
+1. **`index.ts` is the only door.** It exports the module's routes; everything else is private. If a module deliberately exports more (a rare, documented event), that export is a _contract_ — reviewed like one, changed like one.
+2. **The hierarchy is `module → feature → component`,** and the same import rules apply at each level: features inside a module don't import from sibling features; if two features share something, it moves _up_ to the module's own `components/`, `hooks/`, or `services/`. The layer discipline is fractal.
 
 ## 3. Screens
 
@@ -51,17 +51,17 @@ Screens are also where **error boundaries** live. A boundary per routed screen c
 
 ## 4. Features — the promotion from "big component"
 
-A component becomes a **feature** when it owns a meaningful chunk of *behavior* — a wizard step sequence, an autosave system, a live-updating schedule board — not merely when it gets big. Size is a symptom; ownership of behavior is the criterion.
+A component becomes a **feature** when it owns a meaningful chunk of _behavior_ — a wizard step sequence, an autosave system, a live-updating schedule board — not merely when it gets big. Size is a symptom; ownership of behavior is the criterion.
 
-A feature is a mini-module: its own `components/`, `hooks/`, `services/`, governed by the same rules. What it does *not* get: its own routes (the module's `routes.tsx` owns routing) or its own public API ceremony (inside a module, direct imports between a feature and the module's shared folders are fine — the formality lives at module boundaries, not inside them).
+A feature is a mini-module: its own `components/`, `hooks/`, `services/`, governed by the same rules. What it does _not_ get: its own routes (the module's `routes.tsx` owns routing) or its own public API ceremony (inside a module, direct imports between a feature and the module's shared folders are fine — the formality lives at module boundaries, not inside them).
 
-**The reference app has no `features/` folder, and that is the honest outcome, not an omission.** The plan expected the release wizard to become one; it didn't. Its four steps are routed, so they are screens by §3's definition, and what they share climbed to the module's own `hooks/` and `services/` instead — which §6's ladder is exactly what you get when a "feature" turns out to be a route group. The section stands as doctrine for the case that does arrive: a self-contained chunk of behaviour that is *not* a route. Per §5, we did not build one to have an example of one.
+**The reference app has no `features/` folder, and that is the honest outcome, not an omission.** The plan expected the release wizard to become one; it didn't. Its four steps are routed, so they are screens by §3's definition, and what they share climbed to the module's own `hooks/` and `services/` instead — which §6's ladder is exactly what you get when a "feature" turns out to be a route group. The section stands as doctrine for the case that does arrive: a self-contained chunk of behaviour that is _not_ a route. Per §5, we did not build one to have an example of one.
 
 ## 5. No folder before need
 
-The template above is the *maximum* shape, not the mandatory one. A module with 12 files needs no `features/` directory, possibly no `state/`, maybe just `api/index.ts` instead of three api files. Empty scaffolding is worse than absence — it implies structure that doesn't exist and trains readers to ignore folder names.
+The template above is the _maximum_ shape, not the mandatory one. A module with 12 files needs no `features/` directory, possibly no `state/`, maybe just `api/index.ts` instead of three api files. Empty scaffolding is worse than absence — it implies structure that doesn't exist and trains readers to ignore folder names.
 
-The rule: **create a folder at the moment the second file that belongs in it appears.** Corollary: the smallest honest module is `index.ts` + `routes.tsx` + one screen. The reference app's `activity` module is intentionally this small — it exists to prove the template scales *down*, and to be the jettison test's cheapest victim.
+The rule: **create a folder at the moment the second file that belongs in it appears.** Corollary: the smallest honest module is `index.ts` + `routes.tsx` + one screen. The reference app's `activity` module is intentionally this small — it exists to prove the template scales _down_, and to be the jettison test's cheapest victim.
 
 ## 6. The promotion ladder
 
@@ -84,16 +84,16 @@ Three disciplines keep the ladder honest:
 
 One naming rule does outsized work: **files named `utils` may not speak the domain.**
 
-If a function mentions a domain word — release, track, royalty, invoice — it is *business logic*, and it lives in a `services/` file named for its topic (`release-eligibility.ts`, `royalty-split.ts`). If it could be published to npm without mentioning your product (`formatDuration`, `groupBy`, `clamp`), it is a util. A new `utils.ts` containing domain vocabulary fails code review.
+If a function mentions a domain word — release, track, royalty, invoice — it is _business logic_, and it lives in a `services/` file named for its topic (`release-eligibility.ts`, `royalty-split.ts`). If it could be published to npm without mentioning your product (`formatDuration`, `groupBy`, `clamp`), it is a util. A new `utils.ts` containing domain vocabulary fails code review.
 
-Why so strict: `utils.ts` is where business logic goes to hide. It starts with one innocent mapper, and two years later it is an 800-line file that is really the domain model of the application, untested and unnamed. Naming the topic forces the file to *have* a topic — which is what makes it findable, testable, and ownable.
+Why so strict: `utils.ts` is where business logic goes to hide. It starts with one innocent mapper, and two years later it is an 800-line file that is really the domain model of the application, untested and unnamed. Naming the topic forces the file to _have_ a topic — which is what makes it findable, testable, and ownable.
 
 ## 8. Module state
 
 The pain: **you fill in three steps of a wizard, click back to check something, and it is all gone.** State that must outlive a screen has to live somewhere that outlives it — and "somewhere" is the decision this section makes, because the default answer is a global store folder that ends up holding everybody's.
 
-If a module needs client state that must survive navigation between its screens (a draft, a selection, a multi-step flow), it owns a store in `state/`, registered by the app shell inside the reducers marker region — one of the registration lines the jettison test strips (Chapter 1 §3). Everything with a shorter lifetime stays lower: component state in the component, subtree state in a context at the feature root. The full state placement doctrine is Chapter 4's table; the anatomical point here is only *where that state lives*: inside the module, never in a global `store/` folder that accumulates everyone's.
+If a module needs client state that must survive navigation between its screens (a draft, a selection, a multi-step flow), it owns a store in `state/`, registered by the app shell inside the reducers marker region — one of the registration lines the jettison test strips (Chapter 1 §3). Everything with a shorter lifetime stays lower: component state in the component, subtree state in a context at the feature root. The full state placement doctrine is Chapter 4's table; the anatomical point here is only _where that state lives_: inside the module, never in a global `store/` folder that accumulates everyone's.
 
 ---
 
-*Next: [Chapter 3 — The component pattern](03-component-pattern.md), the shape of every rich component inside these folders.*
+_Next: [Chapter 3 — The component pattern](03-component-pattern.md), the shape of every rich component inside these folders._
