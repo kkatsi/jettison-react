@@ -56,6 +56,8 @@ export function TracksStep() {
         <input
           ref={picker}
           type="file"
+          // Hidden, unlike the cover's: the "Add track" button above is focusable
+          // and clicks this, so a second tab stop would only duplicate it.
           multiple
           accept="audio/*,.wav,.flac"
           className="hidden"
