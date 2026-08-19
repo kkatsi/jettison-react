@@ -29,7 +29,7 @@ modules/<name>/
 ├── components/           # Module-scoped components shared by its screens/features
 ├── hooks/                # Module-scoped view-logic hooks
 ├── services/             # Module-scoped pure business logic (plain TS, no React)
-├── state/                # Module slice / reactions, if the module needs them
+├── state/                # Module store / reactions, if the module needs them
 ├── types.ts
 └── constants.ts
 ```
@@ -92,7 +92,7 @@ Why so strict: `utils.ts` is where business logic goes to hide. It starts with o
 
 The pain: **you fill in three steps of a wizard, click back to check something, and it is all gone.** State that must outlive a screen has to live somewhere that outlives it — and "somewhere" is the decision this section makes, because the default answer is a global store folder that ends up holding everybody's.
 
-If a module needs client state that must survive navigation between its screens (a draft, a selection, a multi-step flow), it owns a slice in `state/`, registered in `app/store.ts` inside the reducers marker region — one of the registration lines the jettison test strips (Chapter 1 §3). Everything with a shorter lifetime stays lower: component state in the component, subtree state in a context at the feature root. The full state placement doctrine is Chapter 4's table; the anatomical point here is only *where the slice lives*: inside the module, never in a global `store/` folder that accumulates everyone's state.
+If a module needs client state that must survive navigation between its screens (a draft, a selection, a multi-step flow), it owns a store in `state/`, registered by the app shell inside the reducers marker region — one of the registration lines the jettison test strips (Chapter 1 §3). Everything with a shorter lifetime stays lower: component state in the component, subtree state in a context at the feature root. The full state placement doctrine is Chapter 4's table; the anatomical point here is only *where that state lives*: inside the module, never in a global `store/` folder that accumulates everyone's.
 
 ---
 

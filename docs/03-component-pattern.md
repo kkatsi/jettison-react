@@ -1,6 +1,6 @@
 # Chapter 3 — The Component Pattern
 
-> The whole chapter in one line: **views render, hooks orchestrate, services decide — and twelve rules make it law.**
+> The whole chapter in one line: **views render, hooks orchestrate, services decide — and thirteen rules make it law.**
 
 ---
 
@@ -65,7 +65,7 @@ Repo law — enforced by lint where possible, by review where not.
 
 **R7 — Placement follows reuse.** Logic is born colocated and climbs the promotion ladder (Chapter 2 §6) only when a real second caller appears.
 
-**R8 — Cache logic lives on endpoints; state derivation lives in selectors.** Cache effects are declared on the endpoint that causes them (Chapter 4); derived store state is a memoized selector beside its slice. Hooks consume both and inline neither.
+**R8 — Cache logic lives on endpoints; state derivation lives in selectors.** Cache effects are declared on the endpoint that causes them (Chapter 4); derived store state is a memoized selector beside the state it reads. Hooks consume both and inline neither.
 
 **R9 — Size triggers, measured per declaration.** A view component past ~150 lines splits into child components; a hook function past ~150 lines extracts sub-hooks or pushes logic into services; a service file past ~200 lines splits by topic. Review triggers, not hard gates.
 
@@ -77,7 +77,7 @@ Count the declaration, not the file. A file holding a screen and its two row com
 
 **R12 — "Service" is a role, not a folder — and `utils` may not speak the domain.** Any pure business-logic file is a service, wherever it sits, and it is named for its topic (Chapter 2 §7). Domain vocabulary in a file named `utils` fails review.
 
-## 4. The decision flowchart
+**R13 — Types keep the evidence they were handed.** A boundary parses; everything inside it works with what parsing produced. So: no `unknown` parameter standing in for a value the caller knows the shape of, no `as` without a `SAFETY:` line naming the invariant that makes it true, no lookup table annotated `Record<Union, X>` when `satisfies` would keep the keys, and no `typeof` check doing the job a parse should have done at the edge. The failure this prevents is quiet: a function that accepts `unknown` and casts its way back to a type compiles forever and is wrong the first time the payload changes. Enforced by fifteen lint rules (section 5 of the config, [ADR-006](adr/006-evidence-preserving-types.md)); the exemption is the simulated backend, which fabricates its own data and would only be parsing its own seeds.
 
 ```
 Where does this code go?
@@ -95,8 +95,8 @@ Where does this code go?
 ├─ About the query cache — tags, optimistic updates?
 │        → the endpoint's declared cache effects   (Chapter 4)
 │
-├─ Derived from a store slice?
-│        → a memoized selector beside the slice
+├─ Derived from module state?
+│        → a memoized selector beside it
 │
 └─ A user-facing string?
          → constants.ts, keyed by domain code

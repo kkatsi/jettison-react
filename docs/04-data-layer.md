@@ -30,7 +30,7 @@ Four words, four meanings, never mixed:
 
 ## 2. The state placement table
 
-The pain: **the same value is in a slice, a query, a prop and a `useState` — four copies that immediately disagree**, and the bug only reproduces on one screen because that screen reads a different copy. Nobody set out to build that. It is what happens when each new piece of state is placed by whoever added it, on the day they added it.
+The pain: **the same value is in a store, a query, a prop and a `useState` — four copies that immediately disagree**, and the bug only reproduces on one screen because that screen reads a different copy. Nobody set out to build that. It is what happens when each new piece of state is placed by whoever added it, on the day they added it.
 
 Every piece of state has exactly one correct home. The table is the whole doctrine:
 
@@ -38,17 +38,17 @@ Every piece of state has exactly one correct home. The table is the whole doctri
 |---|---|---|
 | Server data | the query cache — only | releases, tracks, streams, payouts |
 | Local UI state | `useState` in the component | modal open, hovered row, active tab |
-| Form state | React Hook Form | every form |
+| Form state | the form library's own store | every form |
 | URL-worthy state | the router (query params) | filters, pagination, selected tab that should survive reload |
 | Feature/subtree state | context or `useReducer` at the feature root | a canvas tool's selection, an inline editor's mode |
-| Module state that survives navigation | module slice in `modules/*/state`, registered in `app/store.ts` | drafts, long-lived selections |
-| App-global state | a global slice — **requires an ADR** | session, tokens, active tenant |
+| Module state that survives navigation | a module store in `modules/*/state`, registered by the app shell | drafts, long-lived selections |
+| App-global state | an app-wide store — **requires an ADR** | session, tokens, active tenant |
 
 The reference app never reaches that row — it has no React context at all. Its one multi-step flow keeps the current step in the URL, because a wizard step is linkable and must survive a reload, which makes it the row above. Take that as the table working: escalate only when the level below demonstrably fails, and most flows never need the escalation.
 
 Resolution order when unsure: **props → context → store.** Escalate only when the current level demonstrably fails, and never let context cross a module boundary — inside a module it is a dependency-injection tool; across modules it would be a hidden bus.
 
-Two prohibitions with teeth: server data never gets copied into a slice ("mirroring the cache" creates two sources of truth that immediately disagree), and new *global* slices don't happen without a written decision — global state is the most expensive kind, so it carries the highest burden of proof.
+Two prohibitions with teeth: server data never gets copied into a module store ("mirroring the cache" creates two sources of truth that immediately disagree), and new *app-wide* state doesn't happen without a written decision — global state is the most expensive kind, so it carries the highest burden of proof.
 
 ## 3. The cache consistency problem
 
@@ -125,7 +125,7 @@ Two conventions contain the indirection cost: all events live in `shared/events/
 
 Unlike every other section in these chapters, this one answers an objection rather than a pain — *"this is RTK-specific, so it isn't for us."* It earns its place because the chapters claim to be library-agnostic, and a claim like that is worth exactly as much as the mapping that makes it checkable.
 
-The doctrine above names no library, and every mechanism has a TanStack Query equivalent. If your team is on TanStack Query, the mapping is:
+The doctrine above names no library, and every mechanism has a TanStack Query equivalent. One caveat, stated rather than buried: this mapping is the only claim in these chapters with no test behind it. The layer rules have violation fixtures, the jettison test has a CI matrix, and this has prose — a port would confirm it, and nobody has run one. Read it as a route, not a receipt. If your team is on TanStack Query, the mapping is:
 
 | Doctrine element | RTK Query (reference impl) | TanStack Query equivalent |
 |---|---|---|

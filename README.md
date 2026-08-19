@@ -27,7 +27,7 @@ The second position: **modularity must be falsifiable.** "Loosely coupled" is no
 |---|---------|----------------|
 | 1 | [Layers & the jettison test](docs/01-layers.md) | Code flows in one direction — `app → modules → shared → core` — and every module is jettisonable. |
 | 2 | [Module anatomy](docs/02-module-anatomy.md) | Every module has the same internal shape, features are mini-modules, and no folder exists before it is needed. |
-| 3 | [The component pattern](docs/03-component-pattern.md) | Views render, hooks orchestrate, services decide. Twelve rules make it law. |
+| 3 | [The component pattern](docs/03-component-pattern.md) | Views render, hooks orchestrate, services decide. Thirteen rules make it law. |
 | 4 | [The data layer](docs/04-data-layer.md) | One API client, module-owned endpoints, and cross-module cache sync through domain events — because tag invalidation lies when your backend is eventually consistent. |
 
 The chapters are written library-agnostic; the concrete choices behind the reference implementation — including the ones with real costs — live in [`docs/adr/`](docs/adr).

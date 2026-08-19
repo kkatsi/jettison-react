@@ -87,11 +87,12 @@ export default defineConfig({
     'typescript/triple-slash-reference': 'error',
 
     // ==========================================================================
-    // 5. EVIDENCE — no unknown at the boundary, no laundered assertion
+    // 5. EVIDENCE — no unknown at the boundary, no laundered assertion (R13)
     // ==========================================================================
     // Vendored from the anti-slop plugin. These are about the *type* a value
     // carries, not about where the file sits: an `unknown` parameter or an
-    // unexplained `as` is how a contract quietly stops being one.
+    // unexplained `as` is how a contract quietly stops being one. The set is not
+    // ours and the costs of that are written down — ADR-006.
     'anti-slop/no-chained-type-assertions': 'error',
     'anti-slop/no-conditional-empty-object-spread': 'error',
     'anti-slop/no-known-value-widening': 'error',
@@ -198,7 +199,7 @@ export default defineConfig({
 
     // The simulated backend is the app's fixture, not its source: it fabricates the
     // data and then asserts on JSON it produced itself, so the five section-5 rules
-    // below would only have it parse its own seeds. Every other rule still
+    // below would only have it parse its own seeds (ADR-006). Every other rule still
     // applies — sections 1–4 police this folder like any other.
     {
       files: ['src/mocks/**'],

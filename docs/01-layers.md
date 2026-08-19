@@ -41,7 +41,7 @@ Three corollaries do most of the work:
 
 1. **Modules never import other modules.** If two modules need the same thing, it moves *down* — to `shared` (UI, utils, types) or `core` (infrastructure). And sometimes the right answer is duplication: a five-line helper copied into two modules is cheaper than a coupling between them.
 2. **Modules are consumed only through their public API** — a single `index.ts` that exports the module's routes and, deliberately and rarely, anything else. Deep imports (`modules/billing/features/...` from outside `modules/billing`) are lint errors. The public API is the module's contract; everything behind it is private and refactorable without repository-wide impact.
-3. **Only `app` composes.** The router knows which modules exist. The store knows which slices exist. No module knows any of that.
+3. **Only `app` composes.** The router knows which modules exist. The store knows whose state it holds. No module knows any of that.
 
 ### What goes where — the litmus tests
 
@@ -56,7 +56,7 @@ The acceptance criterion for the entire layer system — the test this architect
 
 > **Deleting `modules/X/`, plus its registration lines in the app shell, must leave a compiling, working application.** Any module can be jettisoned; the ship keeps flying.
 
-Registration is deliberately mechanical, not minimal. A module registers where the shell composes: its route spread in `router.tsx`, its slice or reactions in `store.ts`, its nav entries in `navigation.ts` — each inside a `// jettison:…` marker region, alongside the import that feeds it. The count varies by module (the reference app's `analytics` touches two files, `catalog` three), and that is fine. What must hold is that a script can strip them without reading the code: **any line importing `@modules/<name>`, plus any line naming the module inside a marker region.** A module that needs judgement to unregister was never jettisonable.
+Registration is deliberately mechanical, not minimal. A module registers where the shell composes: its route spread in `router.tsx`, its store or reactions in `store.ts`, its nav entries in `navigation.ts` — each inside a `// jettison:…` marker region, alongside the import that feeds it. The count varies by module (the reference app's `analytics` touches two files, `catalog` three), and that is fine. What must hold is that a script can strip them without reading the code: **any line importing `@modules/<name>`, plus any line naming the module inside a marker region.** A module that needs judgement to unregister was never jettisonable.
 
 This is what "loosely coupled" means when you refuse to let it be a vibe. The jettison test is falsifiable — it either passes or it doesn't — which makes it the perfect CI job:
 
