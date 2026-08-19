@@ -1,0 +1,136 @@
+<!doctype html>
+<!--
+  The repo's social preview card, 1280x640 — the image GitHub turns into the link
+  preview whenever the repo is pasted into LinkedIn, Slack or a message.
+
+  Generated, not drawn, so it cannot drift from the console it shows. It crops
+  catalog.png (committed beside it) with CSS, which means re-running the screenshot
+  re-renders the card:
+
+    chrome --headless=new --hide-scrollbars --force-device-scale-factor=2 \
+      --window-size=1280,640 --screenshot=social-2x.png \
+      file://$PWD/docs/screens/social-preview.html
+    sips --resampleWidth 1280 social-2x.png --out docs/screens/social-preview.png
+
+  Upload the result at Settings -> General -> Social preview. GitHub's limit is 1MB.
+-->
+<meta charset="utf-8" />
+<title>Jettison — social preview</title>
+<style>
+  * {
+    margin: 0;
+    box-sizing: border-box;
+  }
+  html,
+  body {
+    width: 1280px;
+    height: 640px;
+    overflow: hidden;
+  }
+  body {
+    background: #0b0e14;
+    color: #e6eaf2;
+    font-family: system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+  }
+  /* A violet wash behind the copy, so the type never competes with the screenshot. */
+  body::before {
+    content: '';
+    position: absolute;
+    inset: 0 42% 0 0;
+    background: radial-gradient(120% 90% at 0% 30%, rgba(139, 92, 246, 0.22), transparent 70%);
+  }
+  .copy {
+    position: relative;
+    padding: 64px 40px 64px 64px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 18px;
+  }
+  .mark {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font: 600 13px/1 ui-monospace, 'SF Mono', Menlo, monospace;
+    letter-spacing: 0.22em;
+    color: #8b5cf6;
+    text-transform: uppercase;
+  }
+  .mark i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #8b5cf6;
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.18);
+  }
+  h1 {
+    font-size: 78px;
+    line-height: 0.94;
+    letter-spacing: -0.035em;
+    font-weight: 700;
+  }
+  p {
+    font-size: 27px;
+    line-height: 1.28;
+    color: #b9c2d4;
+    max-width: 15em;
+  }
+  .claim {
+    font: 15px/1.5 ui-monospace, 'SF Mono', Menlo, monospace;
+    color: #64748b;
+    border-left: 2px solid #1e2530;
+    padding-left: 14px;
+  }
+  .claim b {
+    color: #34d399;
+    font-weight: 400;
+  }
+  /* The console, bleeding off the right edge: recognisable as a real product,
+     cropped past the sidebar so no row is cut through its own text. */
+  .shot {
+    position: relative;
+    overflow: hidden;
+  }
+  .window {
+    position: absolute;
+    top: 108px;
+    left: 46px;
+    width: 1010px;
+    height: 662px;
+    overflow: hidden;
+    border-radius: 10px 0 0 10px;
+    border: 1px solid #1e2530;
+    border-right: 0;
+    box-shadow: -28px 0 60px rgba(0, 0, 0, 0.55);
+  }
+  /* catalog.png is 1440x900; this shows the content area from (250,75) at 0.8487x. */
+  .window img {
+    position: absolute;
+    width: 1222px;
+    left: -212px;
+    top: -64px;
+  }
+  .shot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(11, 14, 20, 0.9) 0%, transparent 5%);
+  }
+</style>
+<body>
+  <div class="copy">
+    <div class="mark"><i></i>Enforced architecture</div>
+    <h1>Jettison</h1>
+    <p>An enforced architecture for enterprise React.</p>
+    <div class="claim">
+      delete any module — <b>CI proves the app still flies</b><br />
+      github.com/kkatsi/jettison-react
+    </div>
+  </div>
+  <div class="shot">
+    <div class="window"><img src="catalog.png" alt="" /></div>
+  </div>
+</body>
