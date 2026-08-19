@@ -15,7 +15,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 
 /** The files that are allowed to know a module exists. */
-const SHELL_FILES = ['src/app/store.ts', 'src/app/router.tsx', 'src/app/navigation.ts'];
+const SHELL_FILES = ['src/app/store.ts', 'src/app/routes.tsx', 'src/app/navigation.ts'];
 
 const MARKER = /^\s*\/\/ jettison:(\w+):(start|end)\b/;
 
