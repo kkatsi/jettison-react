@@ -3,7 +3,7 @@
 [![CI](https://github.com/kkatsi/jettison-react/actions/workflows/ci.yml/badge.svg)](https://github.com/kkatsi/jettison-react/actions/workflows/ci.yml)
 [![Jettison test](https://github.com/kkatsi/jettison-react/actions/workflows/jettison-test.yml/badge.svg)](https://github.com/kkatsi/jettison-react/actions/workflows/jettison-test.yml)
 
-**[Live demo](https://jettison.kkatsi.workers.dev)** — the whole console runs in your browser: there is no server, the API is a service worker (ADR-002), and `?cache=naive` switches on the bug the architecture exists to prevent.
+**[Live demo](https://jettison.kkatsi.workers.dev)** — the whole console runs in your browser: there is no server, the API is a service worker (ADR-002). Add `?cache=naive` to watch Chapter 4's failure happen on purpose.
 
 > **jettison** (v.) — to throw cargo overboard, deliberately, to keep the ship flying.
 
@@ -23,6 +23,36 @@ Jettison's position: **an architecture that is not enforced is a suggestion.** E
 
 The second position: **modularity must be falsifiable.** "Loosely coupled" is not a property you assert — it is a property you test. Hence the jettison test: remove any module and the ship keeps flying, verified in CI on every push.
 
+## The architecture, at a glance
+
+Four layers. **Imports flow one way — `app → modules → shared → core` — and never back.**
+
+| Layer | What lives there | May import |
+|---|---|---|
+| `app` | The shell that composes: router, store, providers, layouts. The only layer that knows which modules exist. | everything below |
+| `modules` | A business capability, whole: its routes, screens, endpoints, services, state. | `shared`, `core` — **never another module** |
+| `shared` | Business-agnostic and reusable: UI kit, the domain event vocabulary, generic utils. | `core` |
+| `core` | Infrastructure with no domain knowledge: the API client, cache utilities, config. | nothing above it |
+
+Three corollaries do most of the work: **modules never import each other** (if two need the same thing it moves down, or gets duplicated); **a module is reachable only through its `index.ts`**, so everything behind it stays refactorable; and **only `app` composes**, so no module knows the shell exists.
+
+Every module has the same internal shape, and no folder exists before it is needed:
+
+```
+modules/<name>/
+├── index.ts        # PUBLIC API — routes, and nothing else unless deliberate
+├── routes.tsx      # the module's route tree (lazy screens)
+├── api/            # the endpoints THIS module owns, and their cache effects
+├── screens/        # one folder per routed screen — composition only
+├── features/       # big self-contained chunks of behaviour
+├── components/ hooks/ services/ state/
+└── types.ts constants.ts
+```
+
+Inside a component: **views render, hooks orchestrate, services decide.** A `.tsx` file may not fetch, dispatch or navigate; a service is plain TypeScript with no React and no store, which is why the rules that lose money are the ones with unit tests.
+
+Then the part that makes it hold: **every one of those sentences is a lint error when broken**, and a CI job deletes each module in turn to prove the rest of the app does not depend on it.
+
 ## The four pillars
 
 | # | Chapter | One-line claim |
@@ -33,6 +63,19 @@ The second position: **modularity must be falsifiable.** "Loosely coupled" is no
 | 4 | [The data layer](docs/04-data-layer.md) | One API client, module-owned endpoints, and cross-module cache sync through domain events — because tag invalidation lies when your backend is eventually consistent. |
 
 The chapters are written library-agnostic; the concrete choices behind the reference implementation — including the ones with real costs — live in [`docs/adr/`](docs/adr).
+
+### The problems it answers
+
+Every rule here exists because of something that happened, not because it is tidy:
+
+| The everyday pain | What answers it |
+|---|---|
+| "I touched billing and checkout broke." / "We can't delete this feature because nobody knows what depends on it." | Layers + the jettison test — coupling becomes a lint error, and jettisonability is a CI job |
+| "Where does this file go?" — asked in every PR, answered differently every time | One module shape, one promotion ladder, folders that appear only when earned |
+| The 300-line component nobody wants to touch, with business rules you cannot unit-test without mounting half the app | Views render, hooks orchestrate, services decide |
+| The architecture wiki page that described the codebase two years ago | Rules ship as `error` from day one, and a suite asserts each one still fires |
+| "It works on the edit screen but the list doesn't update" | Mutations own their cache effects; cross-module sync travels as domain events |
+| "Why is it built this way?" answered by archaeology | ADRs, each with its costs written down
 
 ## What's in this repo
 
@@ -82,7 +125,9 @@ The catalogue, filtered to live releases. The filter is in the URL, so that view
 | ![One release in full](docs/screens/release-detail.png) | |
 | **A release in full.** Tracklist with ISRCs, per-track audio state, and delivery to five fictional stores — one screen assembled from a module's own endpoints, with no cross-module reads. | |
 
-### The bug this architecture exists to prevent
+### The fourth pillar, filmed
+
+Boundaries and their enforcement are what this repo is for. The data layer is the one pillar whose payoff is invisible in a screenshot, so it gets a recording — this is what a boundary buys at runtime, not the reason the boundary exists.
 
 ![Two browsers side by side after the same submit: in events mode the new release is the first row on the distribution board; in naive cache mode the same board has nine rows and no new release.](docs/screens/naive-vs-events.gif)
 
@@ -127,9 +172,20 @@ git restore . && git clean -fd src       # put it back
 
 And watch the picture change: add a cross-module import, run `npm run graph`, and the number lands in a hatched cell in red — the diagram cannot drift from the code, because it is generated from it.
 
+## Adopting it in your codebase
+
+The architecture is four moves, and two of them are files you copy:
+
+1. **Declare the layers.** Four aliases in `tsconfig.json` — `@app/*`, `@modules/*`, `@shared/*`, `@core/*` — mirrored in your bundler config. This is not cosmetic: it makes every cross-layer import syntactically recognisable, which is what lets a rule target it and a relative-path disguise be banned outright.
+2. **Copy the enforcement.** [`oxlint.config.ts`](oxlint.config.ts) plus [`tools/oxlint/jettison/`](tools/oxlint/jettison/index.ts). Change the alias-to-folder map in the plugin and the rest follows your layout. Ship the rules as `error` — in a migration only the folders that have adopted the layout are classified at all, so legacy code stays untouched until it moves.
+3. **Keep a deliberately violating file.** [`fixtures/`](fixtures) and its Vitest suite is the step people skip, and it is the one that matters: a boundary config that matches nothing is indistinguishable from one that is satisfied.
+4. **Add the jettison test.** [`scripts/unregister-module.mjs`](scripts/unregister-module.mjs) and the matrix job in [`.github/workflows/jettison-test.yml`](.github/workflows/jettison-test.yml). Wrap each registration line in a `// jettison:…` marker region and the script strips them mechanically.
+
+**What you do not need to copy:** RTK Query, MSW, shadcn, nuqs — or oxlint itself, which is a choice like any other ([ADR-005](docs/adr/005-oxlint-with-a-local-boundaries-plugin.md) records why it won and what it cost). Chapters 1–3 name no library at all; Chapter 4's appendix maps the data layer onto TanStack Query row by row, and every ADR states what its choice costs. The layers, the module shape, the component pattern and the jettison test are the architecture. The stack is a reference implementation of it.
+
 ## Who this is for
 
-Teams building React applications that must survive years of feature work, team turnover, and parallel development — the environment where "we all know the conventions" stops scaling. Jettison borrows its starting point from [bulletproof-react](https://github.com/alan2207/bulletproof-react) (feature folders, unidirectional flow, colocation) and extends it where enterprise codebases actually bleed: cross-module cache consistency, form-state ownership, boundary enforcement, and architectural governance. Scope, stated plainly: long-lived enterprise SPAs — no SSR, no RSC, by thesis.
+Teams building React applications that must survive years of feature work, team turnover, and parallel development — the environment where "we all know the conventions" stops scaling. Jettison borrows its starting point from [bulletproof-react](https://github.com/alan2207/bulletproof-react) (feature folders, unidirectional flow, colocation) and extends it where enterprise codebases actually bleed: enforcement with teeth, falsifiable modularity, governance that survives turnover — and, further down the list, cross-module cache consistency and form-state ownership. Scope, stated plainly: long-lived enterprise SPAs — no SSR, no RSC, by thesis.
 
 ## Status
 
