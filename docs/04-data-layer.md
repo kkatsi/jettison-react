@@ -80,7 +80,7 @@ One hard prohibition follows: **a module never patches another module's cached q
 
 The shape is classic Redux, in modern spelling:
 
-- **`shared/events/`** holds the domain events — typed `createAction` definitions, zero logic. This is the "action constants file": a complete, readable catalogue of every fact that may cross a module boundary. `domain/releases/submitted`, `domain/releases/withdrawn`.
+- **`shared/events/`** holds the domain events — typed definitions, zero logic. This is the "action constants file": a complete, readable catalogue of every fact that may cross a module boundary. `domain/releases/submitted`, `domain/releases/withdrawn`. It names no library: an event is built by `defineEvent` from [`core/events/events.ts`](../src/core/events/events.ts), the one file that decides what a fact *is* on the wire. Swap that file and the catalogue above it does not change — which is what makes the appendix at the end of this chapter a port rather than a rewrite.
 - **The mutating module announces.** After `queryFulfilled`, the endpoint dispatches `releaseSubmitted({ release })` alongside its own Class-A patches.
 - **Each interested module reacts** in `state/reactions.ts` — its "reducer switch": one `on(event, handler)` per case. The handler upserts into *its own* cached queries immediately (the patch), and schedules a delayed tag invalidation as reconciliation (the verify) — by the time it fires, the read model has caught up, and the refetch confirms rather than clobbers.
 - **One core file** ([`core/redux/reactions.ts`](../src/core/redux/reactions.ts), under fifty lines, written once) wraps the store's listener mechanism (RTK: `createListenerMiddleware`) into a `createReactions((on) => …)` helper. No module ever touches middleware; `app/store.ts` registers each module's reactions inside the reactions marker region — one of the registration lines the jettison test strips (Chapter 1 §3).
@@ -134,7 +134,7 @@ The doctrine above names no library, and every mechanism has a TanStack Query eq
 | Cache tags | `tagTypes` registry | hierarchical query keys; the registry becomes a `core` query-key factory convention |
 | Class A: own-cache patch | `onQueryStarted` + `updateQueryData` | `onMutate`/`onSuccess` + `queryClient.setQueryData` |
 | Class B: plain invalidation | `invalidatesTags` | `queryClient.invalidateQueries({ queryKey })` |
-| Class C: domain events | `createAction` + listener middleware | a typed event emitter in `shared/events/` (or keep a minimal Redux store just for events) |
+| Class C: domain events | `defineEvent` (`createAction`) in `core/events/`, vocabulary in `shared/events/` | the same split — `defineEvent` wraps a typed emitter instead, vocabulary untouched |
 | Reactions | `state/reactions.ts` via `createReactions` | `state/reactions.ts` subscribing to the emitter, calling `setQueryData` + delayed `invalidateQueries` |
 | Registration line the jettison test strips | `registerCatalogReactions()` in `store.ts` | `registerCatalogReactions()` in app bootstrap |
 
