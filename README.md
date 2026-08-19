@@ -39,16 +39,17 @@ One application — the **Low Orbit Records console** — carrying the whole sys
 ```
 jettison-react/
 ├── README.md                 # You are here
-├── docs/                     # The architecture — four chapters + ADRs
+├── docs/                     # The architecture — four chapters, ADRs, generated dependency matrix
 ├── oxlint.config.ts          # The enforcement — every boundary rule, heavily commented, copyable
 ├── tools/oxlint/             # The layer + module-privacy rules, as a local plugin
+├── fixtures/                 # Deliberately violating files; Vitest asserts each rule fires
 ├── scripts/                  # incl. the jettison-test module unregistration script
 ├── .github/workflows/        # CI + the jettison test
 └── src/
     ├── app/                  # Shell: router, store, providers, layouts
     ├── modules/              # release-editor · catalog · analytics · activity
-    ├── shared/               # ui kit, events, generic hooks/utils
-    ├── core/                 # api client, cache utils, reactions, config
+    ├── shared/               # ui kit, the domain event vocabulary, generic utils
+    ├── core/                 # api client, cache utils, reactions, what an event is, config
     └── mocks/                # MSW backend with deliberate eventual consistency
 ```
 
