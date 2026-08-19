@@ -168,9 +168,9 @@ function railFooter(
   };
 }
 
-const RAIL_NOTE: Record<StepSlug, string> = {
+const RAIL_NOTE = {
   details: 'Everything is saved as you type. You can leave and return to this draft from Catalog.',
   tracks: '',
   artwork: 'Artwork is checked against store requirements as soon as it is uploaded.',
   review: 'Submission stays locked until every blocking issue is cleared.',
-};
+} satisfies Record<StepSlug, string>;

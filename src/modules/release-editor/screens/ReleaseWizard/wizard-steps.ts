@@ -18,7 +18,7 @@ export type RailStep = {
 const SLUGS = STEPS.map((step) => step.slug);
 
 export function isStepSlug(value: string): value is StepSlug {
-  return SLUGS.includes(value as StepSlug);
+  return SLUGS.some((slug) => slug === value);
 }
 
 export function railSteps(current: StepSlug): RailStep[] {
@@ -38,11 +38,14 @@ export function railSteps(current: StepSlug): RailStep[] {
   });
 }
 
-/** Every step stays reachable: the review step's fix buttons jump forwards too. */
-export function adjacentSteps(current: StepSlug): {
+/** `null` at either end of the rail. */
+export type AdjacentSteps = {
   previous: StepSlug | null;
   next: StepSlug | null;
-} {
+};
+
+/** Every step stays reachable: the review step's fix buttons jump forwards too. */
+export function adjacentSteps(current: StepSlug): AdjacentSteps {
   const position = SLUGS.indexOf(current);
 
   return {

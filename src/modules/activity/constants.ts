@@ -4,11 +4,11 @@
 import type { ActivityEventType, RangeFilter, TypeFilter } from './types';
 
 /** Chip colours, one per event type. Tokens only — no hex outside theme.css. */
-export const TYPE_CHIP: Record<ActivityEventType, string> = {
+export const TYPE_CHIP = {
   'domain/releases/submitted': 'bg-brand/10 text-brand-soft',
   'domain/releases/withdrawn': 'bg-danger/10 text-danger',
   'domain/tracks/processed': 'bg-live/10 text-live',
-};
+} satisfies Record<ActivityEventType, string>;
 
 export const TYPE_OPTIONS: { value: TypeFilter; label: string }[] = [
   { value: 'all', label: 'all' },
@@ -28,8 +28,8 @@ export const RANGE_OPTIONS: { value: RangeFilter; label: string }[] = [
  * their summary from the backend; these are the ones that happened in this tab,
  * before the backend has told us about them.
  */
-export const LIVE_SUMMARY: Record<ActivityEventType, (title: string, detail?: string) => string> = {
+export const LIVE_SUMMARY = {
   'domain/releases/submitted': (title) => `${title} submitted for distribution`,
   'domain/releases/withdrawn': () => 'Withdrawn from distribution',
   'domain/tracks/processed': (_title, detail) => `Audio processing finished for ${detail}`,
-};
+} satisfies Record<ActivityEventType, (title: string, detail?: string) => string>;

@@ -76,8 +76,8 @@ function toChartPanel(
     totalLabel: `${formatValue(total)} total`,
     points: series.map((day, index): TimeSeriesPoint => {
       const value = valueOf(day);
-      const previous = index > 0 ? valueOf(series[index - 1] as DailyPointDto) : undefined;
-      const change = toDelta(value, previous);
+      const previous = series[index - 1];
+      const change = toDelta(value, previous ? valueOf(previous) : undefined);
       const inSpike = !!spike && day.date >= spike.from && day.date <= spike.to;
 
       return {

@@ -10,13 +10,13 @@ export const TYPE_VALUES = ['all', 'releases', 'tracks'] as const satisfies read
 
 export const RANGE_VALUES = ['24h', '7d', '30d', '90d'] as const satisfies readonly RangeFilter[];
 
-const TYPE_PREFIX: Record<TypeFilter, string> = {
+const TYPE_PREFIX = {
   all: '',
   releases: 'domain/releases/',
   tracks: 'domain/tracks/',
-};
+} satisfies Record<TypeFilter, string>;
 
-const RANGE_DAYS: Record<RangeFilter, number> = { '24h': 1, '7d': 7, '30d': 30, '90d': 90 };
+const RANGE_DAYS = { '24h': 1, '7d': 7, '30d': 30, '90d': 90 } satisfies Record<RangeFilter, number>;
 
 const DAY_MS = 86_400_000;
 

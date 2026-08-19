@@ -27,8 +27,8 @@ export type ActivityFeedModel = {
   filters: FeedFilters & {
     isActive: boolean;
     onQuery: (query: string) => void;
-    onType: (type: string) => void;
-    onRange: (range: string) => void;
+    onType: (type: FeedFilters['type']) => void;
+    onRange: (range: FeedFilters['range']) => void;
     onReset: () => void;
   };
 };
@@ -58,8 +58,8 @@ export function useActivityFeed(): ActivityFeedModel {
       ...filters,
       isActive: isFiltered(filters),
       onQuery: (query) => void setFilters({ query }),
-      onType: (type) => void setFilters({ type: type as FeedFilters['type'] }),
-      onRange: (range) => void setFilters({ range: range as FeedFilters['range'] }),
+      onType: (type) => void setFilters({ type }),
+      onRange: (range) => void setFilters({ range }),
       // null clears every key this hook owns — the whole filter set, in one call.
       onReset: () => void setFilters(null),
     },

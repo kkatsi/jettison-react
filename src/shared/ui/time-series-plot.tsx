@@ -93,7 +93,7 @@ function option(
       borderColor: colours.lineStrong,
       borderWidth: 1,
       padding: [8, 10],
-      formatter: (params: unknown) => tooltip(points, params),
+      formatter: (params: AxisTooltipParams) => tooltip(points, params),
     },
 
     series: [
@@ -118,8 +118,11 @@ function option(
   };
 }
 
-function tooltip(points: readonly TimeSeriesPoint[], params: unknown): string {
-  const index = Array.isArray(params) ? (params[0] as { dataIndex: number }).dataIndex : 0;
+/** All the tooltip reads of echarts' callback payload, on an axis trigger. */
+type AxisTooltipParams = readonly { dataIndex: number }[];
+
+function tooltip(points: readonly TimeSeriesPoint[], params: AxisTooltipParams): string {
+  const index = params[0]?.dataIndex ?? 0;
   const tip = points[index]?.tip;
   if (!tip) return '';
 

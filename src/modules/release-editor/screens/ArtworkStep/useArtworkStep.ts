@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import type { Tone } from '@shared/ui';
 
-import type { Artwork, ArtworkFile, Credits } from '../../api/types';
+import type { Artwork, ArtworkFile } from '../../api/types';
 import { ARTWORK, CREDIT_FIELDS, EMPTY_CREDITS } from '../../constants';
 import { useDraft } from '../../hooks/useDraft';
 import { useDraftAutosave } from '../../hooks/useDraftAutosave';
@@ -63,7 +63,7 @@ export function useArtworkStep(): ArtworkModel {
     defaultValues: credits,
   });
 
-  useDraftAutosave(id, form, (values) => ({ credits: values as Credits }));
+  useDraftAutosave(id, form, (values) => ({ credits: values }));
 
   return {
     form,

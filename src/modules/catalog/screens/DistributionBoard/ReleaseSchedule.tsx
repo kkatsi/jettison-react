@@ -115,18 +115,18 @@ export function ReleaseSchedule({ axis, pins }: { axis: ScheduleAxis; pins: Sche
   );
 }
 
-const toneRule: Record<SchedulePin['tone'], string> = {
+const toneRule = {
   live: 'bg-live',
   warning: 'bg-warning',
   danger: 'bg-danger',
   idle: 'bg-idle',
   brand: 'bg-brand',
-};
+} satisfies Record<SchedulePin['tone'], string>;
 
-const toneRing: Record<SchedulePin['tone'], string> = {
+const toneRing = {
   live: 'border-live',
   warning: 'border-warning',
   danger: 'border-danger',
   idle: 'border-idle',
   brand: 'border-brand',
-};
+} satisfies Record<SchedulePin['tone'], string>;

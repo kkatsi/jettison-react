@@ -5,9 +5,9 @@
 import type { TrendDirection } from './catalog-summary';
 
 /** What the sparkline says, for a reader who cannot see it. */
-export const TREND_LABEL: Record<TrendDirection, string> = {
+export const TREND_LABEL = {
   rising: 'Streams rising over the last 16 days',
   falling: 'Streams falling over the last 16 days',
   steady: 'Streams steady over the last 16 days',
   none: 'No streams to chart yet',
-};
+} satisfies Record<TrendDirection, string>;

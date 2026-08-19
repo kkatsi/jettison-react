@@ -26,13 +26,15 @@ const NAIVE_BANNER = {
 const DEMO_MODULE = 'release-editor';
 
 /** The layout's one view-model. */
-export function useAppLayout(): {
+export type AppLayoutModel = {
   title: string;
   backend: BackendIndicator;
   /** Keys the screen slot: a mount, not an update, or React holds the old screen. */
   screenKey: string;
   banner: NaiveBannerProps | null;
-} {
+};
+
+export function useAppLayout(): AppLayoutModel {
   const { pathname } = useLocation();
   const matches = useMatches();
   const navigate = useNavigate();
