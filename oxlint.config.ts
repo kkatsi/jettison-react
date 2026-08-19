@@ -1,13 +1,14 @@
 // =============================================================================
 // Jettison — the enforcement
 // =============================================================================
-// The architecture in one file. Five sections, readable top to bottom:
+// The architecture in one file. Six sections, readable top to bottom:
 //
 //   1. Layers         — imports flow one way: app → modules → shared → core
 //   2. Module privacy — a module is reachable only through its index.ts
 //   3. R1 (views)     — .tsx files render; they never fetch, dispatch, or navigate
 //   4. R5 (services)  — business logic is React-free and store-free
 //   5. Evidence       — TypeScript that keeps the type it was handed
+//   6. Accessibility  — the whole jsx-a11y set, and one exemption that says why
 //
 // Every rule here ships as `error`. Warnings are wallpaper within a week.
 //
@@ -47,9 +48,9 @@ export default defineConfig({
     { name: 'anti-slop', specifier: './tools/oxlint/anti-slop/index.ts' },
   ],
 
-  // The hooks rules are correctness insurance; the sections below are the
-  // architecture. `typescript`, `unicorn` and `oxc` are on by default.
-  plugins: ['react', 'typescript', 'unicorn', 'oxc'],
+  // The hooks and accessibility rules are correctness insurance; the sections below
+  // are the architecture. `typescript`, `unicorn` and `oxc` are on by default.
+  plugins: ['react', 'typescript', 'unicorn', 'oxc', 'jsx-a11y'],
   categories: { correctness: 'error' },
 
   rules: {
@@ -108,6 +109,63 @@ export default defineConfig({
     'anti-slop/no-unsafe-dictionary-type': 'error',
     'anti-slop/no-widen-then-assert': 'error',
     'anti-slop/require-safety-comment-for-type-assertion': 'error',
+
+    // ==========================================================================
+    // 6. ACCESSIBILITY — the whole set, because a subset is a preference
+    // ==========================================================================
+    // Listed rule by rule rather than left to a category, so the config states a
+    // decision about all thirty-six. Two carry options that restore the upstream
+    // defaults oxlint widens; one file is exempted below, by name.
+    //
+    // What this does not reach: focus order, contrast, a control that is visible
+    // but not reachable. Those are found by tabbing — `e2e/` is where such a
+    // claim can be asserted, and lint being green is not the same as accessible.
+    'jsx-a11y/alt-text': 'error',
+    'jsx-a11y/anchor-ambiguous-text': 'error',
+    'jsx-a11y/anchor-has-content': 'error',
+    'jsx-a11y/anchor-is-valid': 'error',
+    'jsx-a11y/aria-activedescendant-has-tabindex': 'error',
+    'jsx-a11y/aria-props': 'error',
+    'jsx-a11y/aria-proptypes': 'error',
+    'jsx-a11y/aria-role': 'error',
+    'jsx-a11y/aria-unsupported-elements': 'error',
+    'jsx-a11y/autocomplete-valid': 'error',
+    'jsx-a11y/click-events-have-key-events': 'error',
+    'jsx-a11y/control-has-associated-label': 'error',
+    'jsx-a11y/heading-has-content': 'error',
+    'jsx-a11y/html-has-lang': 'error',
+    'jsx-a11y/iframe-has-title': 'error',
+    'jsx-a11y/img-redundant-alt': 'error',
+    'jsx-a11y/interactive-supports-focus': 'error',
+    // The console's file inputs are wrapped by their label, not named by an `id`,
+    // and the input itself is a component — which the rule cannot see into.
+    'jsx-a11y/label-has-associated-control': ['error', { controlComponents: ['FilePicker'] }],
+    'jsx-a11y/lang': 'error',
+    'jsx-a11y/media-has-caption': 'error',
+    'jsx-a11y/mouse-events-have-key-events': 'error',
+    'jsx-a11y/no-access-key': 'error',
+    'jsx-a11y/no-aria-hidden-on-focusable': 'error',
+    'jsx-a11y/no-autofocus': 'error',
+    'jsx-a11y/no-distracting-elements': 'error',
+    'jsx-a11y/no-interactive-element-to-noninteractive-role': 'error',
+    // The upstream handler list: pointer and keyboard events. Drag handlers are
+    // deliberately absent — a drop target has no keyboard equivalent to demand,
+    // which is why the file input beside it has to be reachable on its own.
+    'jsx-a11y/no-noninteractive-element-interactions': [
+      'error',
+      {
+        handlers: ['onClick', 'onMouseDown', 'onMouseUp', 'onKeyPress', 'onKeyDown', 'onKeyUp'],
+      },
+    ],
+    'jsx-a11y/no-noninteractive-element-to-interactive-role': 'error',
+    'jsx-a11y/no-noninteractive-tabindex': 'error',
+    'jsx-a11y/no-redundant-roles': 'error',
+    'jsx-a11y/no-static-element-interactions': 'error',
+    'jsx-a11y/prefer-tag-over-role': 'error',
+    'jsx-a11y/role-has-required-aria-props': 'error',
+    'jsx-a11y/role-supports-aria-props': 'error',
+    'jsx-a11y/scope': 'error',
+    'jsx-a11y/tabindex-no-positive': 'error',
   },
 
   overrides: [
@@ -201,6 +259,21 @@ export default defineConfig({
     // data and then asserts on JSON it produced itself, so the five section-5 rules
     // below would only have it parse its own seeds (ADR-006). Every other rule still
     // applies — sections 1–4 police this folder like any other.
+    // The one accessibility exemption, by filename rather than by folder: this file
+    // came from the registry and ADR-003 §5 says customisation goes in a sibling, so
+    // that `shadcn add --diff` keeps working. What upstream does here is a
+    // click-to-focus affordance on a `role="group"` div — a mouse shortcut to an
+    // input that is already in the tab order, so nothing is lost by leaving it. The
+    // rest of the kit is policed like any other folder.
+    {
+      files: ['src/shared/ui/input-group.tsx'],
+      rules: {
+        'jsx-a11y/click-events-have-key-events': 'off',
+        'jsx-a11y/no-noninteractive-element-interactions': 'off',
+        'jsx-a11y/prefer-tag-over-role': 'off',
+      },
+    },
+
     {
       files: ['src/mocks/**'],
       rules: {

@@ -15,6 +15,8 @@ const oxlint = fileURLToPath(new URL('../node_modules/.bin/oxlint', import.meta.
 const LAYERS = 'jettison(layer-dependencies)';
 const PRIVACY = 'jettison(module-privacy)';
 const RESTRICTED = 'eslint(no-restricted-imports)';
+const a11y = (rule: string) => `jsx-a11y(${rule})`;
+const A11Y_VIEW = 'src/modules/catalog/violations/InaccessibleView.tsx';
 
 /** Every violation fixture, with the rule that must fire on it. */
 const VIOLATIONS: { file: string; rule: string; count?: number }[] = [
@@ -24,6 +26,11 @@ const VIOLATIONS: { file: string; rule: string; count?: number }[] = [
   { file: 'src/app/violations/deep-module-import.ts', rule: PRIVACY },
   { file: 'src/modules/catalog/violations/BadView.tsx', rule: RESTRICTED, count: 3 },
   { file: 'src/modules/catalog/services/violations/bad-service.ts', rule: RESTRICTED, count: 2 },
+  // One file, four rules: the a11y set is only worth listing if it still fires.
+  { file: A11Y_VIEW, rule: a11y('alt-text') },
+  { file: A11Y_VIEW, rule: a11y('click-events-have-key-events') },
+  { file: A11Y_VIEW, rule: a11y('no-static-element-interactions') },
+  { file: A11Y_VIEW, rule: a11y('anchor-is-valid') },
 ];
 
 /** Files that follow the architecture and must lint clean. */
