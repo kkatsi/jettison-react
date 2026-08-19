@@ -16,7 +16,12 @@ const TYPE_PREFIX = {
   tracks: 'domain/tracks/',
 } satisfies Record<TypeFilter, string>;
 
-const RANGE_DAYS = { '24h': 1, '7d': 7, '30d': 30, '90d': 90 } satisfies Record<RangeFilter, number>;
+const RANGE_DAYS = {
+  '24h': 1,
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
+} satisfies Record<RangeFilter, number>;
 
 const DAY_MS = 86_400_000;
 

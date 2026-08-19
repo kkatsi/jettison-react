@@ -18,7 +18,7 @@ Accepted
 
 ## Context
 
-Chapter 1 puts the design system in `shared/ui` and Chapter 2's promotion ladder says a component is not shared until a second module needs it. Neither says where the *first* version of a component comes from, and that gap has a default answer that costs real money: someone writes a `Dialog` by hand.
+Chapter 1 puts the design system in `shared/ui` and Chapter 2's promotion ladder says a component is not shared until a second module needs it. Neither says where the _first_ version of a component comes from, and that gap has a default answer that costs real money: someone writes a `Dialog` by hand.
 
 The components an operations console needs are dominated by ones whose value is invisible in a screenshot — dialog, select, combobox, tooltip, popover, tabs, checkbox — where correctness means focus trapping and focus return, `aria-*` wiring, roving tabindex, typeahead, escape and outside-click handling, portalling with scroll lock, and RTL. Those behaviours take years of bug reports to get right. A repo whose whole argument is "enforce the boundaries and stop rewriting things" cannot credibly rewrite them.
 
@@ -36,7 +36,7 @@ The counter-force: a component library imported as a dependency puts the design 
 ## Costs & sharp edges (be honest)
 
 - **The kit is a vendored copy, so upstream fixes are a pull, not an install.** Nobody is notified when shadcn fixes a focus bug in `select`; someone has to run `shadcn add select --diff` and look. Rule 5 exists to keep that cheap, and it only stays cheap while people follow it.
-- **Namespace collisions are silent and ugly.** shadcn's `--muted` is a *surface*; ours was a *text* colour. Its `--accent` is a hover surface, not a brand colour. The first version of this theme had both clashing, which repainted half the UI with no error anywhere. The console's tokens are now named `subtle` and `brand` for exactly this reason — and any new token has to be checked against shadcn's set.
+- **Namespace collisions are silent and ugly.** shadcn's `--muted` is a _surface_; ours was a _text_ colour. Its `--accent` is a hover surface, not a brand colour. The first version of this theme had both clashing, which repainted half the UI with no error anywhere. The console's tokens are now named `subtle` and `brand` for exactly this reason — and any new token has to be checked against shadcn's set.
 - **Base UI is younger than Radix.** Fewer components, fewer edge cases found by other people. We are trading maturity for the primitive API we would rather live with for the next five years, and a component that turns out to be missing means either a Radix-based fallback or a hand-written one, per case.
 - **The formatter rewrites generated files.** Running Prettier over the kit makes future `--diff` output noisier than the upstream file. Consistency inside the repo won that trade; the alternative is an exempted folder that looks foreign.
 - **`shadcn add` will happily reach for a component we do not need.** Rule 6 is a discipline, not a mechanism: nothing stops a contributor installing forty components on a slow afternoon.

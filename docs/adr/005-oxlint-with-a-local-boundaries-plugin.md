@@ -18,7 +18,7 @@ Accepted
 
 The enforcement started as an ESLint flat config: `eslint-plugin-boundaries` for layer direction and module privacy, `@typescript-eslint/no-restricted-imports` for R1 and R5, `eslint-plugin-react-hooks` for correctness. It worked, and it was the showpiece the README points at.
 
-Two things then pulled against each other. A second linter arrived — oxlint, carrying a vendored plugin of rules about *evidence* rather than *structure*: no `unknown` at a boundary, no unexplained `as`, no lookup table that throws away the keys it was built from. And two linters mean two configs, two toolchains, and two answers to "why did this not fail in CI".
+Two things then pulled against each other. A second linter arrived — oxlint, carrying a vendored plugin of rules about _evidence_ rather than _structure_: no `unknown` at a boundary, no unexplained `as`, no lookup table that throws away the keys it was built from. And two linters mean two configs, two toolchains, and two answers to "why did this not fail in CI".
 
 Collapsing them into one meant choosing which one survives. Oxlint is the faster tool by an order of magnitude (a full run in ~0.2s against ~2s) and is where the ecosystem is heading, so it was the obvious candidate — except that the layer rules are the whole product, and oxlint does not ship them.
 
@@ -55,7 +55,7 @@ Measured, not assumed: oxlint loads `eslint-plugin-boundaries` as a JS plugin wi
 
 **Positive** — one linter, one config, one command; a ~10× faster lint; no import resolver in the enforcement path, removing the failure mode that used to make the whole config silently pass; the evidence rules (Section 5) now apply to the app under the same run.
 
-**Negative** — the architecture's two load-bearing rules are code we maintain; Node 22.18+ required for `lint` *and* `test`; type-aware rules stay out of reach (`npm run type-check` owns whole-program truth, as before).
+**Negative** — the architecture's two load-bearing rules are code we maintain; Node 22.18+ required for `lint` _and_ `test`; type-aware rules stay out of reach (`npm run type-check` owns whole-program truth, as before).
 
 **Neutral** — rule IDs changed, so editor squiggles and CI output read `jettison(layer-dependencies)` and `eslint(no-restricted-imports)` where they used to read `boundaries/dependencies`; disable directives now use oxlint's own naming.
 

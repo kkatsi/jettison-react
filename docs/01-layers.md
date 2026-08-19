@@ -26,12 +26,12 @@ src/
 └── core/       # Infrastructure — framework-facing, zero business logic, zero JSX
 ```
 
-| Layer | Contains | May import from |
-|-------|----------|-----------------|
-| **`app`** | Router composition, store composition, providers, layouts, route guards | `modules`, `shared`, `core` |
-| **`modules`** | Business domains: screens, features, domain services, module state, module-owned API endpoints | `shared`, `core` |
-| **`shared`** | Design-system components, generic hooks, generic utils, cross-cutting types, domain events | `core` |
-| **`core`** | API base client, config, auth plumbing, storage, monitoring | *(nothing above it)* |
+| Layer         | Contains                                                                                       | May import from             |
+| ------------- | ---------------------------------------------------------------------------------------------- | --------------------------- |
+| **`app`**     | Router composition, store composition, providers, layouts, route guards                        | `modules`, `shared`, `core` |
+| **`modules`** | Business domains: screens, features, domain services, module state, module-owned API endpoints | `shared`, `core`            |
+| **`shared`**  | Design-system components, generic hooks, generic utils, cross-cutting types, domain events     | `core`                      |
+| **`core`**    | API base client, config, auth plumbing, storage, monitoring                                    | _(nothing above it)_        |
 
 ### The dependency rule
 
@@ -39,7 +39,7 @@ src/
 
 Three corollaries do most of the work:
 
-1. **Modules never import other modules.** If two modules need the same thing, it moves *down* — to `shared` (UI, utils, types) or `core` (infrastructure). And sometimes the right answer is duplication: a five-line helper copied into two modules is cheaper than a coupling between them.
+1. **Modules never import other modules.** If two modules need the same thing, it moves _down_ — to `shared` (UI, utils, types) or `core` (infrastructure). And sometimes the right answer is duplication: a five-line helper copied into two modules is cheaper than a coupling between them.
 2. **Modules are consumed only through their public API** — a single `index.ts` that exports the module's routes and, deliberately and rarely, anything else. Deep imports (`modules/billing/features/...` from outside `modules/billing`) are lint errors. The public API is the module's contract; everything behind it is private and refactorable without repository-wide impact.
 3. **Only `app` composes.** The router knows which modules exist. The store knows whose state it holds. No module knows any of that.
 
@@ -67,11 +67,11 @@ strategy:
     module: [release-editor, catalog, analytics, activity]
 steps:
   - run: rm -rf src/modules/${{ matrix.module }}
-  - run: node scripts/unregister-module.mjs ${{ matrix.module }}  # strips the registration lines
+  - run: node scripts/unregister-module.mjs ${{ matrix.module }} # strips the registration lines
   - run: npm run type-check && npm run build
 ```
 
-If a teammate (or an AI agent — they are prolific import writers) sneaks a cross-module import in, this job fails on the next push, with the module name in the job title. The wiki diagram can't drift from the codebase, because the diagram *is* a test.
+If a teammate (or an AI agent — they are prolific import writers) sneaks a cross-module import in, this job fails on the next push, with the module name in the job title. The wiki diagram can't drift from the codebase, because the diagram _is_ a test.
 
 The jettison test also forces honest answers to design questions. "Can the catalog module use the release editor's eligibility service?" becomes "would catalog still compile if the editor were jettisoned?" — and the answer designs the code for you: the service either moves down to `shared`, gets duplicated, or the requirement is rethought.
 
@@ -81,11 +81,11 @@ Rules that live in a doc are suggestions. These live in oxlint and fail in the e
 
 ### Path aliases first
 
-Every layer gets an alias — `@app/*`, `@modules/*`, `@shared/*`, `@core/*` — declared in `tsconfig.json` and resolved by Vite. This is not cosmetic: aliases make every cross-layer import *syntactically recognizable*, so lint rules can target them, and a relative-path disguise (`../../core/api`) can be banned outright.
+Every layer gets an alias — `@app/*`, `@modules/*`, `@shared/*`, `@core/*` — declared in `tsconfig.json` and resolved by Vite. This is not cosmetic: aliases make every cross-layer import _syntactically recognizable_, so lint rules can target them, and a relative-path disguise (`../../core/api`) can be banned outright.
 
 ### The layer matrix, as a lint rule
 
-Every linter ships the *shape* of this — restricted imports, forbidden paths — and none of them ship the matrix itself. So it is a local plugin, [`tools/oxlint/jettison/`](../tools/oxlint/jettison/index.ts), and it is short: a layer is a path prefix, an alias is a path prefix, so classifying both ends of an import is string work and no module resolution is involved at all.
+Every linter ships the _shape_ of this — restricted imports, forbidden paths — and none of them ship the matrix itself. So it is a local plugin, [`tools/oxlint/jettison/`](../tools/oxlint/jettison/index.ts), and it is short: a layer is a path prefix, an alias is a path prefix, so classifying both ends of an import is string work and no module resolution is involved at all.
 
 The rules it registers:
 
@@ -107,7 +107,7 @@ In a greenfield project there is nothing to grandfather. In a migration, only th
 
 ### Hard-won gotchas (verify your config actually fires)
 
-These are the failure modes that make boundary configs *silently useless* — each one produces a green build with zero enforcement:
+These are the failure modes that make boundary configs _silently useless_ — each one produces a green build with zero enforcement:
 
 - The rules classify by path prefix, so the alias map in the plugin is load-bearing. Rename an alias in `tsconfig.json` without renaming it there and every import through it is unclassified — **every rule silently passes.**
 - Only the four layer folders are classified. Files sitting directly in `src/` (`main.tsx`) are unconstrained by design; anything else you add beside them is too.
@@ -126,4 +126,4 @@ The discipline that follows: **keep a deliberately violating file in the test su
 
 ---
 
-*Next: [Chapter 2 — Module anatomy](02-module-anatomy.md), the internal shape every module shares.*
+_Next: [Chapter 2 — Module anatomy](02-module-anatomy.md), the internal shape every module shares._

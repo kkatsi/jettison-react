@@ -160,13 +160,11 @@ export function useCatalog(): CatalogModel {
       type: filters.type,
       stage: filters.stage,
       artists: [ALL, ...artistOptions(releases)],
-      types: TYPE_VALUES.map(
-        (type): FilterOption<CatalogFilters['type']> =>
-          type === 'all' ? ALL : { value: type, label: type },
+      types: TYPE_VALUES.map((type): FilterOption<CatalogFilters['type']> =>
+        type === 'all' ? ALL : { value: type, label: type },
       ),
-      stages: STAGE_VALUES.map(
-        (stage): FilterOption<CatalogFilters['stage']> =>
-          stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
+      stages: STAGE_VALUES.map((stage): FilterOption<CatalogFilters['stage']> =>
+        stage === 'all' ? ALL : { value: stage, label: STAGE[stage].label },
       ),
       isActive: isFiltered(filters),
       onQuery: (query) => update({ query }),
