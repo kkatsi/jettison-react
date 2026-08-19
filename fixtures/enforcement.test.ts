@@ -1,23 +1,27 @@
-// A boundaries config that matches nothing is indistinguishable from one that
-// is satisfied. This suite runs the real eslint.config.js against files that
-// break each rule group on purpose, and fails if a rule stops firing.
+// A config that matches nothing is indistinguishable from one that is satisfied.
+// This suite runs the real oxlint.config.ts against files that break each rule
+// group on purpose, and fails if a rule stops firing.
+import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { promisify } from 'node:util';
 
-import { ESLint } from 'eslint';
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
-const fixturesDir = fileURLToPath(new URL('.', import.meta.url));
-const configFile = fileURLToPath(new URL('../eslint.config.js', import.meta.url));
+const run = promisify(execFile);
 
-const BOUNDARIES = 'boundaries/dependencies';
-const RESTRICTED = '@typescript-eslint/no-restricted-imports';
+const fixturesDirectory = fileURLToPath(new URL('.', import.meta.url));
+const oxlint = fileURLToPath(new URL('../node_modules/.bin/oxlint', import.meta.url));
+
+const LAYERS = 'jettison(layer-dependencies)';
+const PRIVACY = 'jettison(module-privacy)';
+const RESTRICTED = 'eslint(no-restricted-imports)';
 
 /** Every violation fixture, with the rule that must fire on it. */
-const VIOLATIONS: Array<{ file: string; rule: string; count?: number }> = [
-  { file: 'src/core/violations/imports-shared.ts', rule: BOUNDARIES },
-  { file: 'src/shared/violations/imports-module.ts', rule: BOUNDARIES },
-  { file: 'src/modules/catalog/violations/imports-sibling-module.ts', rule: BOUNDARIES },
-  { file: 'src/app/violations/deep-module-import.ts', rule: BOUNDARIES },
+const VIOLATIONS: { file: string; rule: string; count?: number }[] = [
+  { file: 'src/core/violations/imports-shared.ts', rule: LAYERS },
+  { file: 'src/shared/violations/imports-module.ts', rule: LAYERS },
+  { file: 'src/modules/catalog/violations/imports-sibling-module.ts', rule: LAYERS },
+  { file: 'src/app/violations/deep-module-import.ts', rule: PRIVACY },
   { file: 'src/modules/catalog/violations/BadView.tsx', rule: RESTRICTED, count: 3 },
   { file: 'src/modules/catalog/services/violations/bad-service.ts', rule: RESTRICTED, count: 2 },
 ];
@@ -31,29 +35,48 @@ const COMPLIANT = [
   'src/modules/release-editor/services/release-eligibility.ts',
 ];
 
-// `ignore: false` so the fixtures are linted even though the repo's own lint
-// script skips them; cwd is fixtures/ so element patterns match `src/…` here
-// exactly as they do in the app.
-const eslint = new ESLint({ cwd: fixturesDir, overrideConfigFile: configFile, ignore: false });
+type Diagnostic = { code: string; filename: string };
 
-async function rulesFiredIn(file: string): Promise<string[]> {
-  const [result] = await eslint.lintFiles([file]);
-  if (!result) throw new Error(`ESLint returned no result for ${file}`);
-  return result.messages.map((message) => message.ruleId ?? 'fatal');
-}
+/** Rules that fired, per fixture file. One lint run for the whole suite. */
+const fired = new Map<string, string[]>();
+
+// `--no-ignore` so the fixtures are linted even though the repo's own lint script
+// skips them; cwd is fixtures/ so the plugin classifies `src/…` here exactly as it
+// does in the app.
+beforeAll(async () => {
+  // Reports something, so a non-zero exit is the expected path. Config failures
+  // land on stdout too (an unreadable config, or a Node too old to load a TS one),
+  // so anything that is not JSON is a real failure worth printing whole.
+  const { stdout } = await run(
+    oxlint,
+    ['--config', '../oxlint.config.ts', '--no-ignore', '--format=json', 'src'],
+    { cwd: fixturesDirectory },
+  ).catch((error: { stdout?: string }) => error);
+
+  if (stdout === undefined || !stdout.startsWith('{')) {
+    throw new Error(`oxlint did not report:\n${stdout ?? '(no output)'}`);
+  }
+
+  const report: { diagnostics: Diagnostic[] } = JSON.parse(stdout);
+
+  for (const file of [...VIOLATIONS.map((entry) => entry.file), ...COMPLIANT]) fired.set(file, []);
+  for (const diagnostic of report.diagnostics) {
+    fired.get(diagnostic.filename)?.push(diagnostic.code);
+  }
+});
 
 describe('the enforcement fires', () => {
-  it.each(VIOLATIONS)('$file violates $rule', async ({ file, rule, count }) => {
-    const fired = await rulesFiredIn(file);
-    expect(fired).toContain(rule);
+  it.each(VIOLATIONS)('$file violates $rule', ({ file, rule, count }) => {
+    const rules = fired.get(file);
+    expect(rules).toContain(rule);
     if (count !== undefined) {
-      expect(fired.filter((id) => id === rule)).toHaveLength(count);
+      expect(rules?.filter((code) => code === rule)).toHaveLength(count);
     }
   });
 });
 
 describe('the enforcement stays out of the way', () => {
-  it.each(COMPLIANT)('%s lints clean', async (file) => {
-    expect(await rulesFiredIn(file)).toEqual([]);
+  it.each(COMPLIANT)('%s lints clean', (file) => {
+    expect(fired.get(file)).toEqual([]);
   });
 });

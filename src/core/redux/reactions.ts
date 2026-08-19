@@ -22,7 +22,7 @@ export const reactionsMiddleware = createListenerMiddleware();
 // parameter is `any` on purpose: a cache patch is typed against the store state it
 // belongs to, and core may not import app to learn what that is. Reactions read
 // their data from the event payload, never from getState, so nothing is lost.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 export type ReactionDispatch = ThunkDispatch<any, unknown, UnknownAction>;
 
 type ReactionApi = ListenerEffectAPI<unknown, ReactionDispatch>;
