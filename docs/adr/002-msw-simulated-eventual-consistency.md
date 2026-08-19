@@ -35,6 +35,7 @@ A documented demo flag (`?cache=naive`) switches the app's Class-C handling from
 - **A lagging mock complicates every future feature added to the reference app** — contributors must think about which endpoints read which model. This is a real tax; it is also exactly the thinking the architecture trains.
 - **The lag constant is a caricature.** Real projection lag is variable and occasionally long; a fixed 2.5s cannot prove the delayed-invalidation heuristic correct (nothing can — Chapter 4 calls it a heuristic honestly). It proves the *mechanism*, not the tuning.
 - **MSW in production-mode deploys means the service worker ships to visitors.** Acceptable for a demo; would be malpractice in a real product.
+- **No worker, no app.** Booting the mock before the first render means the console has no degraded mode: if registration refuses or never answers, there is nothing behind any screen. That used to render as a permanently blank page — the one failure mode Ch. 2's doctrine exists to prevent. `startMockBackend` now settles either way (an 8s deadline covers a registration that hangs rather than refuses) and `main.tsx` renders [`BootFailure`](../../src/app/screens/BootFailure.tsx) with the reason. A real backend would degrade per screen instead; this one cannot, and says so.
 
 ## Alternatives considered
 
