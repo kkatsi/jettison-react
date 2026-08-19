@@ -95,6 +95,10 @@ onQueryStarted:
                                                                         invalidate after delay  (verify)
 ```
 
+![Two browsers side by side after the same submit. In events mode the release is the first row on the distribution board; in naive mode the same board has one row fewer and no release.](screens/naive-vs-events.gif)
+
+Both sessions ran the same journey and clicked the same button; the only difference is `?cache=naive`. On the left the mutation wrote the row into the cache and confirmed it once the read model caught up. On the right the refetch went out immediately and the response, still missing the release, overwrote the cache.
+
 Why this preserves the architecture:
 
 - **The jettison test survives.** Jettison catalog → the editor dispatches events nobody hears; jettison the editor → events never fire and catalog still compiles. Events are fire-and-forget by construction.
