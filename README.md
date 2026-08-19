@@ -65,6 +65,23 @@ The picture above is generated from the real import graph by [`scripts/dependenc
 
 **The console** is a deliberately real product: the back office of an indie record label. Release creation (a multi-step wizard with drafts and audio that processes asynchronously), catalog and distribution management (lists kept consistent across modules through domain events), and streaming analytics (charts fed by tested transformations). Its mock backend simulates **eventual consistency** — reads lag writes by seconds — because that is how music distribution actually behaves (delivery takes hours, stats lag days), and a demo backend that hides the problem would prove nothing.
 
+### The console
+
+Every shot below is the running app at 1440×900, captured from the production build.
+
+[![The catalogue, filtered to live releases](docs/screens/catalog.png)](https://jettison.kkatsi.workers.dev/catalog)
+
+The catalogue, filtered to live releases. The filter is in the URL, so that view is a link somebody can send you — state that survives a reload belongs to the router, not to a component ([ADR-004](docs/adr/004-url-state-with-nuqs.md)).
+
+| | |
+|---|---|
+| ![The distribution pipeline](docs/screens/distribution.png) | ![The wizard's review step](docs/screens/wizard-review.png) |
+| **Distribution.** Rows land here by domain event when a release is submitted elsewhere in the app — not by a refetch that would return a read model seconds behind ([Ch. 4 §5](docs/04-data-layer.md)). | **The wizard, at review.** Submission stays locked until every blocking issue clears. The issues come from a React-free, store-free service, which is why they can be unit-tested without mounting anything ([R5](docs/03-component-pattern.md)). |
+| ![Analytics over 90 days](docs/screens/analytics.png) | ![The activity feed](docs/screens/activity.png) |
+| **Analytics.** Charts fed by transformations with their own tests; the 90-day window is where the seeded playlist surge shows up. | **Activity.** Every fact that crosses a module boundary, in the vocabulary `shared/events/` defines. The architecture's event names, on screen, as a feed. |
+| ![One release in full](docs/screens/release-detail.png) | |
+| **A release in full.** Tracklist with ISRCs, per-track audio state, and delivery to five fictional stores — one screen assembled from a module's own endpoints, with no cross-module reads. | |
+
 ## Try to break it
 
 Every rule in here is a lint error, not a paragraph. The fastest way to believe that is to violate one — each of these fails in about a second:
@@ -112,7 +129,8 @@ Teams building React applications that must survive years of feature work, team 
 - [x] App shell: core + shared + app layers
 - [x] Jettison-test CI
 - [x] Modules: activity, catalog, release-editor, analytics
-- [ ] Deployed demo (Cloudflare Workers)
+- [x] Deployed demo (Cloudflare Workers) — [jettison.kkatsi.workers.dev](https://jettison.kkatsi.workers.dev)
+- [ ] The naive-vs-events demo, as a GIF
 
 ---
 
