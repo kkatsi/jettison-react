@@ -94,6 +94,6 @@ If anyone — or any agent — sneaks a cross-module import past review, this fa
 
 ## What is deliberately not installed
 
-- **Type-evidence rules.** Vendored separately from [anti-slop](https://github.com/dmmulroy/anti-slop) (MIT); its own skill installs them.
+- **Type-evidence rules.** Not ours to ship: [anti-slop](https://github.com/dmmulroy/anti-slop) by Dillon Mulroy, MIT, which upstream distributes by vendoring and installs with its own skill — `npx skills add dmmulroy/anti-slop --skill install-anti-slop`.
 - **Accessibility rules.** Turn on every rule the linter ships, at `error`, rather than a subset — a subset is a preference. They read markup and nothing else, so focus order, contrast and reachability still need a browser or a hand on the tab key.
 - **A dependency-graph check.** Optional, and worth it: generate the import matrix from the real graph and fail CI when the committed copy is stale, so the diagram in the README cannot drift from the code.

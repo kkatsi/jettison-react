@@ -81,7 +81,7 @@ The chapters name no library. The concrete choices, and what each one costs, are
 
 ## How it is enforced
 
-[`oxlint.config.ts`](oxlint.config.ts) holds the whole boundary system as one annotated config: layers, module privacy, view and service restrictions, the type-evidence rules ([anti-slop](https://github.com/dmmulroy/anti-slop), vendored under MIT), and every accessibility rule the linter ships. The two rules no linter ships live in [`tools/oxlint/jettison/`](tools/oxlint/jettison/index.ts), 125 lines of rule code and the reasoning around it, because a layer is a path prefix and so is an alias.
+[`oxlint.config.ts`](oxlint.config.ts) holds the whole boundary system as one annotated config: layers, module privacy, view and service restrictions, the type-evidence rules ([anti-slop](https://github.com/dmmulroy/anti-slop) by Dillon Mulroy, [vendored under MIT](tools/oxlint) the way upstream asks to be), and every accessibility rule the linter ships. The two rules no linter ships live in [`tools/oxlint/jettison/`](tools/oxlint/jettison/index.ts), 125 lines of rule code and the reasoning around it, because a layer is a path prefix and so is an alias.
 
 [`fixtures/`](fixtures) keeps one deliberately violating file per rule, with a Vitest suite that fails if a rule stops firing. A boundary config that matches nothing looks exactly like one that is satisfied.
 
