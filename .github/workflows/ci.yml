@@ -23,6 +23,9 @@ jobs:
       # The README's dependency matrix is generated from the real import graph —
       # a stale one would be a diagram that drifted, which is the whole point.
       - run: npm run graph:check
+      # The shipped skill carries copies of the plugin and the unregister script.
+      # Two copies with no check is two copies that drift.
+      - run: npm run skill:check
       - run: npm test
       - run: npm run build
       # Validates wrangler.jsonc without credentials, so a broken deploy config

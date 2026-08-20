@@ -5,7 +5,7 @@
 
 **An enforced architecture for enterprise React.** Any module can be thrown overboard — delete its folder, strip its registration lines — and the application still compiles, builds and runs. CI proves it on every push.
 
-[Live demo](https://jettison.kkatsi.workers.dev) · [The chapters](docs) · [Decisions and their costs](docs/adr)
+[Live demo](https://jettison.kkatsi.workers.dev) · [The chapters](docs) · [Decisions and their costs](docs/adr) · [The agent skill](skills/jettison)
 
 > **jettison** (v.) — to throw cargo overboard, deliberately, to keep the ship flying.
 
@@ -30,6 +30,7 @@ Two positions follow from that.
 | The wiki page that described the codebase two years ago              | Rules ship as errors, and a test suite asserts each one still fires.                     |
 | "It works on the edit screen but the list doesn't update."           | Mutations own their cache effects; cross-module sync travels as events.                  |
 | "It works fine" — until someone tries the wizard without a mouse     | Every accessibility rule the linter ships, at error; reachability asserted in a browser. |
+| An agent that writes a module a day and reads the conventions once   | A skill that carries them, with the unlintable half marked unlintable.                   |
 
 ## The architecture
 
@@ -88,6 +89,8 @@ The chapters name no library. The concrete choices, and what each one costs, are
 
 [The jettison test](.github/workflows/jettison-test.yml) runs a matrix job per module: delete the folder, run [`unregister-module.mjs`](scripts/unregister-module.mjs), require type-check and build to pass without it.
 
+[`skills/jettison/`](skills/jettison) states the same rules to the author who now writes most of the code and reads the least documentation. It is explicit about which half a linter catches and which half it cannot — a service arriving without its test, a view-model that left a `useMemo` in the view, a cache write into another module's queries — because a rule an agent cannot verify is one it will confidently violate. [One command to install](#the-agent-skill).
+
 ## Try it
 
 ```bash
@@ -118,6 +121,18 @@ git restore . && git clean -fd src
 4. **Add the jettison test.** Wrap each registration line in a `// jettison:…` marker region; the script strips them mechanically.
 
 You do not need the rest of the stack — RTK Query, MSW, shadcn, nuqs, or oxlint itself. The layers, the module shape, the component pattern and the jettison test are the architecture; this repo is one implementation of it.
+
+### The agent skill
+
+It answers the placement questions before a file exists, writes services before views, and carries the lint plugin and config in `assets/` — so "adopt Jettison here" wires up steps 1 to 4 above instead of reciting them.
+
+```
+/plugin marketplace add kkatsi/jettison-react   # then: /plugin install jettison@kkatsi
+```
+
+Or `npx skills add kkatsi/jettison-react` for [any other agent](https://skills.sh).
+
+It names no library, and CI checks the copies it carries against the originals in this repo — a shipped skill that has drifted from the architecture it describes is worse than none.
 
 ## The reference application
 

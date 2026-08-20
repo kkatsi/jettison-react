@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "graph": "node scripts/dependency-graph.mjs",
     "graph:check": "node scripts/dependency-graph.mjs --check",
+    "skill:check": "cmp tools/oxlint/jettison/index.ts skills/jettison/assets/jettison/index.ts && cmp scripts/unregister-module.mjs skills/jettison/assets/unregister-module.mjs",
     "deploy": "npm run build && wrangler deploy",
     "deploy:check": "wrangler deploy --dry-run",
     "test": "vitest run",
