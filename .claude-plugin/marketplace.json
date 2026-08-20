@@ -1,0 +1,25 @@
+{
+  "name": "kkatsi",
+  "owner": {
+    "name": "Kostas Katsinaris",
+    "url": "https://github.com/kkatsi"
+  },
+  "description": "Architecture tooling for enterprise React, from the Jettison repo.",
+  "plugins": [
+    {
+      "name": "jettison",
+      "source": "./skills/jettison",
+      "displayName": "Jettison",
+      "description": "Write and review React code inside the Jettison architecture: four layers with one-way imports, modules that can be deleted without breaking the build, views that render while hooks orchestrate and services decide.",
+      "author": {
+        "name": "Kostas Katsinaris",
+        "url": "https://github.com/kkatsi"
+      },
+      "homepage": "https://github.com/kkatsi/jettison-react/tree/main/skills/jettison",
+      "repository": "https://github.com/kkatsi/jettison-react",
+      "license": "MIT",
+      "keywords": ["react", "architecture", "typescript", "enterprise", "code-review"],
+      "category": "architecture"
+    }
+  ]
+}
